@@ -1,6 +1,7 @@
-import "./style/main.scss"
-import Board from "./scripts/board"
+import "./style/_main.scss"
+import Game from "./scripts/game";
 
-new Board(document.querySelector(".board"))
+const game = new Game()
+
 
 
