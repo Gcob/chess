@@ -25,6 +25,7 @@ require __DIR__ . "/vendor/autoload.php"
             </div>
             <div class="col-lg-4 info-container">
                 <h3>Infos</h3>
+                <p>Trait aux <span class="turn"></span></p>
             </div>
         </div>
     </div>

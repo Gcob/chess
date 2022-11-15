@@ -1,26 +1,48 @@
-$square-color : #dde;
-$dark-square-color : #99a;
+$square-color: #dde;
+$dark-square-color: #99a;
 
 .board {
-  display: flex;
-  flex-wrap: wrap;
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
 
-  .square {
-    width: 12.5%;
-    height: 0;
-    padding-bottom: 12.5%;
-    background: $square-color ;
+  .squares-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
 
-    &.dark {
-      background: $dark-square-color;
+  .letters-container {
+    display: flex;
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    bottom: -20px;
+    left: 0;
+
+    .letter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 12.5%;
     }
+  }
 
-    &:hover {
-      background: darken($square-color , 10%);
+  .numbers-container {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 20px;
+    height: 100%;
+    top: 0;
+    left: -20px;
 
-      &.dark {
-        background: darken($dark-square-color, 10%);
-      }
+    .number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 12.5%;
     }
   }
 }
