@@ -1,4 +1,6 @@
-import bootstrap from 'bootstrap'
 import "./style/main.scss"
+import Board from "./scripts/board"
+
+new Board(document.querySelector(".board"))
 
 

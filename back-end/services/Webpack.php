@@ -74,9 +74,4 @@ class Webpack
 
         return self::get_manifest_data()[$manifest_key] ?? "";
     }
-
-    public static function enqueue_asset(string $resources_dir_relative_path)
-    {
-        $asset_url = self::get_asset_url($resources_dir_relative_path);
-    }
 }

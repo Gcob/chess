@@ -13,11 +13,22 @@ require __DIR__ . "/vendor/autoload.php"
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>Chess</title>
-    <?php Webpack::echo_entry_assets("app"); ?>
 </head>
 <body>
-<div class="container">
-    Hello chess
-</div>
+<section class="main">
+    <div class="container">
+        <h1>Chess</h1>
+        <div class="row">
+            <div class="col-lg-8 board-container">
+                <h3>Board</h3>
+                <div class="board"></div>
+            </div>
+            <div class="col-lg-4 info-container">
+                <h3>Infos</h3>
+            </div>
+        </div>
+    </div>
+</section>
+<?php Webpack::echo_entry_assets("app"); ?>
 </body>
 </html>
