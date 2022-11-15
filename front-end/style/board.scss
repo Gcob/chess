@@ -1,0 +1,26 @@
+$square-color : #dde;
+$dark-square-color : #99a;
+
+.board {
+  display: flex;
+  flex-wrap: wrap;
+
+  .square {
+    width: 12.5%;
+    height: 0;
+    padding-bottom: 12.5%;
+    background: $square-color ;
+
+    &.dark {
+      background: $dark-square-color;
+    }
+
+    &:hover {
+      background: darken($square-color , 10%);
+
+      &.dark {
+        background: darken($dark-square-color, 10%);
+      }
+    }
+  }
+}
