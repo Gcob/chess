@@ -1,0 +1,80 @@
+version: '3.8'
+networks:
+    db:
+        driver: 'bridge'
+services:
+    server:
+        restart: 'always'
+        image: 'gcob/chess-server:latest'
+#        build:
+#            dockerfile: 'docker/php8.0-xdebug-composer-node16.Dockerfile'
+        container_name: 'chess-server'
+        environment:
+            - 'TZ=America/Toronto'
+        volumes:
+            -   type: 'bind'
+                source: '.'
+                target: '/var/www/html/'
+            -   type: 'bind'
+                source: 'docker/certs'
+                target: '/etc/ssl/certs/'
+            -   type: 'bind'
+                source: 'docker/virtual-hosts.conf'
+                target: '/etc/apache2/sites-available/000-default.conf'
+        ports:
+            -   mode: 'host'
+                published: 3090
+                target: 80
+                protocol: 'tcp'
+            -   mode: 'host'
+                published: 3091
+                target: 443
+                protocol: 'tcp'
+            -   mode: 'host'
+                published: 3092
+                target: 3092
+                protocol: 'tcp'
+        networks:
+            - 'db'
+    phpmyadmin:
+        restart: 'always'
+        image: 'phpmyadmin/phpmyadmin:5.0.1'
+        container_name: 'chess-phpmyadmin'
+        networks:
+            - 'db'
+        ports:
+            -   mode: 'host'
+                published: 3093
+                target: 80
+                protocol: 'tcp'
+        environment:
+            - 'PMA_HOSTS=chess-mysql'
+            - 'PMA_CONTROLPORT=3366'
+            - 'PMA_USER=root'
+            - 'UPLOAD_LIMIT=8192M'
+            - 'MEMORY_LIMIT=8192M'
+            - 'MAX_EXECUTION_TIME=10000'
+            - 'MAX_INPUT_TIME=1000'
+    mysql:
+        restart: 'always'
+        image: 'mariadb:10.3.35'
+        container_name: 'chess-mysql'
+        command: '--max_allowed_packet=32505856 '
+        environment:
+            - 'MYSQL_ROOT_PASSWORD:""'
+            - 'MYSQL_ALLOW_EMPTY_PASSWORD=1'
+            - 'MYSQL_DATABASE=chess-db'
+        networks:
+            - 'db'
+        ports:
+            -   mode: 'host'
+                published: 3094
+                target: 3306
+                protocol: 'tcp'
+        volumes:
+            -   type: 'bind'
+                source: mysql_files
+                target: '/var/lib/mysql'
+volumes:
+    database_vol:
+        name: chess-database

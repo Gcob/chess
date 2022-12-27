@@ -8,7 +8,6 @@ Encore
     .setOutputPath('public/')
     .setPublicPath('/public/')
     .addEntry('app', './front-end/app.js')
-    .cleanupOutputBeforeBuild()
     .enableBuildNotifications()
     .enableSourceMaps(!Encore.isProduction())
     .enableVersioning(Encore.isProduction())
