@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "clear && encore dev-server --port 9000 --no-live-reload",
+    "dev": "clear && encore dev-server --port 3092 --host 0.0.0.0 --no-live-reload",
     "build": "encore prod --env production --node-env production",
     "watch": "clear && encore dev --watch"
   },
@@ -9,11 +9,12 @@
     "@babel/preset-env": "^7.20.2",
     "@popperjs/core": "^2.11.6",
     "@symfony/webpack-encore": "^4.1.1",
-    "bootstrap": "5.2.2",
+    "bootstrap": "5.2.3",
     "core-js": "^3.26.1",
+    "file-loader": "^6.0.0",
     "popper.js": "^1.16.1",
     "sass": "^1.56.1",
-    "sass-loader": "^12.0.0",
+    "sass-loader": "^13.0.0",
     "webpack": "^5.75.0",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.11.1",
