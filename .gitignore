@@ -1,9 +1,0 @@
-node_modules
-vendor
-public
-.idea
-mysql_files
-public/
-!public/index.php
-!public/phpinfo.php
-!public/.htaccess

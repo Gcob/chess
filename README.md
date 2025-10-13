@@ -1,41 +1,54 @@
-# Chess 
-Developing a chess game projet in JS and PHP to learn and teach web programming in a full stack env.
+# Chess
 
-## Quickstart 
+A chess project made by Jacob Proulx.
 
-* `composer install`
-* `yarn`
-* `yarn dev`
+## Roadmap Phase 1
 
+- [x] Set up a domain model to represent the chess game
+- [ ] Set up docker compose (in progress)
+- [ ] Set up the backend with Laravel 12 and PHP 8.3.
+- [ ] Implement the domain logic in Laravel to be able to play a game in the terminal.
+- [ ] Set up the frontend in Vue.js 3 compose API.
+- [ ] Implement the game interface with drag and drop for the pieces.
+- [ ] Create multiple AI levels to play against the computer with Stockfish.
+- [ ] Deploy the project on a server.
+
+
+## Phase 2 features
+
+- [ ] Implement a settings system to customize the user experience and basic themes.
+- [ ] Implement a 3D board view with 3D themes.
+- [ ] Implement the account system with registration, login, profile and game history.
+- [ ] Implement a friends system to add and remove friends.
+- [ ] Implement the matchmaking system to invite friends with Laravel Reverb for real-time features and websockets.
+- [ ] Implement a ranking system with ELO and matchmaking based on ELO.
+- [ ] Implement a chat system to communicate with other players.
+- [ ] Implement a tournament system to create and join tournaments.
+- [ ] Implement a puzzle system to solve chess puzzles.
+- [ ] Implement a study system to create and share chess studies.
+- [ ] Implement a lesson system to learn chess with interactive lessons.
+- [ ] Implement a analysis system to analyze games with Stockfish.
+
+
+## Domain Model
+
+![modèle du domaine - échec - chess-MDD V2.drawio.png](documentation%2Fmod%C3%A8le%20du%20domaine%20-%20%C3%A9chec%20-%20chess-MDD%20V2.drawio.png)
 
 ## Docker
 
-If you have docker and docker compose installed on your machine, fell free to use this LAMP setup including NodeJS :
+- This project supports either traefik or ports for docker.
+- Services are separated in the docker directory. 
+- This project leverages the "extends" feature of docker-compose to separate services definition from the main docker-compose file.
 
-* Start the containers `docker compose -p chess-containers up -d`
-* "ssh" into the main container `docker exec -it chess-server bash`
+Before running docker-compose, copy the `.env.example` file to `.env` and edit it to your needs.
 
-To access the project : [http://localhost:3090](http://localhost:3090)
+````bash
+cp .env.example .env
+````
 
-To access the database : [http://localhost:3093](http://localhost:3093/db_structure.php?server=1&db=chess-db)
+Once the `.env` file is configured, run docker-compose:
 
-To see php infos : [http://localhost:3090/phpinfo.php](http://localhost:3090/phpinfo.php)
+````bash
+docker compose up -d
+````
 
-
-## Documentation
-
-### Plugins
-
-Webpack Encore : https://symfony.com/doc/current/frontend.html
-
-### Artefacts
-
-[MDD](https://lucid.app/lucidchart/351354ed-10e0-4592-b98f-911a3cc0bcc0/edit?viewport_loc=-433%2C-507%2C2994%2C1423%2C0_0&invitationId=inv_bb5c43ee-8c2f-48d9-8b2c-44ab37ba7e67)
-
-### Containers documentation
-
-* [Phpmyadmin:5.0.1](https://hub.docker.com/r/phpmyadmin/phpmyadmin/)
-* [Mariadb:10.3.35 (MySQL)](https://hub.docker.com/_/mariadb)
-* [gcob/chess-server](https://hub.docker.com/repository/docker/gcob/chess-server)
-
-The last image was build from "php8.0-xdebug-composer-node16.Dockerfile". It has php 8.2.1, Apache 2.2, NodeJS 16.16 and composer.
