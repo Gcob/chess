@@ -1,0 +1,10 @@
+services:
+  chess_nginx:
+    extends:
+      file: ./docker/nginx/nginx.docker-compose.yml
+      service: chess_nginx
+
+networks:
+  chess_network:
+  webproxy:
+    external: true
