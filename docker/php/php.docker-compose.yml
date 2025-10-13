@@ -1,0 +1,5 @@
+services:
+  chess_php:
+    image: php:8.3-fpm
+    networks:
+      - chess_network
