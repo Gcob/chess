@@ -7,8 +7,9 @@ services:
       - ./nginx.smoke-test.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.chess.rule=Host(`chess.localhost`)"
-      - "traefik.http.services.chess.loadbalancer.server.port=80"
+      - "traefik.http.routers.chess_nginx.rule=Host(`chess.localhost`)"
+      - "traefik.http.services.chess_nginx.loadbalancer.server.port=80"
+      - "traefik.docker.network=webproxy"
     networks:
       - chess_network
       - webproxy
