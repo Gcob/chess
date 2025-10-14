@@ -1,8 +1,26 @@
 services:
   chess_nginx:
-    extends:
-      file: ./docker/nginx/nginx.docker-compose.yml
-      service: chess_nginx
+    image: nginx
+    ports:
+      - "${NGINX_PORT:-3053}:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./php:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chess_nginx.rule=Host(`chess.localhost`)"
+      - "traefik.http.services.chess_nginx.loadbalancer.server.port=80"
+      - "traefik.docker.network=webproxy"
+    networks:
+      - chess_network
+      - webproxy
+
+  chess_php:
+    image: php:8.3-fpm
+    volumes:
+      - ./php:/var/www/html
+    networks:
+      - chess_network
 
 networks:
   chess_network:
