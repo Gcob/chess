@@ -1,4 +1,9 @@
 services:
+
+  ###############################################################################
+  ########################     nginx     ########################################
+  ###############################################################################
+
   chess_nginx:
     image: nginx
     ports:
@@ -15,6 +20,11 @@ services:
       - chess_network
       - webproxy
 
+
+  ###############################################################################
+  ########################     php     ##########################################
+  ###############################################################################
+
   chess_php:
     image: php:8.3-fpm
     volumes:
@@ -22,7 +32,60 @@ services:
     networks:
       - chess_network
 
+
+  ###############################################################################
+  ########################     redis     ########################################
+  ###############################################################################
+
+  chess_redis:
+    image: redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - chess_network
+    environment:
+      - REDIS_PORT=6379
+
+  chess_prma:
+    image: faktiva/php-redis-admin
+    environment:
+      - REDIS_HOST=chess_redis
+      - REDIS_PORT=6379
+    networks:
+      - chess_network
+
+
+
+  ###############################################################################
+  ########################     postgres     #####################################
+  ###############################################################################
+
+  chess_postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: chess-db
+      POSTGRES_USER: chess-user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess-secret-password}
+    networks:
+      - chess_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - chess_network
+    depends_on:
+      - chess_postgres
+
 networks:
   chess_network:
   webproxy:
     external: true
+
+volumes:
+  redis_data:
+  postgres_data:
