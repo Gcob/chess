@@ -1,24 +1,27 @@
 FROM php:8.4-cli AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # runtime dependencies
+    # Runtime dependencies
     curl \
     ca-certificates \
     git \
     gosu \
     zip \
     unzip \
-    # compilation dependencies (will be removed later)
+    libzip5 \
+    libpq5 \
+    libicu-dev \
+    && apt-get install -y --no-install-recommends \
+    # Build dependencies
     libzip-dev \
     libpq-dev \
-    libicu-dev \
     libbrotli-dev \
-    # PHP extensions installation
-    && docker-php-ext-install -j$(nproc) zip pdo pdo_pgsql intl \
+    # Build
+    && docker-php-ext-install -j$(nproc) pcntl zip pdo pdo_pgsql intl \
     && pecl install swoole \
     && docker-php-ext-enable swoole \
-    # Final cleanup
-    && apt-get purge -y --auto-remove libzip-dev libpq-dev libicu-dev libbrotli-dev \
+    # Cleanup tools only
+    && apt-get purge -y --auto-remove libzip-dev libpq-dev libbrotli-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
@@ -31,6 +34,9 @@ RUN groupadd --system --gid 1001 laravel && \
 
 USER laravel
 
+RUN mkdir -p /var/www/html/storage/logs && \
+    chmod -R 775 /var/www/html/storage
+
 CMD ["php", "artisan", "octane:start", "--server=swoole", "--host=0.0.0.0", "--port=80"]
 
 
@@ -41,14 +47,15 @@ ARG GID=1000
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+ENV PATH="$HOME/.composer/vendor/bin:$PATH"
 
 # Configure git to avoid permission issues
 RUN git config --global --add safe.directory /var/www/html
 
 # Create a mimic user to avoid permission issues
-RUN groupadd -g ${GID} --non-unique you && \
-    useradd -u ${UID} -g you --non-unique --create-home you
+RUN groupadd -g ${GID} --non-unique worker && \
+    useradd -u ${UID} -g worker --non-unique --create-home worker
 
-USER you
+USER worker
 
 CMD ["tail", "-f", "/dev/null"]
