@@ -10,7 +10,7 @@ services:
       - "${NGINX_PORT:-3053}:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./php:/var/www/html
+      - ./laravel:/var/www/html
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chess_nginx.rule=Host(`chess.localhost`)"
@@ -31,17 +31,21 @@ services:
       dockerfile: php.Dockerfile
       target: server
     volumes:
-      - ./php:/var/www/html
+      - ./laravel:/var/www/html
     networks:
       - chess_network
 
   chess_php_worker:
+    container_name: chess_php_worker
     build:
       context: ./docker/php
       dockerfile: php.Dockerfile
       target: worker
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     volumes:
-      - ./php:/var/www/html
+      - ./laravel:/var/www/html
     networks:
       - chess_network
 
