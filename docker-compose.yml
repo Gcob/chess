@@ -70,18 +70,18 @@ services:
   ########################     postgres     #####################################
   ###############################################################################
 
-#  chess_postgres:
-#    image: postgres
-#    environment:
-#      POSTGRES_DB: ${POSTGRES_DB:-chess-db}
-#      POSTGRES_USER: ${POSTGRES_USER:-chess-user}
-#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess-pass}
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data
-#    ports:
-#      - "${POSTGRES_PORT:-3054}:5432"
-#    networks:
-#      - chess_network
+  chess_postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-chess-db}
+      POSTGRES_USER: ${POSTGRES_USER:-chess-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess-pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-3054}:5432"
+    networks:
+      - chess_network
 
 
 networks:
