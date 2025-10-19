@@ -34,9 +34,6 @@ RUN groupadd --system --gid 1001 laravel && \
 
 USER laravel
 
-RUN mkdir -p /var/www/html/storage/logs && \
-    chmod -R 775 /var/www/html/storage
-
 CMD ["php", "artisan", "octane:start", "--server=swoole", "--host=0.0.0.0", "--port=80"]
 
 
@@ -48,14 +45,17 @@ ARG GID=1000
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV PATH="$HOME/.composer/vendor/bin:$PATH"
-
-# Configure git to avoid permission issues
 RUN git config --global --add safe.directory /var/www/html
+
+# Entrypoint
+COPY entrypoint.worker.sh /usr/local/bin/entrypoint.worker.sh
+RUN chmod +x /usr/local/bin/entrypoint.worker.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.worker.sh"]
 
 # Create a mimic user to avoid permission issues
 RUN groupadd -g ${GID} --non-unique worker && \
     useradd -u ${UID} -g worker --non-unique --create-home worker
 
-USER worker
+#USER worker
 
 CMD ["tail", "-f", "/dev/null"]
