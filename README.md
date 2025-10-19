@@ -49,6 +49,6 @@ cp .env.example .env
 Once the `.env` file is configured, run docker-compose:
 
 ````bash
-docker compose up -d
+docker compose up -d --build --force-recreate
 ````
 

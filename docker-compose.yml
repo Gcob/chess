@@ -25,8 +25,21 @@ services:
   ########################     php     ##########################################
   ###############################################################################
 
-  chess_php:
-    image: php:8.3-fpm
+  chess_php_server:
+    build:
+      context: ./docker/php
+      dockerfile: php.Dockerfile
+      target: server
+    volumes:
+      - ./php:/var/www/html
+    networks:
+      - chess_network
+
+  chess_php_worker:
+    build:
+      context: ./docker/php
+      dockerfile: php.Dockerfile
+      target: worker
     volumes:
       - ./php:/var/www/html
     networks:
@@ -37,15 +50,15 @@ services:
   ########################     redis     ########################################
   ###############################################################################
 
-  chess_redis:
-    image: redis
-    volumes:
-      - redis_data:/data
-    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD:-chess-pass}" ]
-    networks:
-      - chess_network
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-chess-pass}
+#  chess_redis:
+#    image: redis
+#    volumes:
+#      - redis_data:/data
+#    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD:-chess-pass}" ]
+#    networks:
+#      - chess_network
+#    environment:
+#      - REDIS_PASSWORD=${REDIS_PASSWORD:-chess-pass}
 
 
 
@@ -53,27 +66,18 @@ services:
   ########################     postgres     #####################################
   ###############################################################################
 
-  chess_postgres:
-    image: postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-chess-db}
-      POSTGRES_USER: ${POSTGRES_USER:-chess-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess-pass}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_PORT:-3054}:5432"
-    networks:
-      - chess_network
-
-  # http://localhost:3055/?pgsql=chess_postgres&username=chess-user&db=chess-db
-  chess_adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "${POSTGRES_ADMINER:-3055}:8080"
-    networks:
-      - chess_network
+#  chess_postgres:
+#    image: postgres
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB:-chess-db}
+#      POSTGRES_USER: ${POSTGRES_USER:-chess-user}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess-pass}
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    ports:
+#      - "${POSTGRES_PORT:-3054}:5432"
+#    networks:
+#      - chess_network
 
 
 networks:
