@@ -8,8 +8,8 @@ use Spatie\LaravelData\Data;
 class Stopwatch extends Data
 {
     public function __construct(
-        protected float   $secondsLeft,
-        protected ?Carbon $isRunningSince = null,
+        public float   $secondsLeft,
+        public ?Carbon $isRunningSince = null,
     )
     {
     }

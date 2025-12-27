@@ -8,7 +8,8 @@ use Spatie\LaravelData\Data;
 class GameState extends Data
 {
     public function __construct(
-        public int          $initialStopwatchSeconds = 60 * 5,
+//        public int          $initialStopwatchSeconds = 60 * 5,
+        public int          $initialStopwatchSeconds = 5,
         public int          $timeIncrement = 0,
         public ?Carbon      $hasStartedAt = null,
         public ?Carbon      $hasFinishedAt = null,
