@@ -12,6 +12,7 @@ class Game extends Data
     public readonly Player $player1;
     public readonly Player $player2;
     protected ?Player $currentPlayer = null;
+    protected Board $board;
 
     public static function init(): self
     {
@@ -20,6 +21,42 @@ class Game extends Data
         $game->state = new GameState();
         $game->player1 = Player::from(['name' => 'Player 1', 'color' => 'white', 'stopwatch' => new Stopwatch(secondsLeft: $game->state->initialStopwatchSeconds)]);
         $game->player2 = Player::from(['name' => 'Player 2', 'color' => 'black', 'stopwatch' => new Stopwatch(secondsLeft: $game->state->initialStopwatchSeconds)]);
+        $game->board = Board::init();
+
+        $game->board->placePiece('a2', '♙'); // Pion blanc
+        $game->board->placePiece('b2', '♙');
+        $game->board->placePiece('c2', '♙');
+        $game->board->placePiece('d2', '♙');
+        $game->board->placePiece('e2', '♙');
+        $game->board->placePiece('f2', '♙');
+        $game->board->placePiece('g2', '♙');
+        $game->board->placePiece('h2', '♙');
+        $game->board->placePiece('a7', '♟'); // Pion noir
+        $game->board->placePiece('b7', '♟');
+        $game->board->placePiece('c7', '♟');
+        $game->board->placePiece('d7', '♟');
+        $game->board->placePiece('e7', '♟');
+        $game->board->placePiece('f7', '♟');
+        $game->board->placePiece('g7', '♟');
+        $game->board->placePiece('h7', '♟');
+        $game->board->placePiece('a1', '♖'); // Tour blanche
+        $game->board->placePiece('h1', '♖');
+        $game->board->placePiece('a8', '♜'); // Tour noire
+        $game->board->placePiece('h8', '♜');
+        $game->board->placePiece('b1', '♘'); // Cavalier blanc
+        $game->board->placePiece('g1', '♘');
+        $game->board->placePiece('b8', '♞'); // Cavalier noir
+        $game->board->placePiece('g8', '♞');
+        $game->board->placePiece('c1', '♗'); // Fou blanc
+        $game->board->placePiece('f1', '♗');
+        $game->board->placePiece('c8', '♝'); // Fou noir
+        $game->board->placePiece('f8', '♝');
+        $game->board->placePiece('d1', '♕'); // Reine blanche
+        $game->board->placePiece('d8', '♛'); // Reine noire
+        $game->board->placePiece('e1', '♔'); // Roi blanc
+        $game->board->placePiece('e8', '♚'); // Roi noir
+
+
 
         return $game;
     }
@@ -60,79 +97,78 @@ class Game extends Data
 
     protected function displayTimerAndWaitForMove(): string
     {
-        // Configurer le terminal : non-bloquant et sans écho automatique (on gère l'affichage nous-mêmes)
         stream_set_blocking(STDIN, false);
-        system("stty -icanon -echo"); // Désactive le mode canonique et l'écho système (Linux/Mac)
+        // On supprime les erreurs potentielles de stty sur Windows avec @
+        @system("stty -icanon -echo");
 
         $move = '';
         $inputBuffer = '';
-        $isFirstRender = true;
 
-        // Clear screen
-        echo "\033[2J\033[H";
+        // 1. DESSIN STATIQUE (Une seule fois)
+        echo "\033[2J\033[H"; // Efface tout
+        $this->board->draw(); // Dessine le plateau
+        echo "\n";            // Petite marge
+
+        // 2. POSE DU "MARQUEUR" (Save Cursor Position)
+        // \0337 sauvegarde la position exacte du curseur sous le plateau
+        echo "\0337";
 
         while (true) {
-            // 1. GESTION DE L'AFFICHAGE
-            // On remonte le curseur de 3 lignes (P1 + P2 + Prompt) pour réécrire par-dessus
-            // \033[3A = Monter 3 lignes
-            // \r = Retour au début de la ligne
-            echo "\033[3A\r";
+            // 3. RETOUR AU MARQUEUR (Restore Cursor Position)
+            // \0338 ramène le curseur exactement là où on a fait \0337
+            echo "\0338";
 
-            // Ligne Joueur 1 (avec \033[2K pour effacer proprement la ligne avant d'écrire)
-            echo "\033[2K" . sprintf(
-                    "%s: %s %s\n",
-                    $this->player1->name, // Assure-toi d'afficher le nom
-                    $this->formatTime($this->player1->stopwatch->getCurrentSecondsLeft()),
-                    $this->player1 === $this->currentPlayer ? '← Your turn' : ''
-                );
+            // Ligne Joueur 1
+            // \033[K efface le reste de la ligne (au cas où le texte précédent était plus long)
+            echo sprintf(
+                "%s: %s %s\033[K\n",
+                $this->player1->name,
+                $this->formatTime($this->player1->stopwatch->getCurrentSecondsLeft()),
+                $this->player1 === $this->currentPlayer ? '← Your turn' : ''
+            );
 
             // Ligne Joueur 2
-            echo "\033[2K" . sprintf(
-                    "%s: %s %s\n",
-                    $this->player2->name,
-                    $this->formatTime($this->player2->stopwatch->getCurrentSecondsLeft()),
-                    $this->player2 === $this->currentPlayer ? '← Your turn' : ''
-                );
+            echo sprintf(
+                "%s: %s %s\033[K\n",
+                $this->player2->name,
+                $this->formatTime($this->player2->stopwatch->getCurrentSecondsLeft()),
+                $this->player2 === $this->currentPlayer ? '← Your turn' : ''
+            );
 
-            // Ligne Prompt + Buffer actuel
-            echo "\033[2K" . "Enter your move (e.g., e4): " . $inputBuffer;
+            // Ligne Prompt
+            echo "Enter move: \033[33m" . $inputBuffer . "\033[0m\033[K";
 
-            // 2. LOGIQUE DE TEMPS
+            // --- LOGIQUE IDENTIQUE ---
+
             if ($this->currentPlayer->stopwatch->hasExpired()) {
-                echo "\n⏱️  TIME'S UP! {$this->currentPlayer->name} loses on time.\n";
+                echo "\n\n⏱️  TIME'S UP! {$this->currentPlayer->name} loses on time.\n";
                 $this->state->endedBy = GameEndEnum::TIMEOUT;
                 break;
             }
 
-            // 3. LECTURE DE L'ENTRÉE (Non-bloquante)
-            $input = fread(STDIN, 1); // On lit caractère par caractère pour mieux gérer
+            $input = fread(STDIN, 1);
 
             if ($input !== false && $input !== '') {
                 $ord = ord($input);
 
-                if ($ord === 10) { // Touche ENTRÉE (\n)
+                if ($ord === 10) { // Enter
                     $move = trim($inputBuffer);
-                    if (!empty($move)) {
-                        break;
-                    }
-                } elseif ($ord === 127 || $ord === 8) { // Touche BACKSPACE
+                    if (!empty($move)) break;
+                } elseif ($ord === 127 || $ord === 8) { // Backspace
                     if (strlen($inputBuffer) > 0) {
                         $inputBuffer = substr($inputBuffer, 0, -1);
                     }
                 } else {
-                    // Ajout du caractère au buffer
                     $inputBuffer .= $input;
                 }
             }
 
-            // Petite pause pour ne pas surcharger le CPU (100ms suffit largement pour l'oeil humain)
-            usleep(100000);
+            usleep(100000); // 100ms
         }
 
-        // Restauration du terminal
-        system("stty sane"); // Remet le terminal en état normal
+        @system("stty sane");
         stream_set_blocking(STDIN, true);
-        echo "\n"; // Saut de ligne final pour la propreté
+        echo "\n";
 
         return $move;
     }
