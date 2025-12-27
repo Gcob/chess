@@ -50,7 +50,7 @@ logs service='':
     docker compose logs -f {{ service }}
 
 # Ouvre un shell bash dans le workspace
-shell:
+bash:
     docker exec -it {{ container }} bash
 
 # Supprime les conteneurs (option: just remove true pour tout nettoyer)
