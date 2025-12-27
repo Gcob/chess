@@ -20,4 +20,9 @@ class Player extends Data
     {
         return $this->name . ' (' . $this->color . ')';
     }
+
+    public function isTurn():bool
+    {
+        return $this->stopwatch->isRunningSince !== null;
+    }
 }
