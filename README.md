@@ -5,8 +5,8 @@ A chess project made by Jacob Proulx.
 ## Roadmap Phase 1
 
 - [x] Set up a domain model to represent the chess game
-- [ ] Set up docker compose (in progress)
-- [ ] Set up the backend with Laravel 12 and PHP 8.3.
+- [x] Set up docker compose
+- [x] Set up the backend with Laravel 12 and PHP 8.3.
 - [ ] Implement the domain logic in Laravel to be able to play a game in the terminal.
 - [ ] Set up the frontend in Vue.js 3 compose API.
 - [ ] Implement the game interface with drag and drop for the pieces.
