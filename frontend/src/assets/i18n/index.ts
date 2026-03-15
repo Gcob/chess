@@ -4,9 +4,21 @@ import en from './locales/en'
 
 export type MessageSchema = typeof fr
 
-const i18n = createI18n<[MessageSchema], 'fr' | 'en'>({
+type SupportedLocale = 'fr' | 'en'
+const SUPPORTED: SupportedLocale[] = ['fr', 'en']
+const STORAGE_KEY = 'locale'
+
+function resolveLocale(): SupportedLocale {
+  const stored = localStorage.getItem(STORAGE_KEY) as SupportedLocale | null
+  if (stored && SUPPORTED.includes(stored)) return stored
+
+  const browser = navigator.language.split('-')[0] as SupportedLocale
+  return SUPPORTED.includes(browser) ? browser : 'en'
+}
+
+const i18n = createI18n<[MessageSchema], SupportedLocale>({
   legacy: false,
-  locale: 'fr',
+  locale: resolveLocale(),
   fallbackLocale: 'en',
   messages: { fr, en },
 })
