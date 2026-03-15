@@ -1,0 +1,24 @@
+{
+  "app": {
+    "title": "Chess"
+  },
+  "actions": {
+    "newGame": "New game",
+    "resign": "Resign",
+    "offerDraw": "Offer draw",
+    "undo": "Undo",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "game": {
+    "yourTurn": "Your turn",
+    "check": "Check!",
+    "checkmate": "Checkmate!",
+    "stalemate": "Stalemate!",
+    "draw": "Draw",
+    "white": "White",
+    "black": "Black",
+    "whiteWins": "White wins",
+    "blackWins": "Black wins"
+  }
+}
