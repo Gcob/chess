@@ -1,0 +1,24 @@
+{
+  "app": {
+    "title": "Jeu d'échecs"
+  },
+  "actions": {
+    "newGame": "Nouvelle partie",
+    "resign": "Abandonner",
+    "offerDraw": "Proposer nulle",
+    "undo": "Annuler",
+    "confirm": "Confirmer",
+    "cancel": "Annuler"
+  },
+  "game": {
+    "yourTurn": "À votre tour",
+    "check": "Échec !",
+    "checkmate": "Échec et mat !",
+    "stalemate": "Pat !",
+    "draw": "Nulle",
+    "white": "Blancs",
+    "black": "Noirs",
+    "whiteWins": "Les blancs gagnent",
+    "blackWins": "Les noirs gagnent"
+  }
+}
