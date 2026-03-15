@@ -1,3 +1,20 @@
+<template>
+  <component
+    :is="tag"
+    v-bind="tagProps"
+    class="c-button"
+    :class="[
+      `c-button--${variant}`,
+      { 'c-button--disabled': disabled, 'c-button--loading': loading },
+    ]"
+  >
+    <span v-if="loading" class="c-button__spinner" />
+    <span class="c-button__content" :class="{ 'c-button__content--hidden': loading }">
+      <slot />
+    </span>
+  </component>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
@@ -25,29 +42,13 @@ const tagProps = computed(() => {
 })
 </script>
 
-<template>
-  <component
-    :is="tag"
-    v-bind="tagProps"
-    class="c-button"
-    :class="[
-      `c-button--${variant}`,
-      { 'c-button--disabled': disabled, 'c-button--loading': loading },
-    ]"
-  >
-    <span v-if="loading" class="c-button__spinner" />
-    <span class="c-button__content" :class="{ 'c-button__content--hidden': loading }">
-      <slot />
-    </span>
-  </component>
-</template>
-
 <style lang="scss" scoped>
 .c-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
+  margin: $spacing-sm;
   padding: $spacing-3 $spacing-6;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
@@ -93,10 +94,10 @@ const tagProps = computed(() => {
 
   &--ter {
     color: $color3;
-    background-color: transparent;
+    background-color:  rgba($color3, 0.04);
 
     &:hover:not(.c-button--disabled) {
-      background-color: rgba($color3, 0.06);
+      background-color: rgba($color3, 0.08);
     }
   }
 

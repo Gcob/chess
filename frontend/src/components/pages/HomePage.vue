@@ -1,21 +1,21 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  <main class="home">
+  <main class="page" id="home-page">
     <h1 class="c-h1">{{ $t('app.title') }}</h1>
     <p class="home__subtitle">{{ $t('home.subtitle') }}</p>
 
     <div class="home__actions">
-      <cButton :to="{ name: 'game' }">
+      <cButton :to="{ name: 'new-game' }">
         {{ $t('home.playButton') }}
       </cButton>
     </div>
   </main>
 </template>
 
-<style lang="scss" scoped>
-.home {
+<script setup lang="ts">
+</script>
+
+<style lang="scss" >
+#home-page {
   display: flex;
   flex-direction: column;
   align-items: center;

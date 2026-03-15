@@ -1,16 +1,3 @@
-<script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
-const { locale } = useI18n()
-
-const locales = ['fr', 'en'] as const
-
-function setLocale(lang: typeof locales[number]) {
-  locale.value = lang
-  localStorage.setItem('locale', lang)
-}
-</script>
-
 <template>
   <div class="super-top-bar">
     <div class="super-top-bar__locale">
@@ -27,7 +14,20 @@ function setLocale(lang: typeof locales[number]) {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+
+const locales = ['fr', 'en'] as const
+
+function setLocale(lang: typeof locales[number]) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+}
+</script>
+
+<style lang="scss" >
 @use '@/assets/styles/variables' as *;
 
 .super-top-bar {
