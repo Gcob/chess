@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import {RouterView} from 'vue-router'
+import { RouterView } from 'vue-router'
+import SuperTopBar from '@/components/SuperTopBar.vue'
 </script>
 
 <template>
-  <RouterView/>
+  <SuperTopBar />
+  <RouterView />
 </template>
 
 <style lang="scss">
