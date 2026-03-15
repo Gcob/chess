@@ -1,0 +1,95 @@
+// ============================================
+// Design Tokens
+// ============================================
+
+// --- Colors ---
+
+$color1: #3b82f6;
+$color2: #6366f1;
+$color3: #1f2937;
+
+$color-danger: #b91c1c;
+$color-success: #22c55e;
+$color-warning: #eab308;
+
+// --- Typography ---
+
+$font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+$font-family-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+
+$font-size-xs: 0.75rem;   // 12px
+$font-size-sm: 0.875rem;  // 14px
+$font-size-base: 1rem;    // 16px
+$font-size-lg: 1.125rem;  // 18px
+$font-size-xl: 1.25rem;   // 20px
+$font-size-2xl: 1.5rem;   // 24px
+$font-size-3xl: 1.875rem; // 30px
+
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.25;
+$line-height-base: 1.5;
+$line-height-relaxed: 1.75;
+
+// --- Spacing ---
+
+$spacing-0: 0;
+$spacing-1: 0.25rem;  // 4px
+$spacing-2: 0.5rem;   // 8px
+$spacing-3: 0.75rem;  // 12px
+$spacing-4: 1rem;     // 16px
+$spacing-5: 1.25rem;  // 20px
+$spacing-6: 1.5rem;   // 24px
+$spacing-8: 2rem;     // 32px
+$spacing-10: 2.5rem;  // 40px
+$spacing-12: 3rem;    // 48px
+$spacing-16: 4rem;    // 64px
+
+$spacing-sm: $spacing-2;
+$spacing-md: $spacing-4;
+$spacing-lg: $spacing-6;
+$spacing-xl: $spacing-8;
+$spacing-2xl: $spacing-10;
+
+// --- Borders ---
+
+$border-radius-sm: 0.25rem;  // 4px
+$border-radius-base: 0.5rem; // 8px
+$border-radius-lg: 0.75rem;  // 12px
+$border-radius-xl: 1rem;     // 16px
+$border-radius-full: 9999px;
+
+$border-width-thin: 1px;
+$border-width-base: 2px;
+
+// --- Shadows ---
+
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-base: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+
+// --- Z-index ---
+
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-overlay: 300;
+$z-modal: 400;
+$z-toast: 500;
+
+// --- Transitions ---
+
+$transition-fast: 150ms ease;
+$transition-base: 250ms ease;
+$transition-slow: 350ms ease;
+
+// --- Breakpoints ---
+
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
