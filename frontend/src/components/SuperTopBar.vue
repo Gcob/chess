@@ -1,6 +1,29 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useTheme } from '@/composables/useTheme'
+import { Settings, Sun, Moon } from 'lucide-vue-next'
+
+const { locale } = useI18n()
+const { theme, toggle: toggleTheme } = useTheme()
+
+const locales = ['fr', 'en'] as const
+const isSettingsOpen = ref(false)
+
+function setLocale(lang: typeof locales[number]) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+}
+</script>
+
 <template>
   <div class="super-top-bar">
     <div class="super-top-bar__actions">
+      <button class="super-top-bar__btn" @click="toggleTheme" :aria-label="$t('settings.toggleTheme')">
+        <Sun v-if="theme === 'dark'" :size="14" />
+        <Moon v-else :size="14" />
+      </button>
+
       <button class="super-top-bar__btn" @click="isSettingsOpen = true" :aria-label="$t('settings.title')">
         <Settings :size="14" />
       </button>
@@ -22,23 +45,33 @@
       <template #header>{{ $t('settings.title') }}</template>
 
       <div class="super-top-bar__settings">
-        <label class="super-top-bar__setting">
-          <span>{{ $t('settings.sound') }}</span>
-          <input type="checkbox" />
+        <label class="c-label">
+          <span>{{ $t('settings.theme') }}</span>
+          <select class="c-select" :value="theme" @change="toggleTheme">
+            <option value="light">{{ $t('settings.themeLight') }}</option>
+            <option value="dark">{{ $t('settings.themeDark') }}</option>
+          </select>
         </label>
 
-        <label class="super-top-bar__setting">
+        <hr class="c-divider" />
+
+        <label class="c-label">
+          <span>{{ $t('settings.sound') }}</span>
+          <input type="checkbox" class="c-checkbox" />
+        </label>
+
+        <label class="c-label">
           <span>{{ $t('settings.boardTheme') }}</span>
-          <select>
+          <select class="c-select">
             <option value="classic">Classic</option>
             <option value="modern">Modern</option>
             <option value="wood">Wood</option>
           </select>
         </label>
 
-        <label class="super-top-bar__setting">
+        <label class="c-label">
           <span>{{ $t('settings.pieceStyle') }}</span>
-          <select>
+          <select class="c-select">
             <option value="standard">Standard</option>
             <option value="minimalist">Minimalist</option>
             <option value="pixel">Pixel</option>
@@ -53,31 +86,15 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Settings } from 'lucide-vue-next'
-
-const { locale } = useI18n()
-
-const locales = ['fr', 'en'] as const
-const isSettingsOpen = ref(false)
-
-function setLocale(lang: typeof locales[number]) {
-  locale.value = lang
-  localStorage.setItem('locale', lang)
-}
-</script>
-
-<style lang="scss">
+<style lang="scss" scoped>
 .super-top-bar {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 0 $spacing-4;
-  height: 32px;
-  background-color: $color3;
-  color: #fff;
+  height: 36px;
+  background-color: var(--surface-topbar);
+  transition: background-color $transition-base;
 
   &__actions {
     display: flex;
@@ -89,42 +106,36 @@ function setLocale(lang: typeof locales[number]) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
+    color: var(--surface-topbar-text);
     padding: $spacing-1;
     border-radius: $border-radius-sm;
     transition: color $transition-fast;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--surface-topbar-hover);
     }
   }
 
   &__locale {
     display: flex;
-    gap: $spacing-2;
+    gap: $spacing-1;
   }
 
   &__locale-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--surface-topbar-text);
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
-    cursor: pointer;
     padding: $spacing-1 $spacing-2;
     border-radius: $border-radius-sm;
     transition: color $transition-fast;
     letter-spacing: 0.05em;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--surface-topbar-hover);
     }
 
     &.is-active {
-      color: #fff;
+      color: var(--surface-topbar-text-active);
       font-weight: $font-weight-semibold;
     }
   }
@@ -133,16 +144,6 @@ function setLocale(lang: typeof locales[number]) {
     display: flex;
     flex-direction: column;
     gap: $spacing-4;
-  }
-
-  &__setting {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: $spacing-4;
-    font-size: $font-size-sm;
-    color: $color3;
-    cursor: pointer;
   }
 }
 </style>

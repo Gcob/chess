@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import {RouterView} from 'vue-router'
+import { RouterView } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
 import SuperTopBar from '@/components/SuperTopBar.vue'
+
+useTheme()
 </script>
 
 <template>
   <div id="app-main">
-    <SuperTopBar/>
-    <RouterView/>
+    <SuperTopBar />
+    <RouterView />
   </div>
 </template>
 
 <style lang="scss">
-@use '@/assets/styles/variables' as *;
-
-
+#app-main {
+  transition: background-color $transition-base;
+}
 </style>

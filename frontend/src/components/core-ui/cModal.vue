@@ -1,42 +1,5 @@
-<template>
-  <Transition name="c-modal">
-    <div
-      v-if="modelValue"
-      class="c-modal"
-    >
-      <div class="c-modal__overlay" @click="onOverlayClick" />
-
-      <div
-        ref="modalRef"
-        class="c-modal__wrapper"
-        :class="`c-modal__wrapper--${size}`"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div v-if="$slots.header" class="c-modal__header">
-          <div class="c-modal__header-content">
-            <slot name="header" />
-          </div>
-          <button class="c-modal__close" @click="close" :aria-label="$t('common.close')">
-            <X :size="16" />
-          </button>
-        </div>
-
-        <div class="c-modal__content">
-          <slot />
-        </div>
-
-        <div v-if="$slots.footer" class="c-modal__footer">
-          <slot name="footer" :close="close" />
-        </div>
-      </div>
-    </div>
-  </Transition>
-</template>
-
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, ref } from 'vue'
-import { X } from 'lucide-vue-next'
 
 export interface CModalProps {
   modelValue: boolean
@@ -89,6 +52,50 @@ onUnmounted(() => {
 })
 </script>
 
+<template>
+  <Transition name="c-modal">
+    <div
+      v-if="modelValue"
+      class="c-modal"
+    >
+      <div class="c-modal__overlay" @click="onOverlayClick" />
+
+      <div
+        ref="modalRef"
+        class="c-modal__wrapper"
+        :class="`c-modal__wrapper--${size}`"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div v-if="$slots.header" class="c-modal__header">
+          <div class="c-modal__header-content">
+            <slot name="header" />
+          </div>
+          <button class="c-modal__close" @click="close" :aria-label="$t('common.close')">
+            <X :size="16" />
+          </button>
+        </div>
+
+        <div class="c-modal__content">
+          <slot />
+        </div>
+
+        <div v-if="$slots.footer" class="c-modal__footer">
+          <slot name="footer" :close="close" />
+        </div>
+      </div>
+    </div>
+  </Transition>
+</template>
+
+<script lang="ts">
+import { X } from 'lucide-vue-next'
+
+export default {
+  components: { X },
+}
+</script>
+
 <style lang="scss" scoped>
 .c-modal {
   position: fixed;
@@ -102,8 +109,9 @@ onUnmounted(() => {
   &__overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(1px);
+    background-color: var(--overlay-bg);
+    backdrop-filter: blur(var(--overlay-blur));
+    cursor: pointer;
     transition: all $transition-base;
   }
 
@@ -114,9 +122,9 @@ onUnmounted(() => {
     flex-direction: column;
     width: 100%;
     max-height: 90svh;
-    background: #fff;
+    background: var(--modal-bg);
     border-radius: $border-radius-base;
-    box-shadow: $shadow-xl;
+    box-shadow: var(--modal-shadow);
     transition: all $transition-base;
 
     &--sm { max-width: 28rem; }
@@ -136,7 +144,7 @@ onUnmounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: $spacing-3 $spacing-4;
-    border-bottom: $border-width-thin solid rgba($color3, 0.1);
+    border-bottom: $border-width-thin solid var(--border-color);
   }
 
   &__header-content {
@@ -145,7 +153,7 @@ onUnmounted(() => {
     gap: $spacing-2;
     font-size: $font-size-lg;
     font-weight: $font-weight-semibold;
-    color: $color3;
+    color: var(--text-primary);
   }
 
   &__close {
@@ -155,13 +163,12 @@ onUnmounted(() => {
     width: 2rem;
     height: 2rem;
     border-radius: $border-radius-full;
-    font-size: $font-size-sm;
-    color: rgba($color3, 0.5);
+    color: var(--text-muted);
     transition: all $transition-fast;
 
     &:hover {
-      background-color: rgba($color3, 0.06);
-      color: $color3;
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
       transform: scale(1.1);
     }
   }
@@ -170,6 +177,7 @@ onUnmounted(() => {
     flex: 1;
     padding: $spacing-4;
     overflow: auto;
+    color: var(--text-secondary);
   }
 
   &__footer {
@@ -177,7 +185,7 @@ onUnmounted(() => {
     justify-content: flex-end;
     gap: $spacing-3;
     padding: $spacing-3 $spacing-4;
-    border-top: $border-width-thin solid rgba($color3, 0.1);
+    border-top: $border-width-thin solid var(--border-color);
   }
 }
 

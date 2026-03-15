@@ -91,12 +91,12 @@
 
     strong {
       font-weight: $font-weight-semibold;
-      color: $color3;
+      color: var(--text-primary);
     }
 
     p {
       margin-top: $spacing-1;
-      color: rgba($color3, 0.7);
+      color: var(--text-secondary);
     }
   }
 }

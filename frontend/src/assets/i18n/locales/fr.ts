@@ -8,9 +8,13 @@ export default {
   },
   settings: {
     title: 'Paramètres',
+    toggleTheme: 'Changer le thème',
+    theme: 'Thème',
+    themeLight: 'Clair',
+    themeDark: 'Sombre',
     sound: 'Effets sonores',
     boardTheme: 'Thème du plateau',
-    pieceStyle: 'Style des pièces',
+    pieceStyle: 'Style des pièces'
   },
   home: {
     subtitle: 'Un jeu d\'échecs simple construit avec Vue 3',
