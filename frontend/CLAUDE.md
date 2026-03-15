@@ -17,6 +17,7 @@ Petit projet pour un seul développeur, moi, Jacob.
 - Vitest pour les tests unitaires
 - Playwright pour les tests E2E
 - i18n pour les traductions
+- Lucide pour les icônes (import individuel depuis `lucide-vue-next`, pas d'enregistrement global)
 
 ## Architecture
 

@@ -4,11 +4,11 @@
     <p class="home__subtitle">{{ $t('home.subtitle') }}</p>
 
     <div class="home__actions">
-      <cButton :to="{ name: 'new-game' }">
-        {{ $t('home.playButton') }}
-      </cButton>
       <cButton variant="sec" @click="showRules = true">
         {{ $t('home.rulesButton') }}
+      </cButton>
+      <cButton :to="{ name: 'new-game' }">
+        {{ $t('home.playButton') }}
       </cButton>
     </div>
 
