@@ -1,12 +1,15 @@
-<template>
-  <h1>
-    {{ $t('app.title') }}
-  </h1>
-</template>
-
 <script setup lang="ts">
+import {RouterView} from 'vue-router'
 </script>
 
-<style lang="scss">
+<template>
+  <RouterView/>
+</template>
 
+<style lang="scss">
+@use '@/assets/styles/variables' as *;
+
+#app {
+  min-height: 100vh;
+}
 </style>
