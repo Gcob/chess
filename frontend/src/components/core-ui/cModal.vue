@@ -1,5 +1,42 @@
+<template>
+  <Transition name="c-modal">
+    <div
+      v-if="modelValue"
+      class="c-modal"
+    >
+      <div class="c-modal__overlay" @click="onOverlayClick" />
+
+      <div
+        ref="modalRef"
+        class="c-modal__wrapper"
+        :class="`c-modal__wrapper--${size}`"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div v-if="$slots.header" class="c-modal__header">
+          <div class="c-modal__header-content">
+            <slot name="header" />
+          </div>
+          <button class="c-modal__close" @click="close" :aria-label="$t('common.close')">
+            <X :size="16" />
+          </button>
+        </div>
+
+        <div class="c-modal__content">
+          <slot />
+        </div>
+
+        <div v-if="$slots.footer" class="c-modal__footer">
+          <slot name="footer" :close="close" />
+        </div>
+      </div>
+    </div>
+  </Transition>
+</template>
+
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted, ref } from 'vue'
+import { X } from 'lucide-vue-next'
 
 export interface CModalProps {
   modelValue: boolean
@@ -51,42 +88,6 @@ onUnmounted(() => {
   document.body.style.overflow = ''
 })
 </script>
-
-<template>
-  <Transition name="c-modal">
-    <div
-      v-if="modelValue"
-      class="c-modal"
-    >
-      <div class="c-modal__overlay" @click="onOverlayClick" />
-
-      <div
-        ref="modalRef"
-        class="c-modal__wrapper"
-        :class="`c-modal__wrapper--${size}`"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div v-if="$slots.header" class="c-modal__header">
-          <div class="c-modal__header-content">
-            <slot name="header" />
-          </div>
-          <button class="c-modal__close" @click="close" :aria-label="$t('common.close')">
-            ✕
-          </button>
-        </div>
-
-        <div class="c-modal__content">
-          <slot />
-        </div>
-
-        <div v-if="$slots.footer" class="c-modal__footer">
-          <slot name="footer" :close="close" />
-        </div>
-      </div>
-    </div>
-  </Transition>
-</template>
 
 <style lang="scss" scoped>
 .c-modal {
