@@ -77,7 +77,7 @@ Dans `src/composables/` :
 
 ### Conventions core-ui
 - Préfixe `c` pour tous les composants (cButton, cModal, cToast)
-- Styles en `<style lang="scss" scoped>` dans le .vue
+- Styles en `<style lang="scss">` dans le .vue
 - Chaque composant DOIT avoir un .spec.ts colocalisé avec au minimum : rendu par défaut, props principales, événements émis
 - Les composables sont testés indépendamment des composants
 
@@ -93,7 +93,7 @@ Dans `src/composables/` :
 - Typer explicitement, pas de `any`
 - Écrire les tests unitaires pour toute logique métier (mouvements, validation, échec/mat)
 - anglais pour le code et les commentaires.
-- l'ordre dans un `.vue` est `template`, `<script lang="ts" setup>`, `<style lang="scss">`
+- l'ordre dans un `.vue` est `<template>`, `<script lang="ts" setup>`, `<style lang="scss">`
 
 ## Commandes
 
