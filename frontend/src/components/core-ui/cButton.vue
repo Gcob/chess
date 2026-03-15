@@ -43,6 +43,8 @@ const tagProps = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use 'sass:color';
+
 .c-button {
   display: inline-flex;
   align-items: center;
@@ -73,11 +75,11 @@ const tagProps = computed(() => {
     background-color: $color1;
 
     &:hover:not(.c-button--disabled) {
-      background-color: darken($color1, 8%);
+      background-color: color.adjust($color1, $lightness: -8%);
     }
 
     &:active:not(.c-button--disabled) {
-      background-color: darken($color1, 12%);
+      background-color: color.adjust($color1, $lightness: -12%);
     }
   }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import UiButton from './UiButton.vue'
+import UiButton from './cButton.vue'
 
 const router = createRouter({
   history: createMemoryHistory(),
