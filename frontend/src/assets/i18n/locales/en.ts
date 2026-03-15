@@ -6,6 +6,12 @@ export default {
     back: 'Back',
     close: 'Close',
   },
+  settings: {
+    title: 'Settings',
+    sound: 'Sound effects',
+    boardTheme: 'Board theme',
+    pieceStyle: 'Piece style',
+  },
   home: {
     subtitle: 'A simple chess game built with Vue 3',
     playButton: 'New Game',

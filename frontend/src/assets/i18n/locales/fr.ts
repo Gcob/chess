@@ -6,6 +6,12 @@ export default {
     back: 'Retour',
     close: 'Fermer',
   },
+  settings: {
+    title: 'Paramètres',
+    sound: 'Effets sonores',
+    boardTheme: 'Thème du plateau',
+    pieceStyle: 'Style des pièces',
+  },
   home: {
     subtitle: 'Un jeu d\'échecs simple construit avec Vue 3',
     playButton: 'Nouvelle partie',
