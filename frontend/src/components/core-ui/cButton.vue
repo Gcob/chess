@@ -43,14 +43,11 @@ const tagProps = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@use 'sass:color';
-
 .c-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
-  margin: $spacing-sm;
   padding: $spacing-3 $spacing-6;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
@@ -64,42 +61,43 @@ const tagProps = computed(() => {
   position: relative;
 
   &:focus-visible {
-    outline: 2px solid $color1;
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 
   // --- Variants ---
 
   &--main {
-    color: #fff;
-    background-color: $color1;
+    color: var(--text-inverse);
+    background-color: var(--accent);
 
     &:hover:not(.c-button--disabled) {
-      background-color: color.adjust($color1, $lightness: -8%);
+      background-color: var(--accent-hover);
     }
 
     &:active:not(.c-button--disabled) {
-      background-color: color.adjust($color1, $lightness: -12%);
+      background-color: var(--accent-active);
     }
   }
 
   &--sec {
-    color: $color1;
+    color: var(--accent);
     background-color: transparent;
-    border-color: $color1;
+    border-color: var(--accent);
 
     &:hover:not(.c-button--disabled) {
-      color: #fff;
-      background-color: $color1;
+      color: var(--text-inverse);
+      background-color: var(--accent);
     }
   }
 
   &--ter {
-    color: $color3;
-    background-color:  rgba($color3, 0.04);
+    color: var(--text-secondary);
+    background-color: transparent;
 
     &:hover:not(.c-button--disabled) {
-      background-color: rgba($color3, 0.08);
+      color: var(--text-primary);
+      background-color: var(--bg-hover);
     }
   }
 

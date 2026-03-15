@@ -8,9 +8,13 @@ export default {
   },
   settings: {
     title: 'Settings',
+    toggleTheme: 'Toggle theme',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
     sound: 'Sound effects',
     boardTheme: 'Board theme',
-    pieceStyle: 'Piece style',
+    pieceStyle: 'Piece style'
   },
   home: {
     subtitle: 'A simple chess game built with Vue 3',
