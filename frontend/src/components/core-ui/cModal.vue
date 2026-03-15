@@ -1,12 +1,64 @@
+<script setup lang="ts">
+import { watch, onMounted, onUnmounted, ref } from 'vue'
+
+export interface CModalProps {
+  modelValue: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  closeOnOverlay?: boolean
+  closeOnEsc?: boolean
+}
+
+const props = withDefaults(defineProps<CModalProps>(), {
+  size: 'md',
+  closeOnOverlay: true,
+  closeOnEsc: true,
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  close: []
+}>()
+
+const modalRef = ref<HTMLElement | null>(null)
+
+function close() {
+  emit('update:modelValue', false)
+  emit('close')
+}
+
+function onOverlayClick() {
+  if (props.closeOnOverlay) {
+    close()
+  }
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (props.closeOnEsc && e.key === 'Escape') {
+    close()
+  }
+}
+
+watch(() => props.modelValue, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown)
+  document.body.style.overflow = ''
+})
+</script>
 
 <template>
   <Transition name="c-modal">
     <div
       v-if="modelValue"
       class="c-modal"
-      @click="onOverlayClick"
     >
-      <div class="c-modal__overlay" />
+      <div class="c-modal__overlay" @click="onOverlayClick" />
 
       <div
         ref="modalRef"
@@ -36,61 +88,7 @@
   </Transition>
 </template>
 
-<script setup lang="ts">
-import { watch, onMounted, onUnmounted, ref } from 'vue'
-
-export interface CModalProps {
-  modelValue: boolean
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  closeOnOverlay?: boolean
-  closeOnEsc?: boolean
-}
-
-const props = withDefaults(defineProps<CModalProps>(), {
-  size: 'md',
-  closeOnOverlay: true,
-  closeOnEsc: true,
-})
-
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  close: []
-}>()
-
-const modalRef = ref<HTMLElement | null>(null)
-
-function close() {
-  emit('update:modelValue', false)
-  emit('close')
-}
-
-function onOverlayClick(e: MouseEvent) {
-  if (props.closeOnOverlay && e.target === e.currentTarget) {
-    close()
-  }
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (props.closeOnEsc && e.key === 'Escape') {
-    close()
-  }
-}
-
-watch(() => props.modelValue, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
-})
-
-onMounted(() => {
-  document.addEventListener('keydown', onKeydown)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('keydown', onKeydown)
-  document.body.style.overflow = ''
-})
-</script>
-
-<style lang="scss" >
+<style lang="scss" scoped>
 .c-modal {
   position: fixed;
   inset: 0;
@@ -103,8 +101,9 @@ onUnmounted(() => {
   &__overlay {
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.1);
-    transition: background-color $transition-base;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(1px);
+    transition: all $transition-base;
   }
 
   &__wrapper {
@@ -204,6 +203,7 @@ onUnmounted(() => {
 
   .c-modal__overlay {
     background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
   }
 }
 
@@ -215,6 +215,7 @@ onUnmounted(() => {
 
   .c-modal__overlay {
     background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
   }
 }
 </style>

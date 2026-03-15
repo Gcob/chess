@@ -4,6 +4,7 @@ export default {
   },
   common: {
     back: 'Back',
+    close: 'Close',
   },
   home: {
     subtitle: 'A simple chess game built with Vue 3',

@@ -4,6 +4,7 @@ export default {
   },
   common: {
     back: 'Retour',
+    close: 'Fermer',
   },
   home: {
     subtitle: 'Un jeu d\'échecs simple construit avec Vue 3',
