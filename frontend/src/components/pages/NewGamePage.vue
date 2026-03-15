@@ -1,7 +1,7 @@
 <template>
-  <main class="page" id="new-game-page">
-    <h1 class="h1">{{ $t('newGame.title') }}</h1>
-    <p class="text-lg text-muted">{{ $t('newGame.subtitle') }}</p>
+  <main class="c-page" id="new-game-page">
+    <h1 class="c-h1">{{ $t('newGame.title') }}</h1>
+    <p class="c-text-lg text-muted">{{ $t('newGame.subtitle') }}</p>
 
     <form class="new-game__form" @submit.prevent>
       <!-- Game settings will go here -->
@@ -27,15 +27,8 @@ function onStartButtonClick() {
 
 </script>
 
-<style lang="scss" >
+<style lang="scss">
 #new-game-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: $spacing-4;
-
   &__form {
     margin-top: $spacing-8;
     width: 100%;

@@ -10,6 +10,9 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  preview: {
+    allowedHosts: true,
+  },
   css: {
     preprocessorOptions: {
       scss: {
