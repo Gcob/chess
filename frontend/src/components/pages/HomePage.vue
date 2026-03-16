@@ -14,8 +14,3 @@
 import ChessHero from '@/components/ChessHero.vue'
 </script>
 
-<style lang="scss" scoped>
-.home__actions {
-  margin-top: $spacing-8;
-}
-</style>

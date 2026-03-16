@@ -29,11 +29,6 @@ const router = createRouter({
       name: 'terms',
       component: () => import('@/components/pages/TermsPage.vue'),
     },
-    {
-      path: '/privacy',
-      name: 'privacy',
-      component: () => import('@/components/pages/PrivacyPage.vue'),
-    },
     // {
     //   path: '/game/:id',
     //   name: 'game',
