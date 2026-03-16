@@ -180,6 +180,7 @@ const timerSummary = computed(() => {
   gap: $spacing-8;
   width: 100%;
   max-width: 36rem;
+  padding-bottom: $spacing-4;
 
   &__section {
     display: flex;
@@ -320,7 +321,7 @@ const timerSummary = computed(() => {
     display: flex;
     justify-content: space-between;
     gap: $spacing-3;
-    padding-top: $spacing-4;
+    padding: $spacing-4 0;
   }
 }
 </style>
