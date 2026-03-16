@@ -5,6 +5,7 @@ export type Theme = 'light' | 'dark'
 const STORAGE_KEY = 'theme'
 
 const theme = ref<Theme>('light')
+let watching = false
 
 function applyTheme(t: Theme) {
   document.documentElement.setAttribute('data-theme', t)
@@ -26,15 +27,16 @@ function init() {
   applyTheme(theme.value)
 }
 
-watch(theme, (t) => {
-  localStorage.setItem(STORAGE_KEY, t)
-  applyTheme(t)
-})
-
 export function useTheme() {
-  onMounted(() => {
-    init()
-  })
+  if (!watching) {
+    watching = true
+    watch(theme, (t) => {
+      localStorage.setItem(STORAGE_KEY, t)
+      applyTheme(t)
+    })
+  }
+
+  onMounted(init)
 
   return {
     theme,

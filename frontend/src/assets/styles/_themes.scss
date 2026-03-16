@@ -31,7 +31,7 @@
 
   // --- Modal ---
   --overlay-bg: rgba(0, 0, 0, 0.4);
-  --overlay-blur: 4px;
+  --overlay-blur: 1px;
   --modal-bg: #ffffff;
   --modal-shadow: #{$shadow-xl};
 
@@ -79,7 +79,7 @@
 
   // --- Modal ---
   --overlay-bg: rgba(0, 0, 0, 0.6);
-  --overlay-blur: 6px;
+  --overlay-blur: 1px;
   --modal-bg: #262626;
   --modal-shadow: 0 20px 25px rgba(0, 0, 0, 0.3), 0 10px 10px rgba(0, 0, 0, 0.2);
 
