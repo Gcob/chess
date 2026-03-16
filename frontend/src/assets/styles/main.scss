@@ -8,6 +8,7 @@
 @use 'commons';
 @use 'layouts';
 @use 'themes';
+@use 'polish';
 
 body {
   font-family: $font-family-base;
@@ -16,6 +17,7 @@ body {
   line-height: $line-height-base;
   color: var(--text-primary);
   background-color: var(--bg-primary);
+  text-rendering: optimizeLegibility;
   transition: background-color $transition-base, color $transition-base;
 }
 

@@ -1,0 +1,90 @@
+// ============================================
+// Polish — Micro UX details & refinements
+// ============================================
+
+@use 'variables' as *;
+
+// --- Text selection ---
+
+::selection {
+  background-color: var(--accent-subtle);
+  color: var(--text-primary);
+}
+
+// --- Focus visible ---
+
+// Replace the browser default outline with a consistent accent ring.
+// :focus-visible targets keyboard navigation only — mouse users won't see it.
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: $border-radius-sm;
+}
+
+// --- Link & button base transitions ---
+
+a {
+  transition: color $transition-fast, opacity $transition-fast;
+}
+
+button {
+  transition: color $transition-fast, background-color $transition-fast, opacity $transition-fast;
+}
+
+// --- Placeholder ---
+
+::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 1; // Firefox reduces opacity by default
+}
+
+// --- Disabled form controls ---
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// --- Images ---
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+// --- Chess piece cursor (hook for future use) ---
+// .chess-piece        { cursor: grab; }
+// .chess-piece:active { cursor: grabbing; }
+
+// --- Prefers reduced motion ---
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// --- Prefers high contrast ---
+
+@media (prefers-contrast: high) {
+  :root,
+  [data-theme="light"] {
+    --border-color: rgba(0, 0, 0, 0.4);
+    --border-color-strong: rgba(0, 0, 0, 0.6);
+    --accent-subtle: rgba(59, 130, 246, 0.3);
+  }
+
+  [data-theme="dark"] {
+    --border-color: rgba(255, 255, 255, 0.4);
+    --border-color-strong: rgba(255, 255, 255, 0.6);
+    --accent-subtle: rgba(96, 165, 250, 0.3);
+  }
+}
