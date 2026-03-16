@@ -14,7 +14,13 @@ export default {
     themeDark: 'Dark',
     sound: 'Sound effects',
     boardTheme: 'Board theme',
-    pieceStyle: 'Piece style'
+    boardThemeClassic: 'Classic',
+    boardThemeModern: 'Modern',
+    boardThemeWood: 'Wood',
+    pieceStyle: 'Piece style',
+    pieceStyleStandard: 'Standard',
+    pieceStyleMinimalist: 'Minimalist',
+    pieceStylePixel: 'Pixel'
   },
   home: {
     subtitle: 'A simple chess game built with Vue 3',

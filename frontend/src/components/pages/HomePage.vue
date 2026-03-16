@@ -7,7 +7,7 @@
       <cButton :to="{ name: 'new-game' }">
         {{ $t('home.playButton') }}
       </cButton>
-      <cButton variant="sec" @click="showRules = true">
+      <cButton variant="ter" @click="showRules = true">
         {{ $t('home.rulesButton') }}
       </cButton>
     </div>
