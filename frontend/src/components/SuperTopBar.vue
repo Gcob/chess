@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
 import { Settings, Sun, Moon } from 'lucide-vue-next'
+import SettingsModal from '@/components/parts/SettingsModal.vue'
 
 const { locale } = useI18n()
 const { theme, toggle: toggleTheme } = useTheme()
@@ -41,48 +42,7 @@ function setLocale(lang: typeof locales[number]) {
       </div>
     </div>
 
-    <cModal v-model="isSettingsOpen" size="sm">
-      <template #header>{{ $t('settings.title') }}</template>
-
-      <div class="super-top-bar__settings">
-        <label class="c-label">
-          <span>{{ $t('settings.theme') }}</span>
-          <select class="c-select" :value="theme" @change="toggleTheme">
-            <option value="light">{{ $t('settings.themeLight') }}</option>
-            <option value="dark">{{ $t('settings.themeDark') }}</option>
-          </select>
-        </label>
-
-        <hr class="c-divider" />
-
-        <label class="c-label">
-          <span>{{ $t('settings.sound') }}</span>
-          <input type="checkbox" class="c-checkbox" />
-        </label>
-
-        <label class="c-label">
-          <span>{{ $t('settings.boardTheme') }}</span>
-          <select class="c-select">
-            <option value="classic">Classic</option>
-            <option value="modern">Modern</option>
-            <option value="wood">Wood</option>
-          </select>
-        </label>
-
-        <label class="c-label">
-          <span>{{ $t('settings.pieceStyle') }}</span>
-          <select class="c-select">
-            <option value="standard">Standard</option>
-            <option value="minimalist">Minimalist</option>
-            <option value="pixel">Pixel</option>
-          </select>
-        </label>
-      </div>
-
-      <template #footer="{ close }">
-        <cButton variant="ter" @click="close">{{ $t('common.close') }}</cButton>
-      </template>
-    </cModal>
+    <SettingsModal v-model="isSettingsOpen" />
   </div>
 </template>
 
@@ -164,10 +124,5 @@ function setLocale(lang: typeof locales[number]) {
     }
   }
 
-  &__settings {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-4;
-  }
 }
 </style>
