@@ -1,45 +1,31 @@
 <template>
   <main class="c-page" id="new-game-page">
-    <h1 class="c-h1">{{ $t('newGame.title') }}</h1>
-    <p class="c-text-lg text-muted">{{ $t('newGame.subtitle') }}</p>
+    <div class="new-game-page__header">
+      <h1 class="c-h1">{{ $t('newGame.title') }}</h1>
+      <p class="c-text-lg c-text-muted">{{ $t('newGame.subtitle') }}</p>
+    </div>
 
-    <form class="new-game__form" @submit.prevent>
-      <!-- Game settings will go here -->
-
-      <div class="new-game__actions">
-        <cButton variant="ter" :to="{ name: 'home' }">
-          {{ $t('common.back') }}
-        </cButton>
-        <cButton @click="onStartButtonClick">
-          {{ $t('newGame.startButton') }}
-        </cButton>
-      </div>
-    </form>
+    <NewGameForm @start="onStart" />
   </main>
 </template>
 
 <script setup lang="ts">
-import CButton from "@/components/core-ui/cButton.vue";
+import NewGameForm from '@/components/NewGameForm.vue'
 
-function onStartButtonClick() {
-  alert('To do');
+function onStart() {
+  // TODO: navigate to game page
 }
-
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #new-game-page {
-  &__form {
-    margin-top: $spacing-8;
-    width: 100%;
-    max-width: 24rem;
-  }
+  gap: $spacing-8;
 
-  &__actions {
+  .new-game-page__header {
     display: flex;
-    justify-content: center;
-    gap: $spacing-4;
-    margin-top: $spacing-8;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-2;
   }
 }
 </style>

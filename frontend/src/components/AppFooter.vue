@@ -36,7 +36,7 @@
       <template #header>{{ $t('chessRules.title') }}</template>
       <ChessRules />
       <template #footer="{ close }">
-        <cButton @click="close">{{ $t('common.close') }}</cButton>
+        <cButton @click="close" variant="ter">{{ $t('common.close') }}</cButton>
       </template>
     </cModal>
   </footer>

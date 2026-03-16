@@ -1,9 +1,15 @@
 @use 'variables' as *;
+@use 'mixins' as *;
 
 #app-main {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
+  padding-top: 40px;
+
+  @include breakpoint-down($breakpoint-sm) {
+    padding-top: 52px;
+  }
 }
 
 .c-page {

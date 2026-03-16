@@ -6,6 +6,7 @@ export default {
     back: 'Retour',
     backHome: 'Retour à l\'accueil',
     close: 'Fermer',
+    cancel: 'Annuler',
   },
   footer: {
     howToPlay: 'Comment jouer',
@@ -56,7 +57,39 @@ export default {
   newGame: {
     title: 'Nouvelle partie',
     subtitle: 'Configure ta partie avant de commencer.',
-    startButton: 'Commencer',
+    startButton: 'Lancer la partie',
+    mode: {
+      title: 'Mode de jeu',
+      comingSoon: 'À venir',
+      local: 'Local',
+      localDesc: 'Deux joueurs sur le même appareil.',
+      ai: 'vs Ordinateur',
+      aiDesc: 'Joue contre une IA.',
+      onlineRandom: 'En ligne — Aléatoire',
+      onlineRandomDesc: 'Affronte un joueur au hasard.',
+      onlinePrivate: 'En ligne — Privé',
+      onlinePrivateDesc: 'Invite un ami avec un lien.',
+    },
+    players: {
+      title: 'Joueurs',
+      white: 'Blanc',
+      black: 'Noir',
+      whitePlaceholder: 'Joueur 1',
+      blackPlaceholder: 'Joueur 2',
+    },
+    timer: {
+      title: 'Horloge',
+      enabled: 'Activer le minuteur',
+      minutes: 'Temps par joueur',
+      increment: 'Incrément par coup',
+      minutesSuffix: 'min',
+      secondsSuffix: 's',
+      summary: {
+        noLimit: 'Aucune limite de temps',
+        noIncrement: '{min} min par joueur, sans incrément',
+        withIncrement: '{min} min + {inc}s par coup',
+      },
+    },
   },
   chessRules: {
     "title": "Comment jouer aux échecs",
