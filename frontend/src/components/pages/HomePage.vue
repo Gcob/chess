@@ -1,7 +1,6 @@
 <template>
   <main class="c-page" id="home-page">
-    <h1 class="c-h1">{{ $t('app.title') }}</h1>
-    <p class="c-text-lg c-text-muted">{{ $t('home.subtitle') }}</p>
+    <ChessHero />
 
     <div class="home__actions">
       <cButton :to="{ name: 'new-game' }">
@@ -11,7 +10,8 @@
   </main>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
+import ChessHero from '@/components/ChessHero.vue'
 </script>
 
 <style lang="scss" scoped>

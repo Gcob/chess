@@ -7,44 +7,56 @@
 // --- Headings ---
 
 .c-h1 {
+  font-family: $font-family-display;
   font-size: $font-size-3xl;
   font-weight: $font-weight-bold;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .c-h2 {
+  font-family: $font-family-display;
   font-size: $font-size-2xl;
   font-weight: $font-weight-bold;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .c-h3 {
+  font-family: $font-family-display;
   font-size: $font-size-xl;
   font-weight: $font-weight-semibold;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .c-h4 {
+  font-family: $font-family-display;
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .c-h5 {
+  font-family: $font-family-display;
   font-size: $font-size-base;
   font-weight: $font-weight-medium;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .c-h6 {
+  font-family: $font-family-display;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   line-height: $line-height-tight;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
@@ -293,7 +305,7 @@
 .c-select {
   padding: $spacing-2 $spacing-3;
   font-size: $font-size-sm;
-  font-family: inherit;
+  font-family: $font-family-mono;
   color: var(--input-text);
   background-color: var(--input-bg);
   border: $border-width-thin solid var(--input-border);
