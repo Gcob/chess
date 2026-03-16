@@ -37,8 +37,8 @@
 
   // --- Interactive ---
   --accent: #{$color1};
-  --accent-hover: #{darken($color1, 8%)};
-  --accent-active: #{darken($color1, 12%)};
+  --accent-hover: color-mix(in oklab, #{$color1}, black 12%);
+  --accent-active: color-mix(in oklab, #{$color1}, black 20%);
   --accent-subtle: rgba(59, 130, 246, 0.1);
 
   // --- Forms ---
@@ -51,6 +51,11 @@
   --danger: #{$color-danger};
   --success: #{$color-success};
   --warning: #{$color-warning};
+
+  // --- Scrollbar ---
+  --scrollbar-track: rgba(0, 0, 0, 0.04);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="dark"] {
@@ -84,19 +89,24 @@
   --modal-shadow: 0 20px 25px rgba(0, 0, 0, 0.3), 0 10px 10px rgba(0, 0, 0, 0.2);
 
   // --- Interactive ---
-  --accent: #{lighten($color1, 6%)};
-  --accent-hover: #{lighten($color1, 12%)};
-  --accent-active: #{lighten($color1, 2%)};
+  --accent: color-mix(in oklab, #{$color1}, white 15%);
+  --accent-hover: color-mix(in oklab, #{$color1}, white 25%);
+  --accent-active: color-mix(in oklab, #{$color1}, white 5%);
   --accent-subtle: rgba(96, 165, 250, 0.15);
 
   // --- Forms ---
   --input-bg: #1a1a1a;
   --input-border: rgba(255, 255, 255, 0.15);
-  --input-border-focus: #{lighten($color1, 6%)};
+  --input-border-focus: color-mix(in oklab, #{$color1}, white 15%);
   --input-text: #f0f0f0;
 
   // --- Status ---
-  --danger: #{lighten($color-danger, 12%)};
-  --success: #{lighten($color-success, 8%)};
-  --warning: #{lighten($color-warning, 6%)};
+  --danger: color-mix(in oklab, #{$color-danger}, white 25%);
+  --success: color-mix(in oklab, #{$color-success}, white 20%);
+  --warning: color-mix(in oklab, #{$color-warning}, white 15%);
+
+  // --- Scrollbar ---
+  --scrollbar-track: rgba(255, 255, 255, 0.04);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
 }

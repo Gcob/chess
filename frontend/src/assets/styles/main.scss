@@ -18,3 +18,32 @@ body {
   background-color: var(--bg-primary);
   transition: background-color $transition-base, color $transition-base;
 }
+
+// --- Scrollbar ---
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: $border-radius-full;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: $border-radius-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+
+  &:hover {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+}
