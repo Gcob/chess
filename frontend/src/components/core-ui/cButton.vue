@@ -94,10 +94,12 @@ const tagProps = computed(() => {
   &--ter {
     color: var(--text-secondary);
     background-color: transparent;
+    border-color: var(--border-color-strong);
 
     &:hover:not(.c-button--disabled) {
       color: var(--text-primary);
       background-color: var(--bg-hover);
+      border-color: var(--text-muted);
     }
   }
 
