@@ -1,6 +1,6 @@
 export default {
   app: {
-    title: 'Chess Game',
+    title: 'Chess',
   },
   common: {
     back: 'Back',

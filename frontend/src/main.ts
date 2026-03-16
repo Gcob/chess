@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/jetbrains-mono'
 import '@/assets/styles/main.scss'
 import coreUI from "@/components/core-ui/core-ui.ts";
 

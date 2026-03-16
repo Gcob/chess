@@ -51,6 +51,13 @@ Petit projet pour un seul développeur, moi, Jacob.
 - Variables SCSS et mixins sont injectés globalement via `additionalData` dans `vite.config.ts` — pas besoin de `@use` dans chaque composant.
 - Pas de CSS-in-JS, pas de Tailwind.
 
+### Typographie
+- `$font-family-base` : `'Inter Variable'` — body, paragraphes, labels courants
+- `$font-family-display` : `'Inter Variable'` — headings (.c-h1 à .c-h6), boutons (cButton). Même font que base, séparée pour pouvoir évoluer indépendamment.
+- `$font-family-mono` : `'JetBrains Mono Variable'` — inputs, selects, body text dans les modals (`.c-modal__content`), blocs code, composants au style terminal
+- Fonts chargées via Fontsource : `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono`
+- Headings : `letter-spacing: -0.02em` pour resserrer la graisse
+
 ### Thème (light/dark)
 - Les couleurs utilisent des CSS custom properties (var(--text-primary), var(--bg-primary), etc.) — jamais de couleurs SCSS hardcodées dans les composants.
 - Le thème est géré par le composable `useTheme` (`src/composables/useTheme.ts`).

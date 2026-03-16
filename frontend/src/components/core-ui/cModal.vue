@@ -177,6 +177,7 @@ export default {
     flex: 1;
     padding: $spacing-4;
     overflow: auto;
+    font-family: $font-family-mono;
     color: var(--text-secondary);
   }
 

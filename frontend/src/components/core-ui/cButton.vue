@@ -49,6 +49,7 @@ const tagProps = computed(() => {
   justify-content: center;
   gap: $spacing-2;
   padding: $spacing-3 $spacing-6;
+  font-family: $font-family-display;
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   line-height: $line-height-tight;
