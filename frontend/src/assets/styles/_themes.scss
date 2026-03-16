@@ -39,7 +39,7 @@
   --accent: #{$color1};
   --accent-hover: color-mix(in oklab, #{$color1}, black 12%);
   --accent-active: color-mix(in oklab, #{$color1}, black 20%);
-  --accent-subtle: rgba(59, 130, 246, 0.1);
+  --accent-subtle: rgba(22, 163, 74, 0.1);
 
   // --- Forms ---
   --input-bg: #ffffff;
@@ -92,7 +92,7 @@
   --accent: color-mix(in oklab, #{$color1}, white 15%);
   --accent-hover: color-mix(in oklab, #{$color1}, white 25%);
   --accent-active: color-mix(in oklab, #{$color1}, white 5%);
-  --accent-subtle: rgba(96, 165, 250, 0.15);
+  --accent-subtle: rgba(74, 222, 128, 0.15);
 
   // --- Forms ---
   --input-bg: #1a1a1a;
