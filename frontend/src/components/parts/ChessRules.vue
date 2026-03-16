@@ -73,7 +73,7 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss" >
 .chess-rules {
   display: flex;
   flex-direction: column;

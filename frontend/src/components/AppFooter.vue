@@ -13,10 +13,6 @@
         {{ $t('footer.terms') }}
       </RouterLink>
       <span class="app-footer__sep" aria-hidden="true">·</span>
-      <RouterLink class="app-footer__link" :to="{ name: 'privacy' }">
-        {{ $t('footer.privacy') }}
-      </RouterLink>
-      <span class="app-footer__sep" aria-hidden="true">·</span>
       <a
         class="app-footer__link app-footer__link--icon"
         href="https://github.com/gcob"

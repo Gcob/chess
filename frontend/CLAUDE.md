@@ -58,6 +58,13 @@ Petit projet pour un seul développeur, moi, Jacob.
 - Fonts chargées via Fontsource : `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono`
 - Headings : `letter-spacing: -0.02em` pour resserrer la graisse
 
+### Palette
+- Identité visuelle : knight low-poly bleu cyan sur fond sombre — Neutral Slate + accent bleu unique.
+- `$color-accent: #4a9edd` — bleu du knight, couleur interactive principale
+- `$color-slate-900: #0f172a`, `$color-slate-600: #475569` — neutres de base
+- Palette complète `$color-slate-50` → `$color-slate-950` dans `_variables.scss`
+- Plus de `$color1 / $color2 / $color3` ni `$color-gray-*`
+
 ### Thème (light/dark)
 - Les couleurs utilisent des CSS custom properties (var(--text-primary), var(--bg-primary), etc.) — jamais de couleurs SCSS hardcodées dans les composants.
 - Le thème est géré par le composable `useTheme` (`src/composables/useTheme.ts`).
