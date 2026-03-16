@@ -6,6 +6,7 @@ export default {
     back: 'Back',
     backHome: 'Back to home',
     close: 'Close',
+    cancel: 'Cancel',
   },
   footer: {
     howToPlay: 'How to play',
@@ -56,7 +57,39 @@ export default {
   newGame: {
     title: 'New Game',
     subtitle: 'Configure your game before starting.',
-    startButton: 'Start',
+    startButton: 'Start Game',
+    mode: {
+      title: 'Game Mode',
+      comingSoon: 'Coming soon',
+      local: 'Local',
+      localDesc: 'Two players on the same device.',
+      ai: 'vs Computer',
+      aiDesc: 'Play against an AI opponent.',
+      onlineRandom: 'Online — Random',
+      onlineRandomDesc: 'Get matched with a random player.',
+      onlinePrivate: 'Online — Private',
+      onlinePrivateDesc: 'Invite a friend with a link.',
+    },
+    players: {
+      title: 'Players',
+      white: 'White',
+      black: 'Black',
+      whitePlaceholder: 'Player 1',
+      blackPlaceholder: 'Player 2',
+    },
+    timer: {
+      title: 'Clock',
+      enabled: 'Enable timer',
+      minutes: 'Time per player',
+      increment: 'Increment per move',
+      minutesSuffix: 'min',
+      secondsSuffix: 's',
+      summary: {
+        noLimit: 'No time limit',
+        noIncrement: '{min} min per player, no increment',
+        withIncrement: '{min} min + {inc}s per move',
+      },
+    },
   },
   chessRules: {
     title: "How to Play Chess",
