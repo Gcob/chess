@@ -92,14 +92,23 @@ function setLocale(lang: typeof locales[number]) {
   justify-content: flex-end;
   align-items: center;
   padding: 0 $spacing-4;
-  height: 36px;
+  height: 40px;
   background-color: var(--surface-topbar);
   transition: background-color $transition-base;
+
+  @include breakpoint-down($breakpoint-sm) {
+    height: 52px;
+    padding: 0 $spacing-3;
+  }
 
   &__actions {
     display: flex;
     align-items: center;
     gap: $spacing-3;
+
+    @include breakpoint-down($breakpoint-sm) {
+      gap: $spacing-4;
+    }
   }
 
   &__btn {
@@ -110,6 +119,16 @@ function setLocale(lang: typeof locales[number]) {
     padding: $spacing-1;
     border-radius: $border-radius-sm;
     transition: color $transition-fast;
+
+    svg {
+      width: 16px;
+      height: 16px;
+
+      @include breakpoint-down($breakpoint-sm) {
+        width: 20px;
+        height: 20px;
+      }
+    }
 
     &:hover {
       color: var(--surface-topbar-hover);
@@ -123,12 +142,17 @@ function setLocale(lang: typeof locales[number]) {
 
   &__locale-btn {
     color: var(--surface-topbar-text);
-    font-size: $font-size-xs;
+    font-size: $font-size-sm;
     font-weight: $font-weight-medium;
     padding: $spacing-1 $spacing-2;
     border-radius: $border-radius-sm;
     transition: color $transition-fast;
     letter-spacing: 0.05em;
+
+    @include breakpoint-down($breakpoint-sm) {
+      font-size: $font-size-base;
+      padding: $spacing-1 $spacing-3;
+    }
 
     &:hover {
       color: var(--surface-topbar-hover);
