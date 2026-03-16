@@ -5,12 +5,12 @@
     <div class="settings-modal">
       <label class="c-label">
         <span>{{ $t('settings.sound') }}</span>
-        <input type="checkbox" class="c-checkbox" />
+        <input type="checkbox" class="c-checkbox" v-model="store.settings.sound" />
       </label>
 
       <label class="c-label">
         <span>{{ $t('settings.boardTheme') }}</span>
-        <select class="c-select">
+        <select class="c-select" v-model="store.settings.boardTheme">
           <option value="classic">Classic</option>
           <option value="modern">Modern</option>
           <option value="wood">Wood</option>
@@ -19,7 +19,7 @@
 
       <label class="c-label">
         <span>{{ $t('settings.pieceStyle') }}</span>
-        <select class="c-select">
+        <select class="c-select" v-model="store.settings.pieceStyle">
           <option value="standard">Standard</option>
           <option value="minimalist">Minimalist</option>
           <option value="pixel">Pixel</option>
@@ -34,8 +34,12 @@
 </template>
 
 <script setup lang="ts">
+import { useSettingsStore } from '@/stores/useSettingsStore'
+
 defineProps<{ modelValue: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
+
+const store = useSettingsStore()
 </script>
 
 <style lang="scss" scoped>
