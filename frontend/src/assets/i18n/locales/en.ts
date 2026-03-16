@@ -4,7 +4,33 @@ export default {
   },
   common: {
     back: 'Back',
+    backHome: 'Back to home',
     close: 'Close',
+  },
+  footer: {
+    howToPlay: 'How to play',
+    about: 'About',
+    terms: 'Terms',
+    privacy: 'Privacy',
+    github: 'GitHub',
+    copyright: '© {year} Chess by Jacob',
+  },
+  about: {
+    title: 'About',
+    motivation: 'Motivation',
+    motivationText: 'This project started as a personal challenge to build a fully functional chess game from scratch. The goal is to deepen my understanding of game logic, Vue 3, and modern frontend architecture all while shipping something I\'m proud of.',
+    stack: 'Tech Stack',
+    stackText: 'Built with Vue 3, TypeScript, Pinia, and Vite. Styled with SCSS and a custom design system. Tested with Vitest and Playwright.',
+    roadmap: 'Roadmap',
+    roadmapText: 'Planned features include: full chess rule enforcement, move history, PGN export, AI opponent, and online multiplayer.',
+  },
+  terms: {
+    title: 'Terms of Service',
+    placeholder: 'Coming soon.',
+  },
+  privacy: {
+    title: 'Privacy Policy',
+    placeholder: 'Coming soon.',
   },
   settings: {
     title: 'Settings',

@@ -4,7 +4,33 @@ export default {
   },
   common: {
     back: 'Retour',
+    backHome: 'Retour à l\'accueil',
     close: 'Fermer',
+  },
+  footer: {
+    howToPlay: 'Comment jouer',
+    about: 'À propos',
+    terms: 'Conditions',
+    privacy: 'Confidentialité',
+    github: 'GitHub',
+    copyright: '© {year} Chess par Jacob',
+  },
+  about: {
+    title: 'À propos',
+    motivation: 'Motivation',
+    motivationText: 'Ce projet est né d\'un défi personnel : construire un jeu d\'échecs complet from scratch. L\'objectif est d\'approfondir ma compréhension de la logique de jeu, de Vue 3 et de l\'architecture frontend moderne tout en livrant quelque chose dont je suis fier.',
+    stack: 'Stack technique',
+    stackText: 'Construit avec Vue 3, TypeScript, Pinia et Vite. Stylisé avec SCSS et un design system maison. Testé avec Vitest et Playwright.',
+    roadmap: 'Feuille de route',
+    roadmapText: 'Fonctionnalités prévues : validation complète des règles des échecs, historique des coups, export PGN, adversaire IA et multijoueur en ligne.',
+  },
+  terms: {
+    title: 'Conditions d\'utilisation',
+    placeholder: 'À venir.',
+  },
+  privacy: {
+    title: 'Politique de confidentialité',
+    placeholder: 'À venir.',
   },
   settings: {
     title: 'Paramètres',
