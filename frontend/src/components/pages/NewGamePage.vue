@@ -13,7 +13,7 @@
 import NewGameForm from '@/components/NewGameForm.vue'
 
 function onStart() {
-  // TODO: navigate to game page
+  alert('Coming soon!')
 }
 </script>
 
