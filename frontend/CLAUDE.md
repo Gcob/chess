@@ -103,6 +103,12 @@ Dans `src/composables/` :
 - anglais pour le code et les commentaires.
 - l'ordre dans un `.vue` est `<template>`, `<script lang="ts" setup>`, `<style lang="scss">`
 
+### Settings
+- Les settings du jeu sont gérés par le store `useSettingsStore` (`src/stores/useSettingsStore.ts`).
+- Le store persiste automatiquement dans localStorage (clé `settings`) via un watcher deep.
+- Les defaults sont définis dans le store — tout nouveau setting doit y être ajouté avec un default.
+- Les composants utilisent `storeToRefs` pour le v-model sur les settings.
+
 ## Commandes
 
 - `npm run dev` — serveur de dev
