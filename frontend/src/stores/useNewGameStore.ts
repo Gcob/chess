@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-
-export type GameMode = 'local' | 'ai' | 'online-random' | 'online-private'
+import type { GameMode } from '@/types/chess'
 
 export interface NewGameSettings {
   mode: GameMode

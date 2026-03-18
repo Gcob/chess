@@ -202,6 +202,41 @@ Toutes les interfaces et types du domaine échecs dans un seul fichier. Types pu
 - `Move.previousMove` fournit le contexte pour la validation en passant
 - `GameTime` utilise des props explicites (`minutes`, `increment`) — jamais la notation `"2|1"`
 
+### Sessions de partie
+
+- `GameSession` = composition (`{ id: number, game: Game }`) — **pas** d'héritage de `Game`
+- `id` est un entier simple (1, 2, 3...) assigné par le store. Éventuellement, ce sera l'id assigné par le backend.
+- Une session est indépendante et autonome — elle contient tout ce qu'une partie a besoin pour vivre.
+- `useGamesStore` est un registre de sessions actives. Actuellement max 1, prévu pour N (ex. : regarder plusieurs parties d'un tournoi).
+- Le `id` sera éventuellement la clé dans l'URI de route pour retrouver une partie distante.
+
+### Factory pattern
+
+- Les factories sont dans `src/composables/factories/`
+- `gameFactory.ts` expose :
+  - `toBackendPayload(settings: NewGameSettings): CreateGamePayload` — mappe le formulaire vers le payload backend
+  - `createGameSession(payload: CreateGamePayload, id: number): GameSession` — crée la session à partir du payload
+- Le payload (`CreateGamePayload`) est la **source de vérité** pour la création d'une partie — c'est lui qu'on enverra au backend quand la couche HTTP sera branchée.
+- Le store (`useGamesStore`) gère les ids et orchestre : `open(payload)` → appelle la factory → enregistre la session.
+
+### Bridge formulaire → partie
+
+Flux complet :
+```
+NewGameSettings (useNewGameStore)
+  → toBackendPayload()
+  → CreateGamePayload
+  → useGamesStore.open(payload)
+  → createGameSession(payload, id)
+  → GameSession (enregistrée dans le store)
+```
+
+### Conventions ID
+
+- IDs toujours des entiers simples (1, 2, 3...) dans toute l'app — backend et frontend.
+- Jamais de UUID.
+- Le backend sera la source de vérité finale pour les IDs des parties distantes.
+
 ### Concepts à intégrer éventuellement (pas encore forcés)
 
 - **Theme** (pattern Strategy) pour les images de pièces et de board — `Piece.images.board` est déjà un `string`, le
