@@ -91,6 +91,11 @@ export default {
       },
     },
   },
+  game: {
+    notFound: 'Game not found',
+    notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',
+    newGame: 'New game',
+  },
   chessRules: {
     title: "How to Play Chess",
     "objectiveTitle": "Objective",

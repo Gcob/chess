@@ -91,6 +91,11 @@ export default {
       },
     },
   },
+  game: {
+    notFound: 'Partie introuvable',
+    notFoundDesc: 'La session #{id} n\'existe pas ou est déjà terminée.',
+    newGame: 'Nouvelle partie',
+  },
   chessRules: {
     "title": "Comment jouer aux échecs",
     "objectiveTitle": "Objectif",
