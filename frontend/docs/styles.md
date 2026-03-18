@@ -6,7 +6,7 @@
 - Jamais hardcoder de valeurs — toujours les tokens de `_variables.scss`
 - Jamais de couleurs SCSS hardcodées dans les composants — toujours `var(--custom-property)`
 - `_commons.scss` offre des classes utilitaires — jamais de styles sur les éléments HTML directement
-- Composants : `<style lang="scss" scoped>` dans le `.vue` — pas de fichier SCSS séparé
+- Composants : `<style lang="scss">` dans le `.vue` — pas de fichier SCSS séparé, sauf pour les styles globaux. note, eviter l'utilisation de scoped si possible.
 - Variables et mixins injectés globalement via `additionalData` dans `vite.config.ts` — pas de `@use` dans chaque composant
 
 ## Fichiers globaux (`src/assets/styles/`)
