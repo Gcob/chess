@@ -10,7 +10,7 @@
 
       <label class="c-label">
         <span>{{ $t('settings.boardTheme') }}</span>
-        <select class="c-select" v-model="store.settings.boardTheme">
+        <select class="c-select" v-model="store.settings.boardThemeId">
           <option value="classic">{{ $t('settings.boardThemeClassic') }}</option>
           <option value="modern">{{ $t('settings.boardThemeModern') }}</option>
           <option value="wood">{{ $t('settings.boardThemeWood') }}</option>
@@ -19,7 +19,7 @@
 
       <label class="c-label">
         <span>{{ $t('settings.pieceStyle') }}</span>
-        <select class="c-select" v-model="store.settings.pieceStyle">
+        <select class="c-select" v-model="store.settings.pieceThemeId">
           <option value="standard">{{ $t('settings.pieceStyleStandard') }}</option>
           <option value="minimalist">{{ $t('settings.pieceStyleMinimalist') }}</option>
           <option value="pixel">{{ $t('settings.pieceStylePixel') }}</option>

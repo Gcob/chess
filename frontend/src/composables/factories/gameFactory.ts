@@ -102,7 +102,8 @@ function createInitialBoard(): Board {
 
       const n = (f: number, r: number): Square | null => {
         if (f < 0 || f >= 8 || r < 0 || r >= 8) return null
-        return squares[`${FILES[f]}${RANKS[r]}`]
+        const key = `${FILES[f]}${RANKS[r]}` as SquareKey
+        return squares[key]
       }
 
       square.neighbors = {

@@ -9,6 +9,7 @@ Petit projet solo — développeur : Jacob.
 - Je suis développeur senior — traite-moi ainsi. Explique seulement si je le demande.
 - Code et commentaires 100 % en anglais. Commentaires uniquement pour les choses complexes.
 - Je parle français canadien — nos échanges sont en français.
+- Valider le typescript autant que possible et le build pour s'assurer que tout fonctionne correctement à chaque changement.
 
 ## Documentation
 
@@ -32,6 +33,13 @@ La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier perti
 - Changements de style ou de thème → `docs/styles.md`
 
 Ne jamais laisser la doc déphasée par rapport au code.
+
+## Tests
+
+À chaque tâche complétée, mettre à jour le ou les fichiers `tests/` concernés.
+
+TODO : compléter la documentation ici pour les attentes envers les tests.
+Si claude lit ce texte, il peut essayer de comprendre comment les tests sont en places et proposer des idées.
 
 ## Commandes
 
