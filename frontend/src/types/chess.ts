@@ -138,10 +138,30 @@ export interface Game {
   startedAt: Date
   status: GameStatus
   mode: GameMode
-  time: GameTime
+  time?: GameTime         // undefined = untimed game
   type: GameType
   players: [Player, Player]
-  timers: [Timer, Timer]
+  timers?: [Timer, Timer] // undefined = untimed game
   board: Board
   moves: Move[]
+}
+
+// ─── Session ─────────────────────────────────────────────────────────────────
+
+// A self-contained, independent game instance managed by useGamesStore.
+// id is a simple integer assigned by the store (eventually by the backend).
+export interface GameSession {
+  id: number
+  game: Game
+}
+
+// Payload sent to the backend to create a new game.
+// Used by the factory as its primary input — ready for HTTP when the backend is wired up.
+export interface CreateGamePayload {
+  mode: GameMode
+  players: {
+    white: { name: string }
+    black: { name: string }
+  }
+  time?: GameTime // undefined = untimed game
 }
