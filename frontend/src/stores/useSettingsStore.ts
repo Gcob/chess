@@ -1,19 +1,18 @@
-// src/stores/useSettingsStore.ts
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
 export interface Settings {
   sound: boolean
-  boardTheme: 'classic' | 'modern' | 'wood'
-  pieceStyle: 'standard' | 'minimalist' | 'pixel'
+  pieceThemeId: string  // references a PieceTheme id — independent from board
+  boardThemeId: string  // references a BoardTheme id — independent from pieces
 }
 
 const STORAGE_KEY = 'settings'
 
 const DEFAULTS: Settings = {
   sound: true,
-  boardTheme: 'classic',
-  pieceStyle: 'standard',
+  pieceThemeId: 'classic',
+  boardThemeId: 'green',
 }
 
 function loadFromStorage(): Settings {

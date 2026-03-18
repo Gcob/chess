@@ -93,10 +93,6 @@ export interface Piece {
   color: PieceColor
   type: PieceType
   value: number
-  images: {
-    board: string
-    capture?: string // falls back to board image if not provided
-  }
   textRepresentation: {
     short: string // e.g. 'K', 'N'
     long: string  // e.g. 'King', 'Knight'
