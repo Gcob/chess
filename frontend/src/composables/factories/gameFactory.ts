@@ -4,6 +4,9 @@ import type {
   GameSession,
   GameTime,
   GameType,
+  Piece,
+  PieceColor,
+  PieceType,
   Player,
   Square,
   SquareColor,
@@ -57,6 +60,18 @@ export function createGameSession(payload: CreateGamePayload, id: number): GameS
 const FILES: SquareFile[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS: SquareRank[] = [1, 2, 3, 4, 5, 6, 7, 8]
 
+// Standard starting position — [color, type] per square key
+const INITIAL_SETUP: Partial<Record<SquareKey, [PieceColor, PieceType]>> = {
+  a1: ['white', 'rook'], b1: ['white', 'knight'], c1: ['white', 'bishop'], d1: ['white', 'queen'],
+  e1: ['white', 'king'], f1: ['white', 'bishop'], g1: ['white', 'knight'], h1: ['white', 'rook'],
+  a2: ['white', 'pawn'], b2: ['white', 'pawn'], c2: ['white', 'pawn'], d2: ['white', 'pawn'],
+  e2: ['white', 'pawn'], f2: ['white', 'pawn'], g2: ['white', 'pawn'], h2: ['white', 'pawn'],
+  a7: ['black', 'pawn'], b7: ['black', 'pawn'], c7: ['black', 'pawn'], d7: ['black', 'pawn'],
+  e7: ['black', 'pawn'], f7: ['black', 'pawn'], g7: ['black', 'pawn'], h7: ['black', 'pawn'],
+  a8: ['black', 'rook'], b8: ['black', 'knight'], c8: ['black', 'bishop'], d8: ['black', 'queen'],
+  e8: ['black', 'king'], f8: ['black', 'bishop'], g8: ['black', 'knight'], h8: ['black', 'rook'],
+}
+
 function createInitialBoard(): Board {
   const squares = {} as Record<SquareKey, Square>
 
@@ -70,14 +85,8 @@ function createInitialBoard(): Board {
         color: resolveSquareColor(file, rank),
         piece: null,
         neighbors: {
-          'top': null,
-          'top-right': null,
-          'right': null,
-          'bottom-right': null,
-          'bottom': null,
-          'bottom-left': null,
-          'left': null,
-          'top-left': null,
+          'top': null, 'top-right': null, 'right': null, 'bottom-right': null,
+          'bottom': null, 'bottom-left': null, 'left': null, 'top-left': null,
         },
       }
     }
@@ -92,8 +101,7 @@ function createInitialBoard(): Board {
 
       const n = (f: number, r: number): Square | null => {
         if (f < 0 || f >= 8 || r < 0 || r >= 8) return null
-        const key = `${FILES[f]}${RANKS[r]}` as SquareKey
-        return squares[key]
+        return squares[`${FILES[f]}${RANKS[r]}`]
       }
 
       square.neighbors = {
@@ -109,12 +117,41 @@ function createInitialBoard(): Board {
     }
   }
 
+  // Pass 3: place pieces in their starting positions
+  for (const [key, setup] of Object.entries(INITIAL_SETUP) as [SquareKey, [PieceColor, PieceType]][]) {
+    squares[key].piece = buildPiece(setup[0], setup[1])
+  }
+
   return {squares}
 }
 
 // a1 is dark — (fileIndex + rank) odd = dark, even = light
 function resolveSquareColor(file: SquareFile, rank: SquareRank): SquareColor {
   return (FILES.indexOf(file) + rank) % 2 === 1 ? 'dark' : 'light'
+}
+
+// ─── Piece construction ───────────────────────────────────────────────────────
+
+const PIECE_DATA: Record<PieceType, { value: number; short: string; long: string }> = {
+  king: {value: 0, short: 'K', long: 'King'}, // 0 = sentinel, king cannot be captured
+  queen: {value: 9, short: 'Q', long: 'Queen'},
+  rook: {value: 5, short: 'R', long: 'Rook'},
+  bishop: {value: 3, short: 'B', long: 'Bishop'},
+  knight: {value: 3, short: 'N', long: 'Knight'},
+  pawn: {value: 1, short: 'P', long: 'Pawn'},
+}
+
+function buildPiece(color: PieceColor, type: PieceType): Piece {
+  const {value, short, long} = PIECE_DATA[type]
+  return {
+    color,
+    type,
+    value,
+    images: {board: ''},             // populated by theme
+    textRepresentation: {short, long},
+    pinDirection: null,
+    moveTypes: [],                      // populated when implementing move logic
+  }
 }
 
 // ─── Internals ───────────────────────────────────────────────────────────────
@@ -143,4 +180,3 @@ function resolveGameType(time?: GameTime): GameType {
   if (total < 3600) return {name: 'Rapid', minTime: 600, maxTime: 3599}
   return {name: 'Classical', minTime: 3600, maxTime: Infinity}
 }
-

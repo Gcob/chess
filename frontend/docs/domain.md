@@ -75,12 +75,15 @@ while (current) {
 
 ### Initialisation (`createInitialBoard`)
 
-Deux passes obligatoires :
+Trois passes :
 
 1. Créer les 64 `Square` (file, rank, color, `piece: null`, `neighbors` vides)
 2. Lier les voisins (remplir `neighbors` avec les références réelles)
+3. Placer les 32 pièces via `INITIAL_SETUP` (map `SquareKey → [PieceColor, PieceType]`)
 
 La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark, h1 est light.
+
+`PIECE_DATA` centralise valeur, short et long text par type. `King.value = 0` est un sentinel — le roi ne peut pas être capturé. `moveTypes: []` pour l'instant — populé quand on implémente la logique de déplacement.
 
 ## Sessions de partie
 
