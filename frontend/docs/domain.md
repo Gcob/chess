@@ -30,7 +30,7 @@ logique métier vit dans les composables.
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                      |
 | `Timer`       | Horloge active (isActive, currentTime, increment)                                            |
 | `MoveType`    | Type de déplacement (id, conditions[], effects[])                                            |
-| `Piece`       | Pièce (couleur, type, valeur, images, textRepresentation, pinDirection, moveTypes)           |
+| `Piece`       | Pièce (couleur, type, valeur, images, textRepresentation, pinDirection, hasMoved, moveTypes) |
 | `Square`      | Case (couleur, file, rank, piece, neighbors)                                                 |
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                      |
 | `Capture`     | Capture (pièce capturée)                                                                     |
@@ -101,6 +101,9 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `GameTime` utilise des props explicites (`minutes`, `increment`) — jamais la notation `"2|1"`
 - `Game.time` et `Game.timers` sont optionnels — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case ET clouage de pièce)
+- Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8). La logique de déplacement traduit selon la couleur du joueur.
+- `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement. Requis pour : droits de roque (roi + tours), double avance initiale du pion.
+- `Move.pgn` contient la notation **SAN** (Standard Algebraic Notation) — ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`
 
 ## Concepts à intégrer éventuellement
 

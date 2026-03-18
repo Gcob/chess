@@ -102,6 +102,7 @@ export interface Piece {
     long: string  // e.g. 'King', 'Knight'
   }
   pinDirection: Direction | null // null = not pinned; direction = pinned from that direction
+  hasMoved: boolean              // required for castling rights and pawn double-advance eligibility
   moveTypes: MoveType[]
 }
 
@@ -127,7 +128,7 @@ export interface Capture {
 }
 
 export interface Move {
-  pgn: string
+  pgn: string // SAN — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
   elapsedTime: number // seconds
   from: Square
   to: Square

@@ -150,6 +150,7 @@ function buildPiece(color: PieceColor, type: PieceType): Piece {
     images: {board: ''},             // populated by theme
     textRepresentation: {short, long},
     pinDirection: null,
+    hasMoved: false,
     moveTypes: [],                      // populated when implementing move logic
   }
 }
