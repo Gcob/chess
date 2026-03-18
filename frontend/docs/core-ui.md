@@ -27,8 +27,8 @@ src/components/core-ui/
 
 ## Composables associés
 
-| Composable | Rôle |
-|---|---|
+| Composable    | Rôle                     |
+|---------------|--------------------------|
 | `useTheme.ts` | Logique light/dark theme |
 
 ## Tests

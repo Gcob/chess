@@ -5,10 +5,11 @@ export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn'
 export type SquareColor = 'light' | 'dark'
 export type SquareFile = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h'
 export type SquareRank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+export type SquareKey = `${SquareFile}${SquareRank}` // 'a1' | 'a2' | ... | 'h8' — all 64 squares
 export type AccountStatus = 'active' | 'inactive' | 'banned'
 export type GameStatus = 'waiting' | 'active' | 'paused' | 'finished'
 export type GameMode = 'local' | 'private-remote' | 'public-remote' | 'vs-bot'
-export type PinDirection =
+export type Direction =
   | 'top'
   | 'top-right'
   | 'right'
@@ -100,19 +101,23 @@ export interface Piece {
     short: string // e.g. 'K', 'N'
     long: string  // e.g. 'King', 'Knight'
   }
-  pinDirection: PinDirection | null
+  pinDirection: Direction | null // null = not pinned; direction = pinned from that direction
   moveTypes: MoveType[]
 }
 
+// Squares are nodes in a graph — each linked to up to 8 neighbors.
+// A null neighbor means the square is at the board edge in that direction.
 export interface Square {
   color: SquareColor
-  file: SquareFile  // column: a–h
-  rank: SquareRank  // row: 1–8
+  file: SquareFile   // column: a–h
+  rank: SquareRank   // row: 1–8
   piece: Piece | null
+  neighbors: Record<Direction, Square | null>
 }
 
+// Keyed by chess notation (e.g. 'e4') for O(1) lookup by position
 export interface Board {
-  squares: Square[] // 64 squares
+  squares: Record<SquareKey, Square>
 }
 
 // ─── Movement ────────────────────────────────────────────────────────────────
