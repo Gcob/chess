@@ -14,12 +14,13 @@ Petit projet solo — développeur : Jacob.
 
 La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier pertinent avant chaque tâche.
 
-| Fichier                | Contenu                                              |
-|------------------------|------------------------------------------------------|
-| `docs/architecture.md` | Stack, structure des dossiers, conventions générales |
-| `docs/domain.md`       | Modèle du domaine, types, interfaces                 |
-| `docs/styles.md`       | SCSS, thèmes, typographie, palette                   |
-| `docs/core-ui.md`      | Composants core-ui, composables associés             |
+| Fichier                 | Contenu                                              |
+|-------------------------|------------------------------------------------------|
+| `docs/architecture.md`  | Stack, structure des dossiers, conventions générales |
+| `docs/domain.md`        | Modèle du domaine, types, interfaces                 |
+| `docs/styles.md`        | SCSS, thèmes, typographie, palette                   |
+| `docs/core-ui.md`       | Composants core-ui, composables associés             |
+| `docs/look-and-feel.md` | Thèmes de pièces et de board, assets, useChessTheme  |
 
 ## Mise à jour de la doc
 

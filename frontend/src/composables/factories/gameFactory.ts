@@ -148,7 +148,6 @@ function buildPiece(color: PieceColor, type: PieceType): Piece {
     color,
     type,
     value,
-    images: {board: ''},             // populated by theme
     textRepresentation: {short, long},
     pinDirection: null,
     hasMoved: false,
