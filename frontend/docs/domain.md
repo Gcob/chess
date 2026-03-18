@@ -35,7 +35,7 @@ logique métier vit dans les composables.
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                      |
 | `Capture`     | Capture (pièce capturée)                                                                     |
 | `Move`        | Déplacement (pgn, elapsedTime, from, to, affectedPieces, moveTypes, capture?, previousMove?) |
-| `Game`        | Partie (startedAt, status, mode, time?, type, players[2], timers?, board, moves)             |
+| `Game`        | Partie (startedAt, status, mode, activeColor, time?, type, players[2], timers?, board, moves)|
 | `GameSession` | Composition `{ id: number, game: Game }` — pas d'héritage de `Game`                          |
 
 ## Types primitifs
@@ -102,6 +102,7 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Game.time` et `Game.timers` sont optionnels — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case ET clouage de pièce)
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8). La logique de déplacement traduit selon la couleur du joueur.
+- `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`, mis à jour à chaque `makeMove()`. Robuste contre les coups annulés, la reprise FEN, et le mode spectateur. Aligné avec FEN (`w`/`b`). Ne jamais dériver le tour courant de `moves.length`.
 - `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement. Requis pour : droits de roque (roi + tours), double avance initiale du pion.
 - `Move.pgn` contient la notation **SAN** (Standard Algebraic Notation) — ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`
 

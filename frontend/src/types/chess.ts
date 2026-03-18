@@ -144,6 +144,7 @@ export interface Game {
   startedAt: Date
   status: GameStatus
   mode: GameMode
+  activeColor: PieceColor // whose turn it is — source of truth (aligns with FEN w/b)
   time?: GameTime         // undefined = untimed game
   type: GameType
   players: [Player, Player]
