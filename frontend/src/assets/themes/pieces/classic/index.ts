@@ -1,8 +1,7 @@
 import type { PieceTheme } from '@/types/look-and-feel'
 
-// File naming convention: {w|b}{K|Q|R|B|N|P}.svg
-// wK = white king, bP = black pawn, etc.
-const BASE = '/src/assets/themes/pieces/classic'
+// Served from public/ — paths are relative to the domain root
+const BASE = '/themes/pieces/classic/board'
 
 export const classicPieceTheme: PieceTheme = {
   id: 'classic',
@@ -11,24 +10,21 @@ export const classicPieceTheme: PieceTheme = {
   images: {
     board: {
       white: {
-        king:   `${BASE}/board/wK.svg`,
-        queen:  `${BASE}/board/wQ.svg`,
-        rook:   `${BASE}/board/wR.svg`,
-        bishop: `${BASE}/board/wB.svg`,
-        knight: `${BASE}/board/wN.svg`,
-        pawn:   `${BASE}/board/wP.svg`,
+        king:   `${BASE}/wK.svg`,
+        queen:  `${BASE}/wQ.svg`,
+        rook:   `${BASE}/wR.svg`,
+        bishop: `${BASE}/wB.svg`,
+        knight: `${BASE}/wN.svg`,
+        pawn:   `${BASE}/wP.svg`,
       },
       black: {
-        king:   `${BASE}/board/bK.svg`,
-        queen:  `${BASE}/board/bQ.svg`,
-        rook:   `${BASE}/board/bR.svg`,
-        bishop: `${BASE}/board/bB.svg`,
-        knight: `${BASE}/board/bN.svg`,
-        pawn:   `${BASE}/board/bP.svg`,
+        king:   `${BASE}/bK.svg`,
+        queen:  `${BASE}/bQ.svg`,
+        rook:   `${BASE}/bR.svg`,
+        bishop: `${BASE}/bB.svg`,
+        knight: `${BASE}/bN.svg`,
+        pawn:   `${BASE}/bP.svg`,
       },
     },
-    // small variant for captures & move notation
-    // uncomment and populate when small assets are available
-    // small: { white: { ... }, black: { ... } },
   },
 }

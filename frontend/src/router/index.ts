@@ -29,12 +29,12 @@ const router = createRouter({
       name: 'terms',
       component: () => import('@/components/pages/TermsPage.vue'),
     },
-    // {
-    //   path: '/game/:id',
-    //   name: 'game',
-    //   component: () => import('@/components/pages/GamePage.vue'),
-    //   meta: { hideFooter: true },
-    // },
+    {
+      path: '/game/:id',
+      name: 'game',
+      component: () => import('@/components/pages/GamePage.vue'),
+      meta: { hideFooter: true },
+    },
   ],
 })
 

@@ -67,14 +67,19 @@ src/assets/themes/
     └── green.ts              # export greenBoardTheme
 ```
 
-## useChessTheme (à créer)
+## useChessTheme — `src/composables/useChessTheme.ts`
 
-Le composable **doit** exposer `getPieceImage()` :
+Expose :
+- `pieceTheme` — computed, thème de pièces actif
+- `boardTheme` — computed, thème de board actif
+- `getPieceImage(color, type, size?)` — URL de l'image, fallback `small → board` géré en interne
 
 ```ts
-const { getPieceImage } = useChessTheme()
-getPieceImage(piece.color, piece.type, 'small') // → URL, fallback vers 'board'
+const { getPieceImage, boardTheme } = useChessTheme()
+getPieceImage(piece.color, piece.type, 'small') // → URL, fallback vers 'board' si small absent
 ```
+
+Si un `themeId` stocké en localStorage n'existe plus dans le registre, fallback automatique vers `'classic'` / `'green'`.
 
 **Règle absolue : aucun composant ne réimplémente le fallback `small → board`.**
 Ce fallback vit uniquement dans `useChessTheme`, nulle part ailleurs.
