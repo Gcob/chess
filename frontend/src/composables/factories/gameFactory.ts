@@ -45,6 +45,7 @@ export function createGameSession(payload: CreateGamePayload, id: number): GameS
       startedAt: new Date(),
       status: 'waiting',
       mode: payload.mode,
+      activeColor: 'white',
       time,
       type: resolveGameType(time),
       players: buildPlayers(payload),
