@@ -109,7 +109,7 @@ import {useI18n} from 'vue-i18n'
 import {storeToRefs} from 'pinia'
 import {Users, Bot, Globe, Link} from 'lucide-vue-next'
 import {useNewGameStore} from '@/stores/useNewGameStore'
-import type {GameMode} from '@/stores/useNewGameStore'
+import type {GameMode} from '@/types/chess'
 import type {Component} from 'vue'
 
 const {t} = useI18n()
@@ -135,21 +135,21 @@ const modes: ModeOption[] = [
     available: true
   },
   {
-    value: 'ai',
+    value: 'vs-bot',
     icon: Bot,
     titleKey: 'newGame.mode.ai',
     descKey: 'newGame.mode.aiDesc',
     available: false
   },
   {
-    value: 'online-random',
+    value: 'public-remote',
     icon: Globe,
     titleKey: 'newGame.mode.onlineRandom',
     descKey: 'newGame.mode.onlineRandomDesc',
     available: false
   },
   {
-    value: 'online-private',
+    value: 'private-remote',
     icon: Link,
     titleKey: 'newGame.mode.onlinePrivate',
     descKey: 'newGame.mode.onlinePrivateDesc',

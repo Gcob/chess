@@ -20,7 +20,7 @@ const props = defineProps<{ square: Square }>()
 const {boardTheme, getPieceImage} = useChessTheme()
 
 const squareBackground = computed(() =>
-  props.square.color === 'light' ? boardTheme.value.lightSquare : boardTheme.value.darkSquare,
+  props.square.color === 'light' ? boardTheme.value?.lightSquare : boardTheme.value?.darkSquare,
 )
 </script>
 
