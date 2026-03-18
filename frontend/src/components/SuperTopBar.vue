@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
-import { Settings, Sun, Moon } from 'lucide-vue-next'
+import { Settings, Sun, Moon, Home } from 'lucide-vue-next'
 import SettingsModal from '@/components/parts/SettingsModal.vue'
 
 const { locale } = useI18n()
@@ -19,6 +19,10 @@ function setLocale(lang: typeof locales[number]) {
 
 <template>
   <div class="super-top-bar">
+    <RouterLink to="/" class="super-top-bar__btn" :aria-label="$t('common.backHome')">
+      <Home :size="14" />
+    </RouterLink>
+
     <div class="super-top-bar__actions">
       <button class="super-top-bar__btn" @click="toggleTheme" :aria-label="$t('settings.toggleTheme')">
         <Sun v-if="theme === 'dark'" :size="14" />
@@ -54,7 +58,7 @@ function setLocale(lang: typeof locales[number]) {
   right: 0;
   z-index: $z-sticky;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 $spacing-4;
   height: 40px;
@@ -84,6 +88,7 @@ function setLocale(lang: typeof locales[number]) {
     padding: $spacing-1;
     border-radius: $border-radius-sm;
     transition: color $transition-fast;
+    text-decoration: none;
 
     svg {
       width: 16px;
@@ -128,6 +133,5 @@ function setLocale(lang: typeof locales[number]) {
       font-weight: $font-weight-semibold;
     }
   }
-
 }
 </style>
