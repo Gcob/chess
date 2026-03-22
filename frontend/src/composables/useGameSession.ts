@@ -9,15 +9,15 @@ export function useGameSession(id: number) {
   const board = computed(() => game.value?.board)
   const moves = computed(() => game.value?.moves ?? [])
 
-  const whitePlayer = computed(() => game.value?.players[0])
-  const blackPlayer = computed(() => game.value?.players[1])
+  const whitePlayer = computed(() => game.value?.players.white)
+  const blackPlayer = computed(() => game.value?.players.black)
 
   // activeColor is the source of truth — robust against move cancellation,
   // FEN resume, and spectator mode
   const currentPlayer = computed(() => {
     const g = game.value
     if (!g) return undefined
-    return g.activeColor === 'white' ? g.players[0] : g.players[1]
+    return g.players[g.activeColor]
   })
 
   const isGameOver = computed(() => game.value?.status === 'finished')
