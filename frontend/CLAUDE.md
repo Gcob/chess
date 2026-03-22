@@ -9,7 +9,8 @@ Petit projet solo — développeur : Jacob.
 - Je suis développeur senior — traite-moi ainsi. Explique seulement si je le demande.
 - Code et commentaires 100 % en anglais. Commentaires uniquement pour les choses complexes.
 - Je parle français canadien — nos échanges sont en français.
-- Valider le typescript autant que possible et le build pour s'assurer que tout fonctionne correctement à chaque changement.
+- Valider le typescript autant que possible et le build pour s'assurer que tout fonctionne correctement à chaque
+  changement.
 
 ## Documentation
 
@@ -22,6 +23,13 @@ La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier perti
 | `docs/styles.md`        | SCSS, thèmes, typographie, palette                   |
 | `docs/core-ui.md`       | Composants core-ui, composables associés             |
 | `docs/look-and-feel.md` | Thèmes de pièces et de board, assets, useChessTheme  |
+
+## Style de la doc
+
+Les fichiers `docs/` doivent respecter une largeur maximale d'environ 120 caractères par ligne.
+Pour les longues phrases, préférer les sauts de ligne après une ponctuation (`.`, `,`, `—`, `:`)
+plutôt qu'en plein milieu d'une proposition. J'utilise l'auto-formatage de PHPStorm 
+et j'aimerais que tu utilises le même style de formatage pour la doc.
 
 ## Mise à jour de la doc
 
