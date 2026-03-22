@@ -32,52 +32,48 @@ export type MoveTypeId =
 
 // ─── Actors ──────────────────────────────────────────────────────────────────
 
-export interface User {
-  name: string
-  image: string
+
+// Create an InGamePlayer from an Account or AI
+export interface Player {
+  color: PieceColor
+  isInCheck: boolean
+  metas: PlayerMetas
 }
 
-export interface Account {
-  user: User
+export interface PlayerMetas {
+  name: string
+  image: string
+  elo: number
+}
+
+export interface Account extends PlayerMetas {
   email: string
-  createdAt: Date
   status: AccountStatus
 }
 
-export interface AI {
-  name: string
-  elo: number
-  image: string
+export interface AI extends PlayerMetas {
   strategy: string
   description: string
 }
 
-// In-game participant — sourced from a User or AI at game creation time
-export interface Player {
-  name: string
-  elo: number
-  image: string
-  color: PieceColor
-  isInCheck: boolean
-}
 
 // ─── Game setup ──────────────────────────────────────────────────────────────
 
 export interface GameTime {
   minutes: number
-  increment: number // seconds added to the clock after each move
+  secondsIncrement: number
 }
 
 export interface GameType {
   name: string
-  minTime: number // seconds
-  maxTime: number // seconds
+  minSeconds: number | null
+  maxSeconds: number | null
 }
 
 export interface Timer {
   isActive: boolean
-  currentTime: number // seconds remaining
-  increment: number   // seconds
+  secondsRemaining: number
+  secondsIncrement: number
 }
 
 // ─── Board & pieces ──────────────────────────────────────────────────────────
@@ -97,7 +93,7 @@ export interface Piece {
     short: string // e.g. 'K', 'N'
     long: string  // e.g. 'King', 'Knight'
   }
-  pinDirection: Direction | null // null = not pinned; direction = pinned from that direction
+  pinAbsoluteDirection: Direction | null // null = not pinned; direction = pinned from that direction
   hasMoved: boolean              // required for castling rights and pawn double-advance eligibility
   moveTypes: MoveType[]
 }
@@ -109,7 +105,7 @@ export interface Square {
   file: SquareFile   // column: a–h
   rank: SquareRank   // row: 1–8
   piece: Piece | null
-  neighbors: Record<Direction, Square | null>
+  neighbors: Record<Direction, Square | null> // Direction is an absolute direction; always from white's perspective
 }
 
 // Keyed by chess notation (e.g. 'e4') for O(1) lookup by position
@@ -137,13 +133,14 @@ export interface Move {
 // ─── Game ────────────────────────────────────────────────────────────────────
 
 export interface Game {
-  startedAt: Date
+  createdAt: Date
+  startedAt: Date | null // null = not started
   status: GameStatus
   mode: GameMode
   activeColor: PieceColor // whose turn it is — source of truth (aligns with FEN w/b)
   time?: GameTime         // undefined = untimed game
   type: GameType
-  players: [Player, Player]
+  players: [PlayerMetas, PlayerMetas]
   timers?: [Timer, Timer] // undefined = untimed game
   board: Board
   moves: Move[]
