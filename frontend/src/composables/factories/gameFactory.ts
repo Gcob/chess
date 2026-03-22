@@ -3,11 +3,11 @@ import type {
   CreateGamePayload,
   GameSession,
   GameTime,
-  GameType,
+  GameType, Player,
   Piece,
   PieceColor,
   PieceType,
-  Player,
+  PlayerMetas,
   Square,
   SquareColor,
   SquareFile,
@@ -29,7 +29,7 @@ export function toBackendPayload(settings: NewGameSettings): CreateGamePayload {
       black: {name: settings.playerBlackName},
     },
     time: settings.timerEnabled
-      ? {minutes: settings.timerMinutes, increment: settings.timerIncrement}
+      ? {minutes: settings.timerMinutes, secondsIncrement: settings.timerIncrement}
       : undefined,
   }
 }
@@ -150,7 +150,7 @@ function buildPiece(color: PieceColor, type: PieceType): Piece {
     type,
     value,
     textRepresentation: {short, long},
-    pinDirection: null,
+    pinAbsoluteDirection: null,
     hasMoved: false,
     moveTypes: [],                      // populated when implementing move logic
   }
@@ -168,17 +168,17 @@ function buildPlayers(payload: CreateGamePayload): [Player, Player] {
 function buildTimer(time: GameTime): Timer {
   return {
     isActive: false,
-    currentTime: time.minutes * 60,
-    increment: time.increment,
+    secondsRemaining: time.minutes * 60,
+    secondsIncrement: time.secondsIncrement,
   }
 }
 
 // Classic time control thresholds (FIDE — in total seconds)
 function resolveGameType(time?: GameTime): GameType {
-  if (!time) return {name: 'Untimed', minTime: 0, maxTime: 0}
+  if (!time) return {name: 'Untimed', minSeconds: 0, maxSeconds: 0}
   const total = time.minutes * 60
-  if (total < 180) return {name: 'Bullet', minTime: 0, maxTime: 179}
-  if (total < 600) return {name: 'Blitz', minTime: 180, maxTime: 599}
-  if (total < 3600) return {name: 'Rapid', minTime: 600, maxTime: 3599}
-  return {name: 'Classical', minTime: 3600, maxTime: Infinity}
+  if (total < 180) return {name: 'Bullet', minSeconds: 0, maxSeconds: 179}
+  if (total < 600) return {name: 'Blitz', minSeconds: 180, maxSeconds: 599}
+  if (total < 3600) return {name: 'Rapid', minSeconds: 600, maxSeconds: 3599}
+  return {name: 'Classical', minSeconds: 3600, maxSeconds: Infinity}
 }
