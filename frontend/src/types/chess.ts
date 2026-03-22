@@ -42,8 +42,8 @@ export interface Player {
 
 export interface PlayerMetas {
   name: string
-  image: string
-  elo: number
+  image?: string
+  elo?: number
 }
 
 export interface Account extends PlayerMetas {
@@ -121,9 +121,9 @@ export interface Capture {
 
 export interface Move {
   pgn: string // SAN — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
-  elapsedTime: number // seconds
-  from: Square
-  to: Square
+  elapsedSeconds: number
+  fromSquare: Square
+  toSquare: Square
   affectedPieces: Piece[]
   moveTypes: MoveType[]
   capture?: Capture
@@ -140,7 +140,7 @@ export interface Game {
   activeColor: PieceColor // whose turn it is — source of truth (aligns with FEN w/b)
   time?: GameTime         // undefined = untimed game
   type: GameType
-  players: [PlayerMetas, PlayerMetas]
+  players: { white: Player; black: Player }
   timers?: [Timer, Timer] // undefined = untimed game
   board: Board
   moves: Move[]

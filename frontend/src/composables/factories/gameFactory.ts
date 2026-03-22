@@ -7,7 +7,6 @@ import type {
   Piece,
   PieceColor,
   PieceType,
-  PlayerMetas,
   Square,
   SquareColor,
   SquareFile,
@@ -42,6 +41,7 @@ export function createGameSession(payload: CreateGamePayload, id: number): GameS
   return {
     id,
     game: {
+      createdAt: new Date(),
       startedAt: new Date(),
       status: 'waiting',
       mode: payload.mode,
@@ -158,11 +158,11 @@ function buildPiece(color: PieceColor, type: PieceType): Piece {
 
 // ─── Internals ───────────────────────────────────────────────────────────────
 
-function buildPlayers(payload: CreateGamePayload): [Player, Player] {
-  return [
-    {name: payload.players.white.name, elo: 0, image: '', color: 'white', isInCheck: false},
-    {name: payload.players.black.name, elo: 0, image: '', color: 'black', isInCheck: false},
-  ]
+function buildPlayers(payload: CreateGamePayload): { white: Player; black: Player } {
+  return {
+    white: {color: 'white', isInCheck: false, metas: {name: payload.players.white.name}},
+    black: {color: 'black', isInCheck: false, metas: {name: payload.players.black.name}},
+  }
 }
 
 function buildTimer(time: GameTime): Timer {
