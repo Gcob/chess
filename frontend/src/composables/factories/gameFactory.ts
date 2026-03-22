@@ -42,14 +42,13 @@ export function createGameSession(payload: CreateGamePayload, id: number): GameS
     id,
     game: {
       createdAt: new Date(),
-      startedAt: new Date(),
+      startedAt: null,
       status: 'waiting',
       mode: payload.mode,
       activeColor: 'white',
       time,
       type: resolveGameType(time),
-      players: buildPlayers(payload),
-      timers: time ? [buildTimer(time), buildTimer(time)] : undefined,
+      players: buildPlayers(payload, time),
       board: createInitialBoard(),
       moves: [],
     },
@@ -158,10 +157,11 @@ function buildPiece(color: PieceColor, type: PieceType): Piece {
 
 // ─── Internals ───────────────────────────────────────────────────────────────
 
-function buildPlayers(payload: CreateGamePayload): { white: Player; black: Player } {
+function buildPlayers(payload: CreateGamePayload, time: GameTime | undefined): { white: Player; black: Player } {
+  const timer = time ? buildTimer(time) : undefined
   return {
-    white: {color: 'white', isInCheck: false, metas: {name: payload.players.white.name}},
-    black: {color: 'black', isInCheck: false, metas: {name: payload.players.black.name}},
+    white: {color: 'white', isInCheck: false, timer, metas: {name: payload.players.white.name}},
+    black: {color: 'black', isInCheck: false, timer, metas: {name: payload.players.black.name}},
   }
 }
 
