@@ -44,10 +44,14 @@ Ne jamais laisser la doc déphasée par rapport au code.
 
 ## Tests
 
-À chaque tâche complétée, mettre à jour le ou les fichiers `tests/` concernés.
+À chaque tâche complétée, mettre à jour les tests unitaires concernés.
+Les tests E2E sont mis à jour séparément, selon leur propre rythme.
 
-TODO : compléter la documentation ici pour les attentes envers les tests.
-Si claude lit ce texte, il peut essayer de comprendre comment les tests sont en places et proposer des idées.
+- Nouveau composant core-ui → `.spec.ts` colocalisé obligatoire
+- Nouveau composable ou factory → `.spec.ts` colocalisé
+- Modification d'une interface ou d'un comportement → mettre à jour les specs existantes
+
+Ne jamais laisser un test échouer silencieusement.
 
 ## Commandes
 

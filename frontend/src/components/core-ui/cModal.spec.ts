@@ -88,7 +88,7 @@ describe('cModal', () => {
       { modelValue: true },
       { default: 'Body' },
     )
-    await wrapper.find('.c-modal').trigger('click')
+    await wrapper.find('.c-modal__overlay').trigger('click')
 
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false])
   })
