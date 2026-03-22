@@ -37,6 +37,7 @@ export type MoveTypeId =
 export interface Player {
   color: PieceColor
   isInCheck: boolean
+  timer?: Timer
   metas: PlayerMetas
 }
 
@@ -141,7 +142,6 @@ export interface Game {
   time?: GameTime         // undefined = untimed game
   type: GameType
   players: { white: Player; black: Player }
-  timers?: [Timer, Timer] // undefined = untimed game
   board: Board
   moves: Move[]
 }

@@ -25,7 +25,7 @@ logique métier vit dans les composables.
 | `User`        | Profil humain (nom, image)                                                                   |
 | `Account`     | Compte lié à un User (email, date, statut)                                                   |
 | `AI`          | Profil IA (nom, elo, image, stratégie, description)                                          |
-| `Player`      | Participant en jeu (couleur, isInCheck)                                                      |
+| `Player`      | Participant en jeu (couleur, isInCheck, timer?)                                              |
 | `GameTime`    | Temps de partie structuré (minutes, incrément en secondes)                                   |
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                      |
 | `Timer`       | Horloge active (isActive, currentTime, increment)                                            |
@@ -35,7 +35,7 @@ logique métier vit dans les composables.
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                      |
 | `Capture`     | Capture (pièce capturée)                                                                     |
 | `Move`        | Déplacement (pgn, elapsedTime, from, to, affectedPieces, moveTypes, capture?, previousMove?) |
-| `Game`        | Partie (createdAt, startedAt, status, mode, activeColor, time?, type, players{white,black}, timers?, board, moves)|
+| `Game`        | Partie (createdAt, startedAt, status, mode, activeColor, time?, type, players{white,black}, board, moves)|
 | `GameSession` | Composition `{ id: number, game: Game }` — pas d'héritage de `Game`                          |
 
 ## Types primitifs
@@ -104,6 +104,7 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8). La logique de déplacement traduit selon la couleur du joueur.
 - `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`, mis à jour à chaque `makeMove()`. Robuste contre les coups annulés, la reprise FEN, et le mode spectateur. Aligné avec FEN (`w`/`b`). Ne jamais dériver le tour courant de `moves.length`.
 - `Game.players` — objet `{ white: Player; black: Player }`, pas un tableau. Accès par couleur : `game.players[game.activeColor]`.
+- `Player.timer?` — le timer vit dans le joueur, pas dans `Game`. `Game.time` reste la config (GameTime), le timer runtime est dans `player.timer`. Partie non chronométrée = `timer: undefined`.
 - `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement. Requis pour : droits de roque (roi + tours), double avance initiale du pion.
 - `Move.pgn` contient la notation **SAN** (Standard Algebraic Notation) — ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`
 
