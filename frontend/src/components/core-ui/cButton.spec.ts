@@ -30,27 +30,27 @@ describe('UiButton', () => {
 
   it('applies variant class', () => {
     const sec = mountBtn({ variant: 'sec' })
-    expect(sec.classes()).toContain('ui-button--sec')
+    expect(sec.classes()).toContain('c-button--sec')
 
     const ter = mountBtn({ variant: 'ter' })
-    expect(ter.classes()).toContain('ui-button--ter')
+    expect(ter.classes()).toContain('c-button--ter')
   })
 
   it('defaults to main variant', () => {
     const wrapper = mountBtn()
-    expect(wrapper.classes()).toContain('ui-button--main')
+    expect(wrapper.classes()).toContain('c-button--main')
   })
 
   it('disables the button', () => {
     const wrapper = mountBtn({ disabled: true })
     expect(wrapper.attributes('disabled')).toBeDefined()
-    expect(wrapper.classes()).toContain('ui-button--disabled')
+    expect(wrapper.classes()).toContain('c-button--disabled')
   })
 
   it('shows spinner when loading', () => {
     const wrapper = mountBtn({ loading: true })
-    expect(wrapper.find('.ui-button__spinner').exists()).toBe(true)
-    expect(wrapper.classes()).toContain('ui-button--loading')
+    expect(wrapper.find('.c-button__spinner').exists()).toBe(true)
+    expect(wrapper.classes()).toContain('c-button--loading')
   })
 
   it('emits click event', async () => {
