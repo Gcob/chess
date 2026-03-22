@@ -52,14 +52,15 @@ src/
 
 ## Couches
 
-| Couche | Rôle |
-|---|---|
-| `src/types/` | Interfaces et types purs — le *quoi* |
+| Couche             | Rôle                                       |
+|--------------------|--------------------------------------------|
+| `src/types/`       | Interfaces et types purs — le *quoi*       |
 | `src/composables/` | Logique métier réutilisable — le *comment* |
-| `src/stores/` | État global (Pinia) |
-| `src/components/` | Affichage uniquement |
+| `src/stores/`      | État global (Pinia)                        |
+| `src/components/`  | Affichage uniquement                       |
 
-Les composants Vue ne font qu'afficher — ils consomment des composables et des stores, jamais de logique métier directe.
+Les composants Vue ne font qu'afficher — ils consomment des composables et des stores,
+jamais de logique métier directe.
 
 ## Settings
 
