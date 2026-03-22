@@ -28,7 +28,7 @@ La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier perti
 
 Les fichiers `docs/` doivent respecter une largeur maximale d'environ 120 caractères par ligne.
 Pour les longues phrases, préférer les sauts de ligne après une ponctuation (`.`, `,`, `—`, `:`)
-plutôt qu'en plein milieu d'une proposition. J'utilise l'auto-formatage de PHPStorm 
+plutôt qu'en plein milieu d'une proposition. J'utilise l'auto-formatage de PHPStorm
 et j'aimerais que tu utilises le même style de formatage pour la doc.
 
 ## Mise à jour de la doc
@@ -44,21 +44,36 @@ Ne jamais laisser la doc déphasée par rapport au code.
 
 ## Tests
 
+### Tests unitaires (`src/**/*.spec.ts` — Vitest)
+
 À chaque tâche complétée, mettre à jour les tests unitaires concernés.
-Les tests E2E sont mis à jour séparément, selon leur propre rythme.
 
 - Nouveau composant core-ui → `.spec.ts` colocalisé obligatoire
 - Nouveau composable ou factory → `.spec.ts` colocalisé
 - Modification d'une interface ou d'un comportement → mettre à jour les specs existantes
+
+### Tests Playwright (`e2e/` — 3 catégories)
+
+| Catégorie | Dossier         | Navigateurs                 | But                                          |
+|-----------|-----------------|-----------------------------|----------------------------------------------|
+| UI        | `e2e/ui/`       | Chrome + Mobile + Tablette  | Pages et composantes majeures pas brisées    |
+| Features  | `e2e/features/` | Chrome seulement            | Comportements attendus (locale, thème, etc.) |
+| E2E flows | `e2e/flows/`    | Chromium + Firefox + WebKit | Scénarios complets end-to-end                |
+
+- Tests UI : légers, vérifient dans les grandes lignes (visibility, texte, éléments clés)
+- Tests features : une feature = un fichier (ex. `locale.spec.ts`, `theme.spec.ts`)
+- Tests E2E : scénarios réalistes, réservés aux flux critiques
 
 Ne jamais laisser un test échouer silencieusement.
 
 ## Commandes
 
 - `npm run dev` — serveur de dev
-- `npm run test:unit` — tests unitaires
-- `npm run test:e2e` — tests E2E
-- `npm run test:e2e:ui` — tests E2E avec UI Playwright
-- `npm run test:e2e:debug` — tests E2E en mode debug
-- `npm run test:e2e:prod` — build + tests E2E contre preview
+- `npm run test:unit` — tests unitaires (Vitest)
+- `npm run test:ui` — tests UI Playwright (Chrome + mobile + tablette)
+- `npm run test:features` — tests features Playwright (Chrome)
+- `npm run test:e2e` — tests E2E flows Playwright (3 navigateurs)
+- `npm run test:e2e:ui` — Playwright en mode UI interactif
+- `npm run test:e2e:debug` — Playwright en mode debug
+- `npm run test:e2e:prod` — build + tous les tests Playwright contre preview
 - `npm run lint` — linter
