@@ -2,6 +2,12 @@
 
 A chess project made by Jacob Proulx.
 
+## Play
+
+Visit the [chess-two-neon.vercel.app](https://chess-two-neon.vercel.app/) link to see the project in action.
+
+Please note that the project is still in development and the game is not accessible yet. 
+
 ## Roadmap Phase 1
 
 - [x] Set up a domain model to represent the chess game
