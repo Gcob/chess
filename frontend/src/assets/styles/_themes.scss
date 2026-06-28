@@ -1,0 +1,112 @@
+// ============================================
+// Themes — CSS Custom Properties
+// ============================================
+
+@use 'variables' as *;
+
+:root,
+[data-theme="light"] {
+  // --- Backgrounds ---
+  --bg-primary: #ffffff;
+  --bg-secondary: #{$color-slate-50};
+  --bg-elevated: #ffffff;
+  --bg-hover: rgba(15, 23, 42, 0.04);
+  --bg-active: rgba(15, 23, 42, 0.08);
+
+  // --- Text ---
+  --text-primary: #{$color-slate-900};
+  --text-secondary: #{$color-slate-600};
+  --text-muted: #{$color-slate-400};
+  --text-inverse: #ffffff;
+
+  // --- Borders ---
+  --border-color: #{$color-slate-200};
+  --border-color-strong: #{$color-slate-300};
+
+  // --- Surfaces ---
+  --surface-topbar: #{$color-slate-900};
+  --surface-topbar-text: rgba(255, 255, 255, 0.5);
+  --surface-topbar-text-active: #ffffff;
+  --surface-topbar-hover: rgba(255, 255, 255, 0.85);
+
+  // --- Modal ---
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --overlay-blur: 1px;
+  --modal-bg: #ffffff;
+  --modal-shadow: #{$shadow-xl};
+
+  // --- Interactive ---
+  --accent: #{$color-accent};
+  --accent-hover: #3a8acc;
+  --accent-active: #2d7ab8;
+  --accent-subtle: rgba(74, 158, 221, 0.10);
+
+  // --- Forms ---
+  --input-bg: #ffffff;
+  --input-border: #{$color-slate-200};
+  --input-border-focus: #{$color-accent};
+  --input-text: #{$color-slate-900};
+
+  // --- Status ---
+  --danger: #{$color-danger};
+  --success: #{$color-success};
+  --warning: #{$color-warning};
+
+  // --- Scrollbar ---
+  --scrollbar-track: rgba(15, 23, 42, 0.04);
+  --scrollbar-thumb: rgba(15, 23, 42, 0.2);
+  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.35);
+}
+
+[data-theme="dark"] {
+  // --- Backgrounds ---
+  --bg-primary: #0a0f1a;
+  --bg-secondary: #{$color-slate-900};
+  --bg-elevated: #{$color-slate-800};
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.1);
+
+  // --- Text ---
+  --text-primary: #{$color-slate-100};
+  --text-secondary: #{$color-slate-400};
+  --text-muted: #{$color-slate-600};
+  --text-inverse: #{$color-slate-900};
+
+  // --- Borders ---
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-strong: rgba(255, 255, 255, 0.15);
+
+  // --- Surfaces ---
+  --surface-topbar: #{$color-slate-950};
+  --surface-topbar-text: rgba(255, 255, 255, 0.4);
+  --surface-topbar-text-active: #ffffff;
+  --surface-topbar-hover: rgba(255, 255, 255, 0.8);
+
+  // --- Modal ---
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  --overlay-blur: 1px;
+  --modal-bg: #{$color-slate-800};
+  --modal-shadow: 0 20px 25px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.25);
+
+  // --- Interactive ---
+  --accent: #{$color-accent};
+  --accent-hover: #5eb0ee;
+  --accent-active: #2d7ab8;
+  --accent-subtle: rgba(74, 158, 221, 0.15);
+
+  // --- Forms ---
+  --input-bg: #{$color-slate-900};
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-border-focus: #{$color-accent};
+  --input-text: #{$color-slate-100};
+
+  // --- Status ---
+  --danger: color-mix(in oklab, #{$color-danger}, white 25%);
+  --success: color-mix(in oklab, #{$color-success}, white 20%);
+  --warning: color-mix(in oklab, #{$color-warning}, white 15%);
+
+  // --- Scrollbar ---
+  --scrollbar-track: rgba(255, 255, 255, 0.04);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+}
