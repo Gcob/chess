@@ -26,6 +26,9 @@ La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier perti
 
 ## Style de la doc
 
+Rester concis : seulement les faits saillants, jamais les détails d'implémentation — le code parle de
+lui-même. Pas de tutoriels pas-à-pas ni d'exemples d'usage qui dupliquent le code. Quelques lignes par concept.
+
 Les fichiers `docs/` doivent respecter une largeur maximale d'environ 120 caractères par ligne.
 Pour les longues phrases, préférer les sauts de ligne après une ponctuation (`.`, `,`, `—`, `:`)
 plutôt qu'en plein milieu d'une proposition. J'utilise l'auto-formatage de PHPStorm

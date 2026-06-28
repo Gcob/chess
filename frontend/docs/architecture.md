@@ -89,6 +89,14 @@ NewGameSettings (useNewGameStore)
   → GameSession (enregistrée dans le store)
 ```
 
+## Garde de sortie de page
+
+`usePageLeaveGuard` (store) déclenche le warning natif `beforeunload` ; `usePreventLeave(condition)`
+(composable) l'arme depuis un composant. `GamePage.vue` bloque tant qu'une partie existe.
+
+Ne couvre **pas** la navigation interne vue-router. En attendant, éviter ou conditionner les liens
+qui feraient quitter une partie en cours.
+
 ## Conventions ID
 
 - IDs toujours des entiers simples (1, 2, 3...) — jamais de UUID
