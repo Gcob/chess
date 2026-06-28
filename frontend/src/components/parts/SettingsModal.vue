@@ -1,28 +1,24 @@
 <template>
-  <cModal :model-value="modelValue" size="sm" @update:model-value="$emit('update:modelValue', $event)">
+  <cModal :model-value="modelValue" size="sm"
+          @update:model-value="$emit('update:modelValue', $event)">
     <template #header>{{ $t('settings.title') }}</template>
 
     <div class="settings-modal">
       <label class="c-label">
-        <span>{{ $t('settings.sound') }}</span>
-        <input type="checkbox" class="c-checkbox" v-model="store.settings.sound" />
-      </label>
-
-      <label class="c-label">
         <span>{{ $t('settings.boardTheme') }}</span>
         <select class="c-select" v-model="store.settings.boardThemeId">
-          <option value="classic">{{ $t('settings.boardThemeClassic') }}</option>
-          <option value="modern">{{ $t('settings.boardThemeModern') }}</option>
-          <option value="wood">{{ $t('settings.boardThemeWood') }}</option>
+          <option v-for="opt in boardThemeOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
         </select>
       </label>
 
       <label class="c-label">
         <span>{{ $t('settings.pieceStyle') }}</span>
         <select class="c-select" v-model="store.settings.pieceThemeId">
-          <option value="standard">{{ $t('settings.pieceStyleStandard') }}</option>
-          <option value="minimalist">{{ $t('settings.pieceStyleMinimalist') }}</option>
-          <option value="pixel">{{ $t('settings.pieceStylePixel') }}</option>
+          <option v-for="opt in pieceThemeOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
         </select>
       </label>
     </div>
@@ -34,12 +30,20 @@
 </template>
 
 <script setup lang="ts">
-import { useSettingsStore } from '@/stores/useSettingsStore'
+import {computed} from 'vue'
+import {useI18n} from 'vue-i18n'
+import {useSettingsStore} from '@/stores/useSettingsStore'
+import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
+import {enumToOptions} from '@/utils/enumOptions'
 
 defineProps<{ modelValue: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const store = useSettingsStore()
+const {t} = useI18n()
+
+const boardThemeOptions = computed(() => enumToOptions(BoardThemes, 'settings.boardThemes', t as (key: string) => string))
+const pieceThemeOptions = computed(() => enumToOptions(PieceThemes, 'settings.pieceThemes', t as (key: string) => string))
 </script>
 
 <style lang="scss" scoped>

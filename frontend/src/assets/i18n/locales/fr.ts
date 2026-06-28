@@ -41,13 +41,13 @@ export default {
     themeDark: 'Sombre',
     sound: 'Effets sonores',
     boardTheme: 'Thème du plateau',
-    boardThemeClassic: 'Classique',
-    boardThemeModern: 'Moderne',
-    boardThemeWood: 'Bois',
+    boardThemes: {
+      wood: 'Bois',
+    },
     pieceStyle: 'Style des pièces',
-    pieceStyleStandard: 'Standard',
-    pieceStyleMinimalist: 'Minimaliste',
-    pieceStylePixel: 'Pixel'
+    pieceThemes: {
+      classic: 'Classique',
+    },
   },
   home: {
     subtitle: 'Un jeu d\'échecs simple construit avec Vue 3',

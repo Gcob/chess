@@ -41,13 +41,13 @@ export default {
     themeDark: 'Dark',
     sound: 'Sound effects',
     boardTheme: 'Board theme',
-    boardThemeClassic: 'Classic',
-    boardThemeModern: 'Modern',
-    boardThemeWood: 'Wood',
+    boardThemes: {
+      wood: 'Wood',
+    },
     pieceStyle: 'Piece style',
-    pieceStyleStandard: 'Standard',
-    pieceStyleMinimalist: 'Minimalist',
-    pieceStylePixel: 'Pixel'
+    pieceThemes: {
+      classic: 'Classic',
+    },
   },
   home: {
     subtitle: 'A simple chess game built with Vue 3',

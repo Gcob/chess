@@ -1,5 +1,15 @@
 import type { PieceColor, PieceType } from './chess'
 
+// ─── Theme enums ─────────────────────────────────────────────────────────────
+
+export enum BoardThemes {
+  Wood = 'wood',
+}
+
+export enum PieceThemes {
+  Classic = 'classic',
+}
+
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
 export type ImageFormat = 'svg' | 'png'

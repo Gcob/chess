@@ -1,30 +1,29 @@
-import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import {defineStore} from 'pinia'
+import {ref, watch} from 'vue'
+import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
 
 export interface Settings {
-  sound: boolean
-  pieceThemeId: string  // references a PieceTheme id — independent from board
-  boardThemeId: string  // references a BoardTheme id — independent from pieces
+  boardThemeId: BoardThemes
+  pieceThemeId: PieceThemes
 }
 
 const STORAGE_KEY = 'settings'
 
 const DEFAULTS: Settings = {
-  sound: true,
-  pieceThemeId: 'classic',
-  boardThemeId: 'green',
+  boardThemeId: BoardThemes.Wood,
+  pieceThemeId: PieceThemes.Classic,
 }
 
 function loadFromStorage(): Settings {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      return { ...DEFAULTS, ...JSON.parse(stored) }
+      return {...DEFAULTS, ...JSON.parse(stored)}
     }
   } catch {
     // corrupted data, ignore
   }
-  return { ...DEFAULTS }
+  return {...DEFAULTS}
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -32,11 +31,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(settings, (val) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(val))
-  }, { deep: true })
+  }, {deep: true})
 
   function reset() {
-    settings.value = { ...DEFAULTS }
+    settings.value = {...DEFAULTS}
   }
 
-  return { settings, reset }
+  return {settings, reset}
 })
