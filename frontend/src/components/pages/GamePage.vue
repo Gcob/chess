@@ -17,10 +17,13 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGameSession } from '@/composables/useGameSession'
+import { usePreventLeave } from '@/composables/usePreventLeave'
 import cBoard from '@/components/chess/cBoard.vue'
 
 const route = useRoute()
 const { game } = useGameSession(Number(route.params.id))
+
+usePreventLeave(() => !!game.value)
 
 // Fits the board in the available viewport, capped at 640px
 const boardSize = computed(() => Math.min(window.innerWidth, window.innerHeight, 640) * 0.85)
