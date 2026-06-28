@@ -4,16 +4,26 @@
 
 Séparé de `chess.ts` — les thèmes sont une préoccupation UI, pas du domaine échecs pur.
 
+Contient également les enums `BoardThemes` et `PieceThemes` — source de vérité pour les IDs de thèmes valides.
+Chaque valeur d'enum correspond à une clé dans les registres `boardThemes` et `pieceThemes`.
+
+Pour ajouter un thème : 
+1. ajouter la valeur à l'enum, 
+2. enregistrer le thème dans le registre,
+3. ajouter la clé de traduction (`settings.boardThemes.{value}` / `settings.pieceThemes.{value}`).
+
+Le select se met à jour automatiquement via `enumToOptions`.
+
 ## Deux thèmes indépendants
 
 `PieceTheme` et `BoardTheme` sont **toujours indépendants** —
 on peut mélanger n'importe quel thème de pièces avec n'importe quel thème de board.
 
-Settings :
+Settings (dans `useSettingsStore`) :
 
 ```ts
-pieceThemeId: string  // clé dans pieceThemes
-boardThemeId: string  // clé dans boardThemes
+pieceThemeId: PieceThemes  // enum — clé dans le registre pieceThemes
+boardThemeId: BoardThemes  // enum — clé dans le registre boardThemes
 ```
 
 ## PieceTheme
