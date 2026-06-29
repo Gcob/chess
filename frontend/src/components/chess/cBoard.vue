@@ -47,13 +47,19 @@ const orderedSquares = computed(() => {
 
 // Each board piece resolved to 0-based grid coordinates for the current orientation.
 // coordsFor must mirror orderedSquares so the overlay lines up with the rendered grid.
+//
+// Sorted by id so the v-for keeps a STABLE DOM order regardless of board position.
+// A move then only patches a piece's transform — if the DOM node were reordered instead,
+// the browser would reset the in-flight CSS transition and the piece would teleport.
 const placedPieces = computed(() =>
-  getBoardPieces(props.board).map(({piece, square}) => ({
-    id: piece.id,
-    color: piece.color,
-    type: piece.type,
-    ...coordsFor(square),
-  })),
+  getBoardPieces(props.board)
+    .map(({piece, square}) => ({
+      id: piece.id,
+      color: piece.color,
+      type: piece.type,
+      ...coordsFor(square),
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id)),
 )
 
 function coordsFor(square: SquareKey): { col: number; row: number } {

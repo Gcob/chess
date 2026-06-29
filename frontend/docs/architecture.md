@@ -82,6 +82,10 @@ Deux couches superposées dans `cBoard` :
   d'une case, placé en `transform: translate(col·100%, row·100%)`. Liste dérivée du board via
   `engine/getBoardPieces`, keyée par `piece.id` → la même pièce garde son nœud DOM et **glisse** quand
   ses coordonnées changent (`transition` CSS). `animated=false` au montage = téléportation, puis animé ensuite.
+  - **Ordre DOM stable obligatoire** : l'overlay est trié par `id`, jamais par position. Si l'ordre des nœuds
+    changeait à chaque coup, le navigateur réinitialiserait la transition en cours → la pièce se téléporterait.
+  - Pendant son glissement, `cPiece` monte son `z-index` (classe `--moving` via ses events `transitionstart/end`)
+    pour passer au-dessus des autres pièces, pas en dessous.
 
 `cBoard` possède une prop `orientation` (`PieceColor`, défaut `white` = blancs en bas) qui pilote
 à la fois l'ordre de la grille et le mapping `case → {col, row}`. Flip = inversion des index.
