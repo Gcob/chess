@@ -1,14 +1,15 @@
 import {computed} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useSettingsStore} from '@/stores/useSettingsStore'
-import {pieceThemes} from '@/assets/themes/pieces'
-import {boardThemes} from '@/assets/themes/boards'
+import {pieceThemes} from '@/themes/pieces'
+import {boardThemes} from '@/themes/boards'
 import type {PieceColor, PieceType} from '@/types/chess'
+import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
 
 type PieceImageSize = 'board' | 'small'
 
-const FALLBACK_PIECE_THEME_ID = 'classic'
-const FALLBACK_BOARD_THEME_ID = 'green'
+const FALLBACK_PIECE_THEME_ID = PieceThemes.Classic
+const FALLBACK_BOARD_THEME_ID = BoardThemes.Wood
 
 export function useChessTheme() {
   const {settings} = storeToRefs(useSettingsStore())
@@ -33,6 +34,7 @@ export function useChessTheme() {
     if (size === 'small' && theme.images.small) {
       return theme.images.small[color][type]
     }
+
     return theme.images.board[color][type]
   }
 

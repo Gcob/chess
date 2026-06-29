@@ -69,7 +69,7 @@ src/assets/themes/
 │       └── small/            # optionnel — même convention
 └── boards/
     ├── index.ts              # registre : Record<string, BoardTheme>
-    └── green.ts              # export greenBoardTheme
+    └── wood.ts               # export woodBoardTheme
 ```
 
 ## useChessTheme — `src/composables/useChessTheme.ts`
@@ -86,7 +86,7 @@ getPieceImage(piece.color, piece.type, 'small') // → URL, fallback vers 'board
 ```
 
 Si un `themeId` stocké en localStorage n'existe plus dans le registre,
-fallback automatique vers `'classic'` / `'green'`.
+fallback automatique vers `PieceThemes.Classic` / `BoardThemes.Wood`.
 
 **Règle absolue : aucun composant ne réimplémente le fallback `small → board`.**
 Ce fallback vit uniquement dans `useChessTheme`, nulle part ailleurs.
