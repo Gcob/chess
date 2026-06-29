@@ -1,8 +1,11 @@
 <template>
   <div
     class="c-piece"
-    :class="{ 'c-piece--animated': animated }"
+    :class="{ 'c-piece--animated': animated, 'c-piece--moving': moving }"
     :style="style"
+    @transitionstart="moving = true"
+    @transitionend="moving = false"
+    @transitioncancel="moving = false"
   >
     <img
       class="c-piece__img"
@@ -14,7 +17,7 @@
 </template>
 
 <script lang="ts" setup>
-import {computed} from 'vue'
+import {computed, ref} from 'vue'
 import type {PieceColor, PieceType} from '@/types/chess'
 import {useChessTheme} from '@/composables/useChessTheme'
 
@@ -32,6 +35,9 @@ const props = defineProps<{
 }>()
 
 const {getPieceImage} = useChessTheme()
+
+// Raised above the other pieces while sliding, so it passes over them, not under.
+const moving = ref(false)
 
 // % in translate is relative to the element's own size; the element is one square
 // wide (12.5% of the board), so col * 100% lands exactly on column `col`.
@@ -55,6 +61,10 @@ const style = computed(() => ({
 
   &--animated {
     transition: transform 0.2s ease;
+  }
+
+  &--moving {
+    z-index: 1; // above the resting pieces for the duration of the slide
   }
 
   &__img {
