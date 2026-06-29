@@ -70,24 +70,34 @@
         <input type="checkbox" class="c-checkbox" v-model="settings.timerEnabled"/>
       </label>
 
-      <div v-if="settings.timerEnabled" class="new-game-form__timer-fields">
-        <label class="c-label">
-          <span>{{ $t('newGame.timer.minutes') }}</span>
-          <select class="c-select" v-model.number="settings.timerMinutes">
-            <option v-for="m in timerMinuteOptions" :key="m" :value="m">
-              {{ m }} {{ $t('newGame.timer.minutesSuffix') }}
-            </option>
-          </select>
-        </label>
-        <label class="c-label">
-          <span>{{ $t('newGame.timer.increment') }}</span>
-          <select class="c-select" v-model.number="settings.timerIncrement">
-            <option v-for="s in timerIncrementOptions" :key="s" :value="s">
-              {{ s }} {{ $t('newGame.timer.secondsSuffix') }}
-            </option>
-          </select>
-        </label>
-      </div>
+      <Transition
+        name="timer-fields"
+        @enter="onTimerEnter"
+        @after-enter="onTimerAfterEnter"
+        @before-leave="onTimerBeforeLeave"
+        @leave="onTimerLeave"
+      >
+        <div v-if="settings.timerEnabled" class="new-game-form__timer-collapse">
+          <div class="new-game-form__timer-fields">
+            <label class="c-label">
+              <span>{{ $t('newGame.timer.minutes') }}</span>
+              <select class="c-select" v-model.number="settings.timerMinutes">
+                <option v-for="m in timerMinuteOptions" :key="m" :value="m">
+                  {{ m }} {{ $t('newGame.timer.minutesSuffix') }}
+                </option>
+              </select>
+            </label>
+            <label class="c-label">
+              <span>{{ $t('newGame.timer.increment') }}</span>
+              <select class="c-select" v-model.number="settings.timerIncrement">
+                <option v-for="s in timerIncrementOptions" :key="s" :value="s">
+                  {{ s }} {{ $t('newGame.timer.secondsSuffix') }}
+                </option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </Transition>
 
       <p class="new-game-form__timer-summary c-text-sm c-text-muted">
         {{ timerSummary }}
@@ -159,6 +169,29 @@ const modes: ModeOption[] = [
 
 const timerMinuteOptions = [1, 3, 5, 10, 15, 30, 60]
 const timerIncrementOptions = [0, 1, 2, 3, 5, 10]
+
+// Collapse animation driven by an explicit pixel height: smoother than
+// animating grid-template-rows, which forces a janky per-frame relayout.
+function onTimerEnter(el: Element) {
+  const node = el as HTMLElement
+  node.style.height = '0'
+  void node.offsetHeight // force reflow so the transition picks up the change
+  node.style.height = `${node.scrollHeight}px`
+}
+
+function onTimerAfterEnter(el: Element) {
+  ;(el as HTMLElement).style.height = 'auto'
+}
+
+function onTimerBeforeLeave(el: Element) {
+  const node = el as HTMLElement
+  node.style.height = `${node.scrollHeight}px`
+  void node.offsetHeight
+}
+
+function onTimerLeave(el: Element) {
+  ;(el as HTMLElement).style.height = '0'
+}
 
 const timerSummary = computed(() => {
   if (!settings.value.timerEnabled) {
@@ -300,6 +333,10 @@ const timerSummary = computed(() => {
 
   // --- Timer ---
 
+  &__timer-collapse {
+    overflow: hidden;
+  }
+
   &__timer-fields {
     display: flex;
     flex-direction: column;
@@ -323,5 +360,17 @@ const timerSummary = computed(() => {
     gap: $spacing-3;
     padding: $spacing-4 0;
   }
+}
+
+// --- Timer fields collapse transition ---
+
+.timer-fields-enter-active,
+.timer-fields-leave-active {
+  transition: height $transition-base, opacity $transition-base;
+}
+
+.timer-fields-enter-from,
+.timer-fields-leave-to {
+  opacity: 0;
 }
 </style>
