@@ -24,6 +24,12 @@ $color-slate-800: #1e293b;
 $color-slate-900: #0f172a;
 $color-slate-950: #020617;
 
+// --- Square highlights (translucent overlays on the board) ---
+
+$square-highlight-drop-target: rgba(74, 158, 221, 0.45); // accent — drop landing cell
+$square-highlight-last-move:    rgba(234, 179, 8, 0.40);  // warning — from/to of last move
+$square-highlight-selected:     rgba(34, 197, 94, 0.40);  // success — picked-up piece
+
 // --- Typography ---
 
 $font-family-base: 'Inter Variable', system-ui, sans-serif;

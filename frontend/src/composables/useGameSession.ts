@@ -1,5 +1,7 @@
 import { computed } from 'vue'
 import { useGamesStore } from '@/stores/useGamesStore'
+import { canMove, applyMove } from '@/engine/move'
+import type { SquareKey } from '@/types/chess'
 
 export function useGameSession(id: number) {
   const store = useGamesStore()
@@ -22,9 +24,12 @@ export function useGameSession(id: number) {
 
   const isGameOver = computed(() => game.value?.status === 'finished')
 
-  // TODO: implement when the rules engine is in place
-  function makeMove() {
-    // validate move, update board, flip activeColor, update pgn
+  // Routes every move through the engine, even while its rules are a placeholder.
+  // TODO: flip activeColor and record the Move/pgn once the rules engine lands.
+  function makeMove(from: SquareKey, to: SquareKey) {
+    const b = board.value
+    if (!b || !canMove(b, from, to)) return
+    applyMove(b, from, to)
   }
 
   // TODO: update game status and winner when player model supports it

@@ -95,6 +95,7 @@ export default {
     notFound: 'Partie introuvable',
     notFoundDesc: 'La session #{id} n\'existe pas ou est déjà terminée.',
     newGame: 'Nouvelle partie',
+    rotateBoard: "Tourner l'échiquier",
   },
   chessRules: {
     "title": "Comment jouer aux échecs",

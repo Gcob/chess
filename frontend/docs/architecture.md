@@ -40,6 +40,7 @@ src/
 ├── stores/
 ├── types/
 │   └── chess.ts                   # tout le domaine échecs
+└── utils/                         # helpers purs (ex. boardCoords — case ↔ coords de grille)
 ```
 
 ## Conventions générales
@@ -74,24 +75,44 @@ réactifs minces** : ils appellent l'engine et exposent le résultat en `ref`/`c
 
 ## Rendu de l'échiquier
 
-Deux couches superposées dans `cBoard` :
+`cBoard` empile, dans une zone `__area` (la *ref* qui ancre tous les calculs pointeur→pixel) :
 
-- **La grille** — 64 `cSquare` en CSS grid. Source de vérité visuelle des positions, cibles de clic/drop.
-  Une case ne contient plus de pièce : c'est un fond seulement.
-- **L'overlay de pièces** — couche absolue par-dessus la grille. Chaque `cPiece` est un sprite de la taille
-  d'une case, placé en `transform: translate(col·100%, row·100%)`. Liste dérivée du board via
-  `engine/getBoardPieces`, keyée par `piece.id` → la même pièce garde son nœud DOM et **glisse** quand
-  ses coordonnées changent (`transition` CSS). `animated=false` au montage = téléportation, puis animé ensuite.
+- **La grille** (`__grid`) — 64 `cSquare` en CSS grid, `overflow: hidden` pour arrondir les coins.
+  Source de vérité visuelle des positions, cibles de clic/drop. Une case ne contient plus de pièce :
+  c'est un fond + des overlays de highlight (voir plus bas).
+- **L'overlay de pièces** (`__pieces`) — couche absolue **non clippée** (une pièce draggée peut déborder).
+  Chaque `cPiece` est un sprite de la taille d'une case, placé en `transform: translate(col·100%, row·100%)`.
+  Liste dérivée du board via `engine/getBoardPieces`, keyée par `piece.id` → la même pièce garde son nœud DOM
+  et **glisse** quand ses coordonnées changent (`transition` CSS). `animated=false` au montage = téléportation.
   - **Ordre DOM stable obligatoire** : l'overlay est trié par `id`, jamais par position. Si l'ordre des nœuds
     changeait à chaque coup, le navigateur réinitialiserait la transition en cours → la pièce se téléporterait.
-  - Pendant son glissement, `cPiece` monte son `z-index` (classe `--moving` via ses events `transitionstart/end`)
-    pour passer au-dessus des autres pièces, pas en dessous.
+  - Pendant son glissement, `cPiece` monte son `z-index` (classe `--moving`) pour passer au-dessus des autres.
 
-`cBoard` possède une prop `orientation` (`PieceColor`, défaut `white` = blancs en bas) qui pilote
-à la fois l'ordre de la grille et le mapping `case → {col, row}`. Flip = inversion des index.
+### Orientation
 
-> Phase 2 (à venir) : drag-and-drop (case cible par maths pointeur→pixel sur une ref unique du board),
-> conditionné au mode de jeu et au tour actif ; bouton de rotation du board.
+`cBoard` expose `orientation` (`PieceColor`, défaut `white`) en **`v-model`** : l'état est possédé par le parent
+(`GamePage` — config de rendu *par observateur*, sœur des thèmes), l'affordance (bouton pivoter) vit dans `cBoard`.
+L'orientation pilote l'ordre de la grille **et** le mapping `case ↔ {col,row}`. Flip = inversion des index.
+La conversion vit dans `utils/boardCoords.ts` (`squareToCoords` / `coordsToSquare`, paire inverse pure et testée),
+partagée par le rendu et le drag pour rester synchronisée.
+
+### Drag and drop
+
+`composables/usePieceDrag.ts` gère le drag au pointeur (souris + tactile) : listeners sur `window`,
+case cible calculée par **maths sur le rect du board** (pas de hit-testing DOM, robuste au chevauchement).
+La pièce draggée suit le curseur en px (transition off) ; au drop, `cBoard` émet `move(from, to)` →
+`GamePage` → `useGameSession.makeMove` → `engine`. Drop valide = glisse vers la case ; drop hors board ou
+même case = revient à l'origine. **Tout passe par l'engine**, même si sa validation est encore permissive.
+
+### États de case (highlights)
+
+Concern de **vue**, hors domaine (`Square` reste pur). Type `SquareHighlight` (look-and-feel).
+Sources minimales par état (ex. `drop-target` = case sous le curseur) combinées par `cBoard.highlightsFor(square)`,
+rendues comme overlays translucides empilables sur `cSquare`. Couleurs dans `_variables.scss`.
+Câblé : `drop-target`. Extensions triviales : `last-move`, `selected`, `check`, fantôme de pièce.
+
+> Coquille engine assumée : `engine/move.ts` `canMove() → true` et `applyMove` (capture par écrasement).
+> `makeMove` ne flip pas encore `activeColor` ni n'enregistre le `Move`/pgn — viendra avec les vraies règles.
 
 ## Settings
 

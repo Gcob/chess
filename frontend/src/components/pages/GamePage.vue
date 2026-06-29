@@ -1,6 +1,12 @@
 <template>
   <main id="game-page" class="c-page">
-    <cBoard v-if="game" :board="game.board" :size="boardSize" />
+    <cBoard
+      v-if="game"
+      v-model:orientation="orientation"
+      :board="game.board"
+      :size="boardSize"
+      @move="makeMove"
+    />
 
     <div v-else class="game-page__not-found">
       <h1 class="c-h1">{{ $t('game.notFound') }}</h1>
@@ -14,16 +20,21 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGameSession } from '@/composables/useGameSession'
 import { usePreventLeave } from '@/composables/usePreventLeave'
 import cBoard from '@/components/chess/cBoard.vue'
+import type { PieceColor } from '@/types/chess'
 
 const route = useRoute()
-const { game } = useGameSession(Number(route.params.id))
+const { game, makeMove } = useGameSession(Number(route.params.id))
 
 usePreventLeave(() => !!game.value)
+
+// Per-viewer render preference, sibling to the themes. Defaults to white-down;
+// later seeded from the local player's color (e.g. black-down vs a bot/online).
+const orientation = ref<PieceColor>('white')
 
 // Fits the board in the available viewport, capped at 640px
 const boardSize = computed(() => Math.min(window.innerWidth, window.innerHeight, 640) * 0.85)

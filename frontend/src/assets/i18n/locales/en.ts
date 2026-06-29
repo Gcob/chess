@@ -95,6 +95,7 @@ export default {
     notFound: 'Game not found',
     notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',
     newGame: 'New game',
+    rotateBoard: 'Rotate chessboard',
   },
   chessRules: {
     title: "How to Play Chess",

@@ -34,4 +34,11 @@ describe('cPiece', () => {
     expect(img.attributes('alt')).toBe('black queen')
     expect(img.attributes('src')).toBeTruthy()
   })
+
+  it('follows the cursor in px and drops the transition while dragging', () => {
+    const wrapper = mountPiece({col: 2, row: 3, animated: true, dragging: true, dragX: 120, dragY: 45})
+    expect(wrapper.attributes('style')).toContain('translate(120px, 45px)')
+    expect(wrapper.classes()).not.toContain('c-piece--animated')
+    expect(wrapper.classes()).toContain('c-piece--moving')
+  })
 })

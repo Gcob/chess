@@ -14,6 +14,11 @@ export enum PieceThemes {
 
 export type ImageFormat = 'svg' | 'png'
 
+// Transient visual states a square can show, as translucent overlays. Pure UI —
+// kept out of the domain Square (which stays a pure game-state node). Several can
+// apply at once and stack. New states = add a value here, a colour, and a source.
+export type SquareHighlight = 'drop-target' | 'last-move' | 'selected'
+
 // All 12 piece images: 2 colors × 6 types
 export type PieceImageSet = Record<PieceColor, Record<PieceType, string>>
 
