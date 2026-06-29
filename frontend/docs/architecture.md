@@ -30,9 +30,11 @@ src/
 │       └── _commons.scss
 ├── components/
 │   ├── core-ui/                   # composants génériques réutilisables
+│   ├── chess/                     # composants d'échiquier (cBoard, cSquare, cPiece)
 │   └── pages/                     # une page par route
 ├── composables/
 │   └── factories/                 # factory functions
+├── engine/                        # logique métier pure — sans Vue
 ├── router/
 │   └── index.ts
 ├── stores/
@@ -52,15 +54,40 @@ src/
 
 ## Couches
 
-| Couche             | Rôle                                       |
-|--------------------|--------------------------------------------|
-| `src/types/`       | Interfaces et types purs — le *quoi*       |
-| `src/composables/` | Logique métier réutilisable — le *comment* |
-| `src/stores/`      | État global (Pinia)                        |
-| `src/components/`  | Affichage uniquement                       |
+| Couche             | Connaît Vue ? | Rôle                                                  |
+|--------------------|---------------|-------------------------------------------------------|
+| `src/types/`       | ❌             | Interfaces et types purs — le *quoi*                  |
+| `src/engine/`      | ❌             | Logique métier pure — règles, dérivations (le cerveau)|
+| `src/composables/` | ✅             | Adaptateurs réactifs — exposent l'engine aux composants |
+| `src/stores/`      | ✅             | État global (Pinia)                                   |
+| `src/components/`  | ✅             | Affichage uniquement                                  |
 
 Les composants Vue ne font qu'afficher — ils consomment des composables et des stores,
 jamais de logique métier directe.
+
+**Engine vs composables.** La logique métier vit dans `src/engine/` en TypeScript pur :
+plain data en entrée, plain data en sortie, zéro import `vue`. N'importe quel code peut l'appeler
+(composants, tests, IA, backend futur) sans dépendre de Vue. Les composables sont des **wrappers
+réactifs minces** : ils appellent l'engine et exposent le résultat en `ref`/`computed`.
+`gameFactory.ts` (construction de partie/board) est déjà de la logique pure — il migrera
+éventuellement sous `engine/`.
+
+## Rendu de l'échiquier
+
+Deux couches superposées dans `cBoard` :
+
+- **La grille** — 64 `cSquare` en CSS grid. Source de vérité visuelle des positions, cibles de clic/drop.
+  Une case ne contient plus de pièce : c'est un fond seulement.
+- **L'overlay de pièces** — couche absolue par-dessus la grille. Chaque `cPiece` est un sprite de la taille
+  d'une case, placé en `transform: translate(col·100%, row·100%)`. Liste dérivée du board via
+  `engine/getBoardPieces`, keyée par `piece.id` → la même pièce garde son nœud DOM et **glisse** quand
+  ses coordonnées changent (`transition` CSS). `animated=false` au montage = téléportation, puis animé ensuite.
+
+`cBoard` possède une prop `orientation` (`PieceColor`, défaut `white` = blancs en bas) qui pilote
+à la fois l'ordre de la grille et le mapping `case → {col, row}`. Flip = inversion des index.
+
+> Phase 2 (à venir) : drag-and-drop (case cible par maths pointeur→pixel sur une ref unique du board),
+> conditionné au mode de jeu et au tour actif ; bouton de rotation du board.
 
 ## Settings
 

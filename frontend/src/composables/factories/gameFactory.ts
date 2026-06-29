@@ -120,7 +120,7 @@ function createInitialBoard(): Board {
 
   // Pass 3: place pieces in their starting positions
   for (const [key, setup] of Object.entries(INITIAL_SETUP) as [SquareKey, [PieceColor, PieceType]][]) {
-    squares[key].piece = buildPiece(setup[0], setup[1])
+    squares[key].piece = buildPiece(setup[0], setup[1], key)
   }
 
   return {squares}
@@ -142,9 +142,11 @@ const PIECE_DATA: Record<PieceType, { value: number; short: string; long: string
   pawn: {value: 1, short: 'P', long: 'Pawn'},
 }
 
-function buildPiece(color: PieceColor, type: PieceType): Piece {
+// startSquare is the piece's origin — it seeds a stable id (e.g. 'Pe2') that survives moves and promotion.
+function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey): Piece {
   const {value, short, long} = PIECE_DATA[type]
   return {
+    id: `${short}${startSquare}`,
     color,
     type,
     value,

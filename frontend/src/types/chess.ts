@@ -87,6 +87,7 @@ export interface MoveType {
 }
 
 export interface Piece {
+  id: string                     // stable identity: short text + start square (e.g. 'Pe2', 'Ra1') — survives moves and promotion
   color: PieceColor
   type: PieceType
   value: number
@@ -112,6 +113,13 @@ export interface Square {
 // Keyed by chess notation (e.g. 'e4') for O(1) lookup by position
 export interface Board {
   squares: Record<SquareKey, Square>
+}
+
+// Flat projection of the board: a piece paired with the square it sits on.
+// Used by the rendering layer to drive an absolute, animatable piece overlay.
+export interface BoardPiece {
+  piece: Piece
+  square: SquareKey
 }
 
 // ─── Movement ────────────────────────────────────────────────────────────────
