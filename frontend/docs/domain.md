@@ -31,9 +31,10 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans les
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                                     |
 | `Timer`       | Horloge active (isActive, secondsRemaining, secondsIncrement)                                               |
 | `MoveType`    | Type de déplacement (id, conditions[], effects[])                                                           |
-| `Piece`       | Pièce (couleur, type, valeur, textRepresentation, pinDirection, hasMoved, moveTypes)                        |
+| `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, pinDirection, hasMoved, moveTypes)                    |
 | `Square`      | Case (couleur, file, rank, piece, neighbors)                                                                |
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
+| `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
 | `Capture`     | Capture (pièce capturée)                                                                                    |
 | `Move`        | Déplacement (pgn, elapsedSeconds, fromSquare, toSquare, affectedPieces, moveTypes, capture?, previousMove?) |
 | `Game`        | Partie (createdAt, startedAt, status, mode, activeColor, time?, type, players{white,black}, board, moves)   |
@@ -112,6 +113,9 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Accès par couleur : `game.players[game.activeColor]`.
 - `Player.timer?` — le timer vit dans le joueur, pas dans `Game`. `Game.time` reste la config (GameTime),
   le timer runtime est dans `player.timer`. Partie non chronométrée = `timer: undefined`.
+- `Piece.id` — identité stable `{short}{caseDeDépart}` (ex. `Pe2`, `Ra1`, `Ke1`), assignée à la création du board.
+  Survit aux déplacements et à la promotion (`Pe7` reste `Pe7` même devenue dame).
+  Sert de `key` Vue pour la couche d'animation des pièces — la même pièce = le même nœud DOM qui glisse.
 - `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement.
   Requis pour : droits de roque (roi + tours), double avance initiale du pion.
 - `Move.pgn` contient la notation **SAN** (Standard Algebraic Notation) —
