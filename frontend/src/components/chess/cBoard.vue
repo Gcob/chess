@@ -99,14 +99,8 @@ const orderedSquares = computed(() => {
   return ranks.flatMap(rank => files.map(file => props.board.squares[`${file}${rank}`]))
 })
 
-// Hovered square drives the coordinate highlight in the frame.
+// Square under the mouse (set on hover); the frame highlights its file/rank.
 const hoveredSquare = ref<SquareKey | null>(null)
-const hoveredFile = computed<SquareFile | null>(() =>
-  hoveredSquare.value ? (hoveredSquare.value[0] as SquareFile) : null,
-)
-const hoveredRank = computed<SquareRank | null>(() =>
-  hoveredSquare.value ? (Number(hoveredSquare.value[1]) as SquareRank) : null,
-)
 
 // Each board piece resolved to grid coordinates for the current orientation.
 // Sorted by id so the v-for keeps a STABLE DOM order regardless of board position —
@@ -177,6 +171,16 @@ watch(draggingId, (id, prev) => {
     teleportThenRestore()
   }
 })
+
+// Coordinate highlight source: while dragging the mouse stops firing hover events, so follow the
+// live drop target instead; otherwise use the hovered square.
+const coordSquare = computed(() => (draggingId.value ? dropTarget.value : hoveredSquare.value))
+const hoveredFile = computed<SquareFile | null>(() =>
+  coordSquare.value ? (coordSquare.value[0] as SquareFile) : null,
+)
+const hoveredRank = computed<SquareRank | null>(() =>
+  coordSquare.value ? (Number(coordSquare.value[1]) as SquareRank) : null,
+)
 
 // Combines the per-state sources into the highlights a given square should show.
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
