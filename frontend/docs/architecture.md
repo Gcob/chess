@@ -98,7 +98,8 @@ et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteu
 
 **Drag & drop** — `usePieceDrag` : pointeur (souris + tactile), case cible par maths sur le rect (pas de
 hit-testing). Drop → `cBoard` émet `move` → `makeMove` → engine. Tout relâchement snappe (anim `none`) :
-la pièce est déjà sous le curseur.
+la pièce est déjà sous le curseur. **Bouton droit enfoncé pendant le drag = annulation immédiate** (retour à
+l'origine, aucun coup). Le board supprime le menu contextuel (`@contextmenu.prevent` sur la zone).
 
 **Highlights** — `SquareHighlight` (look-and-feel, hors domaine) : sources par état → `highlightsFor` →
 overlays translucides sur `cSquare`. Câblé : `drop-target`.

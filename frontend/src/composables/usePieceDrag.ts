@@ -2,6 +2,9 @@ import {ref, type Ref} from 'vue'
 import type {PieceColor, SquareKey} from '@/types/chess'
 import {coordsToSquare} from '@/utils/boardCoords'
 
+// PointerEvent.buttons bitmask value for "only the primary (left) button held".
+const PRIMARY_BUTTON = 1
+
 interface UsePieceDragOptions {
   // The grid element — its rect anchors all pointer math.
   boardEl: Ref<HTMLElement | null>
@@ -40,21 +43,42 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
       return
     }
 
+    // Any button other than the primary pressed mid-drag aborts (right-click cancel).
+    // Detected here, not via mousedown: our pointerdown preventDefault suppresses the compat
+    // mouse events, and pointerdown itself doesn't re-fire for a second button — but pointermove
+    // keeps firing (including on a buttons change), and its bitmask reveals the extra button.
+    if (event.buttons !== PRIMARY_BUTTON) {
+      cancel()
+      return
+    }
+
     // Center the piece under the cursor; translate is from the board's top-left.
     dragX.value = event.clientX - rect.left - squareSize / 2
     dragY.value = event.clientY - rect.top - squareSize / 2
     dropTarget.value = squareAt(event.clientX, event.clientY)
   }
 
-  function end(event: PointerEvent) {
+  function detach() {
     window.removeEventListener('pointermove', track)
     window.removeEventListener('pointerup', end)
+    window.removeEventListener('pointercancel', cancel)
+  }
+
+  function end(event: PointerEvent) {
     const target = squareAt(event.clientX, event.clientY)
     const origin = from
+    detach()
     reset()
     if (origin && target && target !== origin) {
       onDrop(origin, target)
     }
+  }
+
+  // Right-button press (or an interrupted pointer) aborts: piece back to origin, no move.
+  // The board suppresses the context menu itself (@contextmenu.prevent).
+  function cancel() {
+    detach()
+    reset()
   }
 
   function reset() {
@@ -71,6 +95,11 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
       return
     }
 
+    // Only the primary button drags; other buttons are reserved for cancelling.
+    if (event.button !== 0) {
+      return
+    }
+
     rect = el.getBoundingClientRect()
     squareSize = rect.width / 8
     from = square
@@ -78,6 +107,7 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
     track(event)
     window.addEventListener('pointermove', track)
     window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', cancel)
     // Avoid text/image selection while dragging.
     event.preventDefault()
   }

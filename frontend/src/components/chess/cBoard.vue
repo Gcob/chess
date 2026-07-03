@@ -12,7 +12,7 @@
       </button>
     </div>
 
-    <div ref="areaEl" class="c-board__area" :style="areaStyle">
+    <div ref="areaEl" class="c-board__area" :style="areaStyle" @contextmenu.prevent>
       <!-- Background grid: clipped to rounded corners. Squares carry their highlights. -->
       <div class="c-board__grid">
         <cSquare
