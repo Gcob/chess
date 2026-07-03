@@ -172,8 +172,16 @@ watch(draggingId, (id, prev) => {
   }
 })
 
-// Coordinate highlight source: while dragging the mouse stops firing hover events, so follow the
-// live drop target instead; otherwise use the hovered square.
+// While dragging the mouse stops firing hover events, so keep the hovered square in sync with the
+// live drop target. This also leaves it on the landing square once the drag ends (mouse is there).
+watch(dropTarget, target => {
+  if (target) {
+    hoveredSquare.value = target
+  }
+})
+
+// Coordinate highlight source: the live drop target while dragging (null off-board = no highlight),
+// otherwise the hovered square.
 const coordSquare = computed(() => (draggingId.value ? dropTarget.value : hoveredSquare.value))
 const hoveredFile = computed<SquareFile | null>(() =>
   coordSquare.value ? (coordSquare.value[0] as SquareFile) : null,
