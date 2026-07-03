@@ -8,6 +8,7 @@
 - Playwright pour les tests E2E
 - i18n pour les traductions
 - Lucide pour les icônes (import individuel depuis `lucide-vue-next`, pas d'enregistrement global)
+- vue-tippy pour les tooltips (plugin global dans `main.ts`, directive `v-tippy`)
 
 ## Structure des dossiers
 

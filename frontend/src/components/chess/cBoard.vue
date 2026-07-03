@@ -2,13 +2,13 @@
   <div class="c-board">
     <div class="c-board__controls">
       <button
+        v-tippy="$t('game.rotateBoard')"
         type="button"
         class="c-board__rotate"
         :aria-label="$t('game.rotateBoard')"
-        :title="$t('game.rotateBoard')"
         @click="rotate"
       >
-        <RotateCw :size="18" />
+        <ArrowUpDown :size="18" />
       </button>
     </div>
 
@@ -55,7 +55,7 @@
 
 <script lang="ts" setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {RotateCw} from 'lucide-vue-next'
+import {ArrowUpDown} from 'lucide-vue-next'
 import type {Board, PieceColor, SquareFile, SquareKey, SquareRank} from '@/types/chess'
 import type {PieceAnimation, SquareHighlight} from '@/types/look-and-feel'
 import {getBoardPieces} from '@/engine/board'

@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import VueTippy from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
 import '@fontsource-variable/inter'
 import '@fontsource-variable/jetbrains-mono'
 import '@/assets/styles/main.scss'
@@ -15,5 +17,11 @@ coreUI(app);
 app.use(createPinia())
 app.use(router)
 app.use(i18n)
+app.use(VueTippy, {
+  defaultProps: {
+    delay: 0,
+    arrow: true,
+  },
+})
 
 app.mount('#app')
