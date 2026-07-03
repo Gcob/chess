@@ -5,18 +5,26 @@ import {coordsToSquare} from '@/utils/boardCoords'
 // PointerEvent.buttons bitmask value for "only the primary (left) button held".
 const PRIMARY_BUTTON = 1
 
+// px the pointer must travel before a press becomes a drag rather than a tap.
+const DRAG_THRESHOLD = 4
+
 interface UsePieceDragOptions {
   // The grid element — its rect anchors all pointer math.
   boardEl: Ref<HTMLElement | null>
   orientation: Ref<PieceColor>
-  // Called only for a real move (target ≠ origin).
+  // A real drag landed on a different square (target ≠ origin).
   onDrop: (from: SquareKey, to: SquareKey) => void
+  // A press released without dragging — a click on the square.
+  onTap?: (square: SquareKey) => void
+  // A drag actually started moving (past the threshold).
+  onDragStart?: () => void
 }
 
-// Pointer-based piece dragging. The dragged piece follows the cursor in pixels;
-// the target square is resolved by arithmetic on the board rect, not DOM hit-testing,
-// so it is robust to overlapping pieces and works the same for mouse and touch.
-export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions) {
+// Pointer-based piece interaction. A press that stays put is a tap (→ onTap, for click-to-move);
+// a press that moves past the threshold becomes a drag: the piece follows the cursor in pixels and
+// the target square is resolved by arithmetic on the board rect (no DOM hit-testing), so it is
+// robust to overlapping pieces and identical for mouse and touch.
+export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}: UsePieceDragOptions) {
   const draggingId = ref<string | null>(null)
   // px translate within the board (top-left origin), while dragging
   const dragX = ref(0)
@@ -25,6 +33,10 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
   const dropTarget = ref<SquareKey | null>(null)
 
   let from: SquareKey | null = null
+  let pendingId: string | null = null
+  let startX = 0
+  let startY = 0
+  let moved = false
   let rect: DOMRect | null = null
   let squareSize = 0
 
@@ -36,6 +48,12 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
     const col = Math.floor((clientX - rect.left) / squareSize)
     const row = Math.floor((clientY - rect.top) / squareSize)
     return coordsToSquare(col, row, orientation.value)
+  }
+
+  function beginDrag() {
+    moved = true
+    draggingId.value = pendingId
+    onDragStart?.()
   }
 
   function track(event: PointerEvent) {
@@ -52,6 +70,15 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
       return
     }
 
+    // Below the threshold it is still a potential tap: leave the piece resting.
+    if (!moved) {
+      if (Math.hypot(event.clientX - startX, event.clientY - startY) <= DRAG_THRESHOLD) {
+        return
+      }
+
+      beginDrag()
+    }
+
     // Center the piece under the cursor; translate is from the board's top-left.
     dragX.value = event.clientX - rect.left - squareSize / 2
     dragY.value = event.clientY - rect.top - squareSize / 2
@@ -65,11 +92,18 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
   }
 
   function end(event: PointerEvent) {
-    const target = squareAt(event.clientX, event.clientY)
     const origin = from
+    const wasDrag = moved
+    const target = squareAt(event.clientX, event.clientY)
     detach()
     reset()
-    if (origin && target && target !== origin) {
+    if (!origin) {
+      return
+    }
+
+    if (!wasDrag) {
+      onTap?.(origin)
+    } else if (target && target !== origin) {
       onDrop(origin, target)
     }
   }
@@ -85,6 +119,8 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
     draggingId.value = null
     dropTarget.value = null
     from = null
+    pendingId = null
+    moved = false
     rect = null
   }
 
@@ -95,7 +131,7 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
       return
     }
 
-    // Only the primary button drags; other buttons are reserved for cancelling.
+    // Only the primary button starts an interaction; other buttons are reserved for cancelling.
     if (event.button !== 0) {
       return
     }
@@ -103,8 +139,10 @@ export function usePieceDrag({boardEl, orientation, onDrop}: UsePieceDragOptions
     rect = el.getBoundingClientRect()
     squareSize = rect.width / 8
     from = square
-    draggingId.value = id
-    track(event)
+    pendingId = id
+    startX = event.clientX
+    startY = event.clientY
+    moved = false
     window.addEventListener('pointermove', track)
     window.addEventListener('pointerup', end)
     window.addEventListener('pointercancel', cancel)

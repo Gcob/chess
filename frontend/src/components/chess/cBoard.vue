@@ -20,6 +20,7 @@
           :key="`${square.file}${square.rank}`"
           :square="square"
           :highlights="highlightsFor(`${square.file}${square.rank}`)"
+          @click="activateSquare(`${square.file}${square.rank}`)"
         />
       </div>
 
@@ -72,7 +73,11 @@ const RANKS: SquareRank[] = [1, 2, 3, 4, 5, 6, 7, 8]
 
 const orientation = computed<PieceColor>(() => props.orientation ?? 'white')
 
+// Selected square for click-to-move. Any unrelated action clears it (drag start, rotation, a move).
+const selected = ref<SquareKey | null>(null)
+
 function rotate() {
+  selected.value = null
   emit('update:orientation', orientation.value === 'white' ? 'black' : 'white')
 }
 
@@ -106,8 +111,45 @@ const areaEl = ref<HTMLElement | null>(null)
 const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
   boardEl: areaEl,
   orientation,
-  onDrop: (from, to) => emit('move', from, to),
+  onDrop: (from, to) => {
+    selected.value = null
+    emit('move', from, to)
+  },
+  onTap: activateSquare,
+  onDragStart: () => {
+    selected.value = null
+  },
 })
+
+// Click-to-move: tap a piece to select, then tap a destination. Tapping the selected square
+// clears it; tapping another friendly piece reselects; anything else attempts the move (the
+// engine validates). Reached from a piece tap (onTap) and from an empty square click.
+function activateSquare(square: SquareKey) {
+  const current = selected.value
+  const piece = props.board.squares[square].piece
+
+  if (!current) {
+    if (piece) {
+      selected.value = square
+    }
+
+    return
+  }
+
+  if (square === current) {
+    selected.value = null
+    return
+  }
+
+  const selectedPiece = props.board.squares[current].piece
+  if (piece && selectedPiece && piece.color === selectedPiece.color) {
+    selected.value = square
+    return
+  }
+
+  emit('move', current, square)
+  selected.value = null
+}
 
 // Any drag release snaps instantly (the piece is already under the cursor) — valid drop to the
 // target, or return to origin on an off-board/same-square release. No slide either way.
@@ -123,6 +165,10 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
   const result: SquareHighlight[] = []
   if (dropTarget.value === square) {
     result.push('drop-target')
+  }
+
+  if (selected.value === square) {
+    result.push('selected')
   }
 
   return result

@@ -96,10 +96,15 @@ restauré via **double `requestAnimationFrame`** (la frame sans transition doit 
 et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteur de règles. `cPiece` → classe
 `c-piece--anim-{name}` ; un drag n'anime jamais.
 
-**Drag & drop** — `usePieceDrag` : pointeur (souris + tactile), case cible par maths sur le rect (pas de
-hit-testing). Drop → `cBoard` émet `move` → `makeMove` → engine. Tout relâchement snappe (anim `none`) :
-la pièce est déjà sous le curseur. **Bouton droit enfoncé pendant le drag = annulation immédiate** (retour à
-l'origine, aucun coup). Le board supprime le menu contextuel (`@contextmenu.prevent` sur la zone).
+**Interaction** — `usePieceDrag` distingue **tap** (presse sans bouger, sous un seuil) et **drag** (au-delà) :
+
+- **Drag** → la pièce suit le curseur ; drop → `cBoard` émet `move` → `makeMove` → engine. Relâchement =
+  snap instantané (anim `none`, la pièce est déjà sous le curseur). Bouton droit enfoncé pendant le drag =
+  annulation immédiate (retour à l'origine, aucun coup). Menu contextuel supprimé (`@contextmenu.prevent`).
+  Case cible par maths sur le rect (pas de hit-testing DOM).
+- **Tap** (clic-pour-jouer) → `cBoard.activateSquare` : tap une pièce = sélection (highlight `selected`) ;
+  tap une destination = coup (slide) ; re-tap = désélection ; tap une pièce alliée = re-sélection.
+  Toute action « pas rapport » annule la sélection (début de drag, rotation, coup).
 
 **Highlights** — `SquareHighlight` (look-and-feel, hors domaine) : sources par état → `highlightsFor` →
 overlays translucides sur `cSquare`. Câblé : `drop-target`.
