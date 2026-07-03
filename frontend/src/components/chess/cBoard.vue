@@ -12,35 +12,44 @@
       </button>
     </div>
 
-    <div ref="areaEl" class="c-board__area" :style="areaStyle" @contextmenu.prevent>
-      <!-- Background grid: clipped to rounded corners. Squares carry their highlights. -->
-      <div class="c-board__grid">
-        <cSquare
-          v-for="square in orderedSquares"
-          :key="`${square.file}${square.rank}`"
-          :square="square"
-          :highlights="highlightsFor(`${square.file}${square.rank}`)"
-          @click="activateSquare(`${square.file}${square.rank}`)"
-        />
-      </div>
+    <cBoardFrame :orientation="orientation" :highlight-file="hoveredFile" :highlight-rank="hoveredRank">
+      <div
+        ref="areaEl"
+        class="c-board__area"
+        :style="areaStyle"
+        @contextmenu.prevent
+        @mouseleave="hoveredSquare = null"
+      >
+        <div class="c-board__grid">
+          <cSquare
+            v-for="square in orderedSquares"
+            :key="`${square.file}${square.rank}`"
+            :square="square"
+            :highlights="highlightsFor(`${square.file}${square.rank}`)"
+            @click="activateSquare(`${square.file}${square.rank}`)"
+            @mouseenter="hoveredSquare = `${square.file}${square.rank}`"
+          />
+        </div>
 
-      <!-- Piece overlay: not clipped, so a dragged piece can overflow the board edge. -->
-      <div class="c-board__pieces">
-        <cPiece
-          v-for="p in placedPieces"
-          :key="p.id"
-          :col="p.col"
-          :row="p.row"
-          :color="p.color"
-          :type="p.type"
-          :animation="animation"
-          :dragging="draggingId === p.id"
-          :drag-x="draggingId === p.id ? dragX : 0"
-          :drag-y="draggingId === p.id ? dragY : 0"
-          @pointerdown="start($event, p.square, p.id)"
-        />
+        <!-- Piece overlay: not clipped, so a dragged piece can overflow the board edge. -->
+        <div class="c-board__pieces">
+          <cPiece
+            v-for="p in placedPieces"
+            :key="p.id"
+            :col="p.col"
+            :row="p.row"
+            :color="p.color"
+            :type="p.type"
+            :animation="animation"
+            :dragging="draggingId === p.id"
+            :drag-x="draggingId === p.id ? dragX : 0"
+            :drag-y="draggingId === p.id ? dragY : 0"
+            @pointerdown="start($event, p.square, p.id)"
+            @mouseenter="hoveredSquare = p.square"
+          />
+        </div>
       </div>
-    </div>
+    </cBoardFrame>
   </div>
 </template>
 
@@ -54,6 +63,7 @@ import {squareToCoords} from '@/utils/boardCoords'
 import {usePieceDrag} from '@/composables/usePieceDrag'
 import cSquare from './cSquare.vue'
 import cPiece from './cPiece.vue'
+import cBoardFrame from './cBoardFrame.vue'
 
 const props = defineProps<{
   board: Board
@@ -88,6 +98,15 @@ const orderedSquares = computed(() => {
   const files = orientation.value === 'white' ? FILES : [...FILES].reverse()
   return ranks.flatMap(rank => files.map(file => props.board.squares[`${file}${rank}`]))
 })
+
+// Hovered square drives the coordinate highlight in the frame.
+const hoveredSquare = ref<SquareKey | null>(null)
+const hoveredFile = computed<SquareFile | null>(() =>
+  hoveredSquare.value ? (hoveredSquare.value[0] as SquareFile) : null,
+)
+const hoveredRank = computed<SquareRank | null>(() =>
+  hoveredSquare.value ? (Number(hoveredSquare.value[1]) as SquareRank) : null,
+)
 
 // Each board piece resolved to grid coordinates for the current orientation.
 // Sorted by id so the v-for keeps a STABLE DOM order regardless of board position —
@@ -252,10 +271,9 @@ const areaStyle = computed(() => {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    border-radius: $border-radius-sm;
     // rounds the board corners
+    border-radius: $border-radius-sm;
     overflow: hidden;
-    box-shadow: $shadow-xl;
   }
 
   &__pieces {

@@ -91,6 +91,9 @@ Deux pièges non-évidents :
 thèmes ; bouton dans `cBoard`). Pilote l'ordre de la grille et le mapping `case ↔ {col,row}`
 (`utils/boardCoords.ts`, paire inverse pure). Rotation instantanée : frame du flip en `none`, puis `slide`
 restauré via **double `requestAnimationFrame`** (la frame sans transition doit être peinte avant de réarmer).
+`cBoardFrame` (composant à slot) entoure le board avec les coordonnées sur les **quatre côtés** (fichiers
+en haut/bas, rangées à gauche/droite), ordonnées selon l'orientation. Le label du fichier/rangée survolé
+s'illumine (`cBoard` traque la case sous la souris et passe `highlightFile`/`highlightRank`).
 
 **Animations** — `PieceAnimation` (look-and-feel, jamais dans l'engine) : `slide` (couvre linéaire ET diagonale)
 et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteur de règles. `cPiece` → classe
