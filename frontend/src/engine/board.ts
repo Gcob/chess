@@ -9,7 +9,9 @@ import type {Board, BoardPiece, SquareKey} from '@/types/chess'
 export function getBoardPieces(board: Board): BoardPiece[] {
   const pieces: BoardPiece[] = []
   for (const [square, {piece}] of Object.entries(board.squares) as [SquareKey, Board['squares'][SquareKey]][]) {
-    if (piece) pieces.push({piece, square})
+    if (piece) {
+      pieces.push({piece, square})
+    }
   }
   return pieces
 }

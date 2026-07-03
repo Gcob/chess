@@ -42,7 +42,8 @@ const squareBackground = computed(() =>
   &__highlight {
     position: absolute;
     inset: 0;
-    pointer-events: none; // never blocks clicks/drops
+    // never blocks clicks/drops
+    pointer-events: none;
 
     &--drop-target {
       background: $square-highlight-drop-target;

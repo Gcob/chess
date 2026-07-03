@@ -56,8 +56,10 @@ import cPiece from './cPiece.vue'
 
 const props = defineProps<{
   board: Board
-  size?: number            // px — controls everything inside via the grid
-  orientation?: PieceColor // which color sits at the bottom; defaults to white (v-model)
+  // px — controls everything inside via the grid
+  size?: number
+  // which color sits at the bottom; defaults to white (v-model)
+  orientation?: PieceColor
 }>()
 
 const emit = defineEmits<{
@@ -110,14 +112,19 @@ const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
 // Any drag release snaps instantly (the piece is already under the cursor) — valid drop to the
 // target, or return to origin on an off-board/same-square release. No slide either way.
 watch(draggingId, (id, prev) => {
-  if (prev && !id) teleportThenRestore()
+  if (prev && !id) {
+    teleportThenRestore()
+  }
 })
 
 // Combines the per-state sources into the highlights a given square should show.
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
   const result: SquareHighlight[] = []
-  if (dropTarget.value === square) result.push('drop-target')
+  if (dropTarget.value === square) {
+    result.push('drop-target')
+  }
+
   return result
 }
 
@@ -189,7 +196,8 @@ const areaStyle = computed(() => {
   }
 
   &__area {
-    position: relative; // anchors the grid, the overlay, and the drag rect math
+    // anchors the grid, the overlay, and the drag rect math
+    position: relative;
   }
 
   &__grid {
@@ -199,7 +207,8 @@ const areaStyle = computed(() => {
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     border-radius: $border-radius-sm;
-    overflow: hidden; // rounds the board corners
+    // rounds the board corners
+    overflow: hidden;
     box-shadow: $shadow-xl;
   }
 
@@ -207,7 +216,8 @@ const areaStyle = computed(() => {
     // overlay covering the grid; pieces position themselves and may overflow while dragged
     position: absolute;
     inset: 0;
-    pointer-events: none; // squares below stay clickable; pieces re-enable it themselves
+    // squares below stay clickable; pieces re-enable it themselves
+    pointer-events: none;
   }
 }
 </style>

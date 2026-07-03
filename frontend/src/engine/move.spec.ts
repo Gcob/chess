@@ -12,9 +12,25 @@ function freshBoard(): Board {
   return createGameSession(payload, 1).game.board
 }
 
-describe('canMove (placeholder)', () => {
-  it('allows every move for now', () => {
-    expect(canMove(freshBoard(), 'a1', 'h8')).toBe(true)
+describe('canMove', () => {
+  it('rejects capturing your own piece', () => {
+    expect(canMove(freshBoard(), 'a1', 'a2')).toBe(false) // white rook onto white pawn
+  })
+
+  it('allows capturing an enemy piece', () => {
+    expect(canMove(freshBoard(), 'a1', 'a7')).toBe(true) // white rook onto black pawn
+  })
+
+  it('allows moving onto an empty square', () => {
+    expect(canMove(freshBoard(), 'e2', 'e4')).toBe(true)
+  })
+
+  it('rejects an empty origin', () => {
+    expect(canMove(freshBoard(), 'e4', 'e5')).toBe(false)
+  })
+
+  it('rejects a non-move (same square)', () => {
+    expect(canMove(freshBoard(), 'e2', 'e2')).toBe(false)
   })
 })
 

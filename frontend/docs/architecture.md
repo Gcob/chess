@@ -103,7 +103,9 @@ la pièce est déjà sous le curseur.
 **Highlights** — `SquareHighlight` (look-and-feel, hors domaine) : sources par état → `highlightsFor` →
 overlays translucides sur `cSquare`. Câblé : `drop-target`.
 
-> Engine coquille : `canMove() → true`, `applyMove` (capture par écrasement) ; pas encore de tour / `Move` / pgn.
+> Engine (règles incrémentales) : `canMove` refuse origine vide, non-coup et capture d'une pièce alliée ;
+> le reste (patterns de déplacement, tour, échec) est encore permis. `applyMove` = capture par écrasement.
+> Pas encore de tour / `Move` / pgn.
 
 ## Settings
 

@@ -28,7 +28,10 @@ export function useGameSession(id: number) {
   // TODO: flip activeColor and record the Move/pgn once the rules engine lands.
   function makeMove(from: SquareKey, to: SquareKey) {
     const b = board.value
-    if (!b || !canMove(b, from, to)) return
+    if (!b || !canMove(b, from, to)) {
+      return
+    }
+
     applyMove(b, from, to)
   }
 

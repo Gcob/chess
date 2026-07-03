@@ -28,13 +28,16 @@ import {useChessTheme} from '@/composables/useChessTheme'
 // Moving it = changing col/row; a CSS transition animates the slide.
 // animation='none' makes the move instant (teleport) — used at mount and on rotation.
 const props = withDefaults(defineProps<{
-  col: number             // 0 = leftmost column, 7 = rightmost
-  row: number             // 0 = top row, 7 = bottom row
+  // 0-based grid cell: col 0 = leftmost column, row 0 = top row.
+  col: number
+  row: number
   color: PieceColor
   type: PieceType
   animation: PieceAnimation
-  dragging?: boolean      // following the cursor — overrides col/row, always instant
-  dragX?: number          // px translate within the board (top-left origin), used while dragging
+  // Following the cursor — overrides col/row and is always instant.
+  dragging?: boolean
+  // px translate within the board (top-left origin), used while dragging.
+  dragX?: number
   dragY?: number
 }>(), {
   dragging: false,
@@ -67,13 +70,16 @@ const style = computed(() => ({
   position: absolute;
   top: 0;
   left: 0;
-  width: 12.5%;   // one square
+  // one square
+  width: 12.5%;
   height: 12.5%;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;  // grabbable; the overlay itself stays click-through
-  touch-action: none;    // let the pointer drag instead of scrolling on touch
+  // grabbable; the overlay itself stays click-through
+  pointer-events: auto;
+  // let the pointer drag instead of scrolling on touch
+  touch-action: none;
   cursor: grab;
   will-change: transform;
 
@@ -91,7 +97,8 @@ const style = computed(() => ({
   }
 
   &--moving {
-    z-index: 1;        // above the resting pieces for the duration of the slide/drag
+    // above the resting pieces for the duration of the slide/drag
+    z-index: 1;
     cursor: grabbing;
   }
 
