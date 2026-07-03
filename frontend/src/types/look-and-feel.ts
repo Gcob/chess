@@ -19,6 +19,14 @@ export type ImageFormat = 'svg' | 'png'
 // apply at once and stack. New states = add a value here, a colour, and a source.
 export type SquareHighlight = 'drop-target' | 'last-move' | 'selected'
 
+// How a piece animates when it changes cell. Pure view vocabulary — the engine never
+// knows about it; the render layer decides which one applies to a given move.
+//   slide     — straight-line translate (covers both linear and diagonal moves)
+//   none      — instant (board mount, rotation)
+//   hop       — arc for the knight; DORMANT until the rules engine reports move types
+//   snap-back — return after an illegal drop; DORMANT until move validation exists
+export type PieceAnimation = 'slide' | 'none' | 'hop' | 'snap-back'
+
 // All 12 piece images: 2 colors × 6 types
 export type PieceImageSet = Record<PieceColor, Record<PieceType, string>>
 

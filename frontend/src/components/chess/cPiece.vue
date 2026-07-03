@@ -1,7 +1,7 @@
 <template>
   <div
     class="c-piece"
-    :class="{ 'c-piece--animated': animated && !dragging, 'c-piece--moving': moving || dragging }"
+    :class="[animationClass, { 'c-piece--moving': moving || dragging }]"
     :style="style"
     @transitionstart="moving = true"
     @transitionend="moving = false"
@@ -19,21 +19,22 @@
 <script lang="ts" setup>
 import {computed, ref} from 'vue'
 import type {PieceColor, PieceType} from '@/types/chess'
+import type {PieceAnimation} from '@/types/look-and-feel'
 import {useChessTheme} from '@/composables/useChessTheme'
 
 // A piece is a square-sized sprite placed in absolute board coordinates.
 // col/row are 0-based grid indices already resolved for the board orientation —
 // cPiece knows nothing about files/ranks or which way the board faces.
-// Moving it = changing col/row; the CSS transition animates the slide.
-// animated=false makes the move instant (teleport) — used when the board mounts.
+// Moving it = changing col/row; a CSS transition animates the slide.
+// animation='none' makes the move instant (teleport) — used at mount and on rotation.
 const props = withDefaults(defineProps<{
-  col: number          // 0 = leftmost column, 7 = rightmost
-  row: number          // 0 = top row, 7 = bottom row
+  col: number             // 0 = leftmost column, 7 = rightmost
+  row: number             // 0 = top row, 7 = bottom row
   color: PieceColor
   type: PieceType
-  animated: boolean
-  dragging?: boolean   // following the cursor — overrides col/row, no transition
-  dragX?: number       // px translate within the board (top-left origin), used while dragging
+  animation: PieceAnimation
+  dragging?: boolean      // following the cursor — overrides col/row, always instant
+  dragX?: number          // px translate within the board (top-left origin), used while dragging
   dragY?: number
 }>(), {
   dragging: false,
@@ -45,6 +46,11 @@ const {getPieceImage} = useChessTheme()
 
 // Raised above the other pieces while sliding, so it passes over them, not under.
 const moving = ref(false)
+
+// A dragged piece must follow the cursor instantly, so it never carries an animation.
+const animationClass = computed(() =>
+  props.dragging || props.animation === 'none' ? '' : `c-piece--anim-${props.animation}`,
+)
 
 // While dragging, follow the cursor in px. Otherwise rest on a grid cell:
 // % in translate is relative to the element's own size, and the element is one square
@@ -71,7 +77,16 @@ const style = computed(() => ({
   cursor: grab;
   will-change: transform;
 
-  &--animated {
+  // Straight-line translate — covers linear AND diagonal moves identically.
+  &--anim-slide {
+    transition: transform 0.2s ease;
+  }
+
+  // DORMANT: defined so the vocabulary is complete, not routed to yet.
+  // hop → knight arc (will need @keyframes once the engine reports move types);
+  // snap-back → return after an illegal drop. Both fall back to a plain slide for now.
+  &--anim-hop,
+  &--anim-snap-back {
     transition: transform 0.2s ease;
   }
 

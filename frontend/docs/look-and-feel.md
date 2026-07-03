@@ -7,10 +7,11 @@ Séparé de `chess.ts` — les thèmes sont une préoccupation UI, pas du domain
 Contient aussi les enums `BoardThemes` et `PieceThemes` — source de vérité des IDs de thèmes valides.
 Chaque valeur correspond à une clé de registre et à une clé i18n `settings.{boardThemes|pieceThemes}.{value}`.
 
-Contient aussi `SquareHighlight` — états visuels transitoires d'une case (`drop-target`, `last-move`,
-`selected`), rendus en overlays translucides empilables sur `cSquare`. C'est de l'UI pure : le `Square`
-du domaine reste un nœud d'état de jeu pur. Couleurs dans `_variables.scss` (`$square-highlight-*`).
-Nouvel état = une valeur ici + une couleur + une source dans `cBoard.highlightsFor`.
+Contient aussi (UI pure, hors domaine — l'engine ne les connaît pas) :
+
+- `SquareHighlight` — états visuels d'une case (`drop-target`, `last-move`, `selected`), overlays
+  translucides empilables sur `cSquare`. Couleurs dans `_variables.scss` (`$square-highlight-*`).
+- `PieceAnimation` — anim d'une pièce qui change de case : `slide`/`none` câblés, `hop`/`snap-back` dormants.
 
 ## Deux thèmes indépendants
 

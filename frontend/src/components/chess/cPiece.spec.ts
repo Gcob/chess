@@ -5,7 +5,7 @@ import cPiece from './cPiece.vue'
 
 function mountPiece(props = {}) {
   return mount(cPiece, {
-    props: {col: 0, row: 0, color: 'white', type: 'pawn', animated: false, ...props},
+    props: {col: 0, row: 0, color: 'white', type: 'pawn', animation: 'none', ...props},
   })
 }
 
@@ -24,9 +24,10 @@ describe('cPiece', () => {
     expect(wrapper.attributes('style')).toContain('translate(0%, 0%)')
   })
 
-  it('applies the animated class only when animated is true', () => {
-    expect(mountPiece({animated: false}).classes()).not.toContain('c-piece--animated')
-    expect(mountPiece({animated: true}).classes()).toContain('c-piece--animated')
+  it('maps the animation prop to a class, and none to no class', () => {
+    expect(mountPiece({animation: 'none'}).classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
+    expect(mountPiece({animation: 'slide'}).classes()).toContain('c-piece--anim-slide')
+    expect(mountPiece({animation: 'hop'}).classes()).toContain('c-piece--anim-hop')
   })
 
   it('renders an image described by color and type', () => {
@@ -36,9 +37,9 @@ describe('cPiece', () => {
   })
 
   it('follows the cursor in px and drops the transition while dragging', () => {
-    const wrapper = mountPiece({col: 2, row: 3, animated: true, dragging: true, dragX: 120, dragY: 45})
+    const wrapper = mountPiece({col: 2, row: 3, animation: 'slide', dragging: true, dragX: 120, dragY: 45})
     expect(wrapper.attributes('style')).toContain('translate(120px, 45px)')
-    expect(wrapper.classes()).not.toContain('c-piece--animated')
+    expect(wrapper.classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
     expect(wrapper.classes()).toContain('c-piece--moving')
   })
 })

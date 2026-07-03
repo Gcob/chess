@@ -32,7 +32,7 @@
           :row="p.row"
           :color="p.color"
           :type="p.type"
-          :animated="animated"
+          :animation="animation"
           :dragging="draggingId === p.id"
           :drag-x="draggingId === p.id ? dragX : 0"
           :drag-y="draggingId === p.id ? dragY : 0"
@@ -44,10 +44,10 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, nextTick, onMounted, ref} from 'vue'
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {RotateCw} from 'lucide-vue-next'
 import type {Board, PieceColor, SquareFile, SquareKey, SquareRank} from '@/types/chess'
-import type {SquareHighlight} from '@/types/look-and-feel'
+import type {PieceAnimation, SquareHighlight} from '@/types/look-and-feel'
 import {getBoardPieces} from '@/engine/board'
 import {squareToCoords} from '@/utils/boardCoords'
 import {usePieceDrag} from '@/composables/usePieceDrag'
@@ -107,6 +107,12 @@ const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
   onDrop: (from, to) => emit('move', from, to),
 })
 
+// Any drag release snaps instantly (the piece is already under the cursor) — valid drop to the
+// target, or return to origin on an off-board/same-square release. No slide either way.
+watch(draggingId, (id, prev) => {
+  if (prev && !id) teleportThenRestore()
+})
+
 // Combines the per-state sources into the highlights a given square should show.
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
@@ -117,11 +123,28 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
 
 // ─── Animation gating ──────────────────────────────────────────────────────────
 
-// Pieces teleport into place on mount, then animate on subsequent moves.
-const animated = ref(false)
+// Board-level animation applied to every piece. A move slides; mount, rotation and drops teleport.
+// (Per-piece animations like the knight 'hop' come with the rules engine.)
+const animation = ref<PieceAnimation>('none')
 onMounted(() => nextTick(() => {
-  animated.value = true
+  animation.value = 'slide'
 }))
+
+// Renders one instant (no-transition) frame, then restores sliding — used by rotation and drops.
+// Two rAFs are required: the no-transition frame must actually PAINT before we re-enable, otherwise
+// the browser coalesces both renders and animates anyway (nextTick is only a microtask — no paint).
+let restoreRaf = 0
+function teleportThenRestore() {
+  animation.value = 'none'
+  cancelAnimationFrame(restoreRaf)
+  restoreRaf = requestAnimationFrame(() => {
+    restoreRaf = requestAnimationFrame(() => {
+      animation.value = 'slide'
+    })
+  })
+}
+watch(orientation, teleportThenRestore)
+onBeforeUnmount(() => cancelAnimationFrame(restoreRaf))
 
 const areaStyle = computed(() => {
   const px = `${props.size ?? 560}px`
