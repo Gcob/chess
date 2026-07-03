@@ -62,8 +62,10 @@ const rankLabels = computed(() => (props.orientation === 'white' ? [...RANKS].re
 
 <style lang="scss">
 .c-board-frame {
-  // coordinate gutters on all four sides; the board fills the middle cell
-  --coord: 1.15rem;
+  // coordinate gutters on all four sides; the board fills the middle cell.
+  // No padding: the gutter alone spaces the labels, keeping them centered between the
+  // outer border and the board (padding would only pad the outer side → asymmetric).
+  --coord: 1.3rem;
   display: grid;
   grid-template-columns: var(--coord) auto var(--coord);
   grid-template-rows: var(--coord) auto var(--coord);
@@ -71,7 +73,6 @@ const rankLabels = computed(() => (props.orientation === 'white' ? [...RANKS].re
     '.    top    .'
     'left board  right'
     '.    bottom .';
-  padding: $spacing-1;
   background: var(--bg-secondary);
   border: $border-width-base solid var(--border-color);
   border-radius: $border-radius-base;
@@ -81,7 +82,7 @@ const rankLabels = computed(() => (props.orientation === 'white' ? [...RANKS].re
   &__ranks {
     display: grid;
     place-items: center;
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: $font-weight-semibold;
     line-height: 1;
     color: var(--text-muted);
