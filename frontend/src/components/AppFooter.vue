@@ -5,13 +5,13 @@
         {{ $t('footer.howToPlay') }}
       </button>
       <span class="app-footer__sep" aria-hidden="true">·</span>
-      <RouterLink class="app-footer__link" :to="{ name: 'about' }">
+      <button class="app-footer__link" @click="showAbout = true">
         {{ $t('footer.about') }}
-      </RouterLink>
+      </button>
       <span class="app-footer__sep" aria-hidden="true">·</span>
-      <RouterLink class="app-footer__link" :to="{ name: 'terms' }">
+      <button class="app-footer__link" @click="showTerms = true">
         {{ $t('footer.terms') }}
-      </RouterLink>
+      </button>
       <span class="app-footer__sep" aria-hidden="true">·</span>
       <a
         class="app-footer__link app-footer__link--icon"
@@ -35,16 +35,35 @@
         <cButton @click="close" variant="ter">{{ $t('common.close') }}</cButton>
       </template>
     </cModal>
+
+    <cModal v-model="showAbout" size="lg">
+      <template #header>{{ $t('about.title') }}</template>
+      <AboutContent />
+      <template #footer="{ close }">
+        <cButton @click="close" variant="ter">{{ $t('common.close') }}</cButton>
+      </template>
+    </cModal>
+
+    <cModal v-model="showTerms" size="lg">
+      <template #header>{{ $t('terms.title') }}</template>
+      <TermsContent />
+      <template #footer="{ close }">
+        <cButton @click="close" variant="ter">{{ $t('common.close') }}</cButton>
+      </template>
+    </cModal>
   </footer>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
 import { Github } from 'lucide-vue-next'
 import ChessRules from '@/components/parts/ChessRules.vue'
+import AboutContent from '@/components/parts/AboutContent.vue'
+import TermsContent from '@/components/parts/TermsContent.vue'
 
 const showRules = ref(false)
+const showAbout = ref(false)
+const showTerms = ref(false)
 const year = new Date().getFullYear()
 </script>
 

@@ -8,6 +8,10 @@ export default {
     close: 'Close',
     cancel: 'Cancel',
   },
+  notFound: {
+    title: 'Page not found',
+    message: "The page you're looking for doesn't exist.",
+  },
   footer: {
     howToPlay: 'How to play',
     about: 'About',

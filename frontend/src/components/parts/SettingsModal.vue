@@ -1,5 +1,5 @@
 <template>
-  <cModal :model-value="modelValue" size="sm"
+  <cModal :model-value="modelValue" size="md"
           @update:model-value="$emit('update:modelValue', $event)">
     <template #header>{{ $t('settings.title') }}</template>
 

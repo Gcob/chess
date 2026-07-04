@@ -111,7 +111,6 @@ export default {
     inset: 0;
     background-color: var(--overlay-bg);
     backdrop-filter: blur(var(--overlay-blur));
-    cursor: pointer;
     transition: all $transition-base;
   }
 

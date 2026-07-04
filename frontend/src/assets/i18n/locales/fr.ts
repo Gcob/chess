@@ -8,6 +8,10 @@ export default {
     close: 'Fermer',
     cancel: 'Annuler',
   },
+  notFound: {
+    title: 'Page introuvable',
+    message: "La page que tu cherches n'existe pas.",
+  },
   footer: {
     howToPlay: 'Comment jouer',
     about: 'À propos',

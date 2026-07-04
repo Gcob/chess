@@ -16,19 +16,14 @@ const router = createRouter({
       component: () => import('@/components/pages/NewGamePage.vue'),
     },
     {
-      path: '/about',
-      name: 'about',
-      component: () => import('@/components/pages/AboutPage.vue'),
-    },
-    {
-      path: '/terms',
-      name: 'terms',
-      component: () => import('@/components/pages/TermsPage.vue'),
-    },
-    {
       path: '/game/:id',
       name: 'game',
       component: () => import('@/components/pages/GamePage.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/components/pages/NotFoundPage.vue'),
     },
   ],
 })
