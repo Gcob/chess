@@ -131,7 +131,8 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   le board auto-flip pour suivre le joueur au trait (`orientation = activeColor`). D'où le retrait du
   bouton « tourner » de `cBoard` (l'orientation est pilotée par la policy).
 - `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `PlayersPanel` → `PlayerCard`,
-  `GameInfo`. Historique/Actions = placeholders.
+  `GameInfo`, `GameActions` (proposer nulle / abandonner, via `view.proposeDraw`/`resign` ; abandon confirmé).
+  Historique = placeholder.
 - **Identités** : `PlayersPanel` groupe les deux `PlayerCard` **en haut** (ordre par orientation → suit la
   rotation). Chaque carte : avatar (propagé du form via `PlayerMetas.image`), nom + **suffixe couleur**
   « (Blanc)/(Noir) », pastille de trait, `CapturedPieces` + **diff matériel (±)**, horloge. Capturées + diff

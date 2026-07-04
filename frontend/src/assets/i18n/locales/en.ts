@@ -108,6 +108,11 @@ export default {
     newGame: 'New game',
     rotateBoard: 'Rotate chessboard',
     leaveConfirm: 'A game is in progress. Leave anyway?',
+    actions: {
+      proposeDraw: 'Offer draw',
+      resign: 'Resign',
+      resignConfirm: 'Resign the game?',
+    },
   },
   chessRules: {
     title: "How to Play Chess",

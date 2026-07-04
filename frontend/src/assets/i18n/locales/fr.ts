@@ -108,6 +108,11 @@ export default {
     newGame: 'Nouvelle partie',
     rotateBoard: "Tourner l'échiquier",
     leaveConfirm: 'Une partie est en cours. Quitter quand même ?',
+    actions: {
+      proposeDraw: 'Proposer la nulle',
+      resign: 'Abandonner',
+      resignConfirm: 'Abandonner la partie ?',
+    },
   },
   chessRules: {
     "title": "Comment jouer aux échecs",

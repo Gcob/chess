@@ -7,8 +7,7 @@
       <GameBoardArea :view="view" />
     </div>
 
-    <!-- Placeholder — filled in the next steps. -->
-    <div class="game-mobile__zone">Actions (à venir)</div>
+    <GameActions :view="view" />
   </div>
 </template>
 
@@ -16,6 +15,7 @@
 import GameBoardArea from '@/components/game/GameBoardArea.vue'
 import PlayersPanel from '@/components/game/PlayersPanel.vue'
 import GameInfo from '@/components/game/GameInfo.vue'
+import GameActions from '@/components/game/GameActions.vue'
 import type {GameView} from '@/composables/useGameView'
 
 defineProps<{ view: GameView }>()
@@ -34,16 +34,6 @@ defineProps<{ view: GameView }>()
     width: 100%;
     aspect-ratio: 1;
     min-height: 0;
-  }
-
-  &__zone {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: $spacing-4;
-    color: var(--text-muted);
-    border: $border-width-thin dashed var(--border-color-strong);
-    border-radius: $border-radius-base;
   }
 }
 </style>
