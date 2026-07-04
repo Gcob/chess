@@ -6,8 +6,8 @@ import type { NewGameSettings } from '@/stores/useNewGameStore'
 const basePayload: CreateGamePayload = {
   mode: 'local',
   players: {
-    white: { name: 'Alice' },
-    black: { name: 'Bob' },
+    white: { name: 'Alice', avatar: 'circle' },
+    black: { name: 'Bob', avatar: 'square' },
   },
 }
 
@@ -32,7 +32,25 @@ describe('toBackendPayload', () => {
     expect(payload.mode).toBe('local')
     expect(payload.players.white.name).toBe('Alice')
     expect(payload.players.black.name).toBe('Bob')
+    expect(payload.players.white.avatar).toBe('circle')
+    expect(payload.players.black.avatar).toBe('square')
     expect(payload.time).toBeUndefined()
+  })
+
+  it('trims player names', () => {
+    const settings: NewGameSettings = {
+      mode: 'local',
+      playerWhiteName: '  Alice  ',
+      playerBlackName: 'Bob ',
+      playerWhiteAvatar: 'circle',
+      playerBlackAvatar: 'square',
+      timerEnabled: false,
+      timerMinutes: 10,
+      timerIncrement: 0,
+    }
+    const payload = toBackendPayload(settings)
+    expect(payload.players.white.name).toBe('Alice')
+    expect(payload.players.black.name).toBe('Bob')
   })
 
   it('includes time when timer is enabled', () => {
@@ -63,6 +81,12 @@ describe('createGameSession', () => {
     expect(session.game.players.black.color).toBe('black')
     expect(session.game.players.white.metas.name).toBe('Alice')
     expect(session.game.players.black.metas.name).toBe('Bob')
+  })
+
+  it('carries the chosen avatar into player metas', () => {
+    const session = createGameSession(basePayload, 1)
+    expect(session.game.players.white.metas.image).toBe('circle')
+    expect(session.game.players.black.metas.image).toBe('square')
   })
 
   it('initializes players with isInCheck false', () => {

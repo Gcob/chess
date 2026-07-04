@@ -5,8 +5,9 @@
     </div>
 
     <aside ref="sidebarRef" class="game-desktop__sidebar">
-      <!-- Placeholders — filled section by section in the next steps. -->
-      <div class="game-desktop__zone">Identités (à venir)</div>
+      <PlayersPanel :view="view" />
+      <GameInfo :view="view" />
+      <!-- Placeholders — filled in the next steps. -->
       <div class="game-desktop__zone game-desktop__zone--sponge">Historique (à venir)</div>
       <div class="game-desktop__zone">Actions (à venir)</div>
     </aside>
@@ -16,6 +17,8 @@
 <script lang="ts" setup>
 import {onBeforeUnmount, onMounted, ref} from 'vue'
 import GameBoardArea from '@/components/game/GameBoardArea.vue'
+import PlayersPanel from '@/components/game/PlayersPanel.vue'
+import GameInfo from '@/components/game/GameInfo.vue'
 import type {GameView} from '@/composables/useGameView'
 
 defineProps<{ view: GameView }>()

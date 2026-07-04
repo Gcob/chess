@@ -24,8 +24,8 @@ export function toBackendPayload(settings: NewGameSettings): CreateGamePayload {
   return {
     mode: settings.mode,
     players: {
-      white: {name: settings.playerWhiteName},
-      black: {name: settings.playerBlackName},
+      white: {name: settings.playerWhiteName.trim(), avatar: settings.playerWhiteAvatar},
+      black: {name: settings.playerBlackName.trim(), avatar: settings.playerBlackAvatar},
     },
     time: settings.timerEnabled
       ? {minutes: settings.timerMinutes, secondsIncrement: settings.timerIncrement}
@@ -162,8 +162,8 @@ function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey):
 function buildPlayers(payload: CreateGamePayload, time: GameTime | undefined): { white: Player; black: Player } {
   const timer = time ? buildTimer(time) : undefined
   return {
-    white: {color: 'white', isInCheck: false, timer, metas: {name: payload.players.white.name}},
-    black: {color: 'black', isInCheck: false, timer, metas: {name: payload.players.black.name}},
+    white: {color: 'white', isInCheck: false, timer, metas: {name: payload.players.white.name, image: payload.players.white.avatar}},
+    black: {color: 'black', isInCheck: false, timer, metas: {name: payload.players.black.name, image: payload.players.black.avatar}},
   }
 }
 

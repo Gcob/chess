@@ -168,8 +168,8 @@ export interface GameSession {
 export interface CreateGamePayload {
   mode: GameMode
   players: {
-    white: { name: string }
-    black: { name: string }
+    white: { name: string; avatar: string }
+    black: { name: string; avatar: string }
   }
   time?: GameTime // undefined = untimed game
 }

@@ -5,7 +5,7 @@ import type {Board, CreateGamePayload} from '@/types/chess'
 
 const payload: CreateGamePayload = {
   mode: 'local',
-  players: {white: {name: 'Alice'}, black: {name: 'Bob'}},
+  players: {white: {name: 'Alice', avatar: 'circle'}, black: {name: 'Bob', avatar: 'square'}},
 }
 
 function freshBoard(): Board {

@@ -1,18 +1,21 @@
 <template>
   <div class="game-mobile">
-    <!-- Placeholders — mobile arrangement refined in the next steps. -->
-    <div class="game-mobile__zone">Identités (à venir)</div>
+    <PlayersPanel :view="view" />
+    <GameInfo :view="view" />
 
     <div class="game-mobile__board">
       <GameBoardArea :view="view" />
     </div>
 
+    <!-- Placeholder — filled in the next steps. -->
     <div class="game-mobile__zone">Actions (à venir)</div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import GameBoardArea from '@/components/game/GameBoardArea.vue'
+import PlayersPanel from '@/components/game/PlayersPanel.vue'
+import GameInfo from '@/components/game/GameInfo.vue'
 import type {GameView} from '@/composables/useGameView'
 
 defineProps<{ view: GameView }>()

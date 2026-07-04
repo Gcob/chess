@@ -31,6 +31,10 @@ export function useGameView(id: number) {
     // TODO: implement with the rules/flow engine
   }
 
+  // Which color sits at the top / bottom of the board — the layout places each player accordingly.
+  const bottomColor = computed<PieceColor>(() => orientation.value)
+  const topColor = computed<PieceColor>(() => (orientation.value === 'white' ? 'black' : 'white'))
+
   return reactive({
     game: session.game,
     moves: session.moves,
@@ -38,6 +42,8 @@ export function useGameView(id: number) {
     blackPlayer: session.blackPlayer,
     activeColor,
     orientation,
+    topColor,
+    bottomColor,
     boardSize: computed(() => settingsStore.settings.boardSize),
     isGameOver: session.isGameOver,
     move,
