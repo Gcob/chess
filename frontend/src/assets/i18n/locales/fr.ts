@@ -14,7 +14,7 @@ export default {
     terms: 'Conditions',
     privacy: 'Confidentialité',
     github: 'GitHub',
-    copyright: '© {year} Chess par Jacob',
+    copyright: '© {year} Échecs par Jacob',
   },
   about: {
     title: 'À propos',
@@ -35,6 +35,7 @@ export default {
   },
   settings: {
     title: 'Paramètres',
+    language: 'Langue',
     toggleTheme: 'Changer le thème',
     theme: 'Thème',
     themeLight: 'Clair',

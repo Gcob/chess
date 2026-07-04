@@ -35,6 +35,7 @@ export default {
   },
   settings: {
     title: 'Settings',
+    language: 'Language',
     toggleTheme: 'Toggle theme',
     theme: 'Theme',
     themeLight: 'Light',

@@ -13,7 +13,8 @@ test.describe('Locale', () => {
     await page.goto('/')
     await expect(page.locator('h1')).toHaveText('Chess')
 
-    await page.getByRole('button', { name: 'FR' }).click()
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'Français' }).click()
     await expect(page.locator('h1')).toHaveText('Échecs')
   })
 
@@ -21,7 +22,8 @@ test.describe('Locale', () => {
     // No addInitScript here — it would re-run on reload and overwrite the persisted locale.
     // Playwright browser locale is en-US, so the initial load resolves to 'en'.
     await page.goto('/')
-    await page.getByRole('button', { name: 'FR' }).click()
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'Français' }).click()
     await expect(page.locator('h1')).toHaveText('Échecs')
 
     await page.reload()

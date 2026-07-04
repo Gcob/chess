@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useTheme } from '@/composables/useTheme'
 import { Settings, Sun, Moon, Home } from 'lucide-vue-next'
 import SettingsModal from '@/components/parts/SettingsModal.vue'
 
-const { locale } = useI18n()
 const { theme, toggle: toggleTheme } = useTheme()
 
-const locales = ['fr', 'en'] as const
 const isSettingsOpen = ref(false)
-
-function setLocale(lang: typeof locales[number]) {
-  locale.value = lang
-  localStorage.setItem('locale', lang)
-}
 </script>
 
 <template>
@@ -32,18 +24,6 @@ function setLocale(lang: typeof locales[number]) {
       <button class="super-top-bar__btn" @click="isSettingsOpen = true" :aria-label="$t('settings.title')">
         <Settings :size="14" />
       </button>
-
-      <div class="super-top-bar__locale">
-        <button
-          v-for="lang in locales"
-          :key="lang"
-          class="super-top-bar__locale-btn"
-          :class="{ 'is-active': locale === lang }"
-          @click="setLocale(lang)"
-        >
-          {{ lang.toUpperCase() }}
-        </button>
-      </div>
     </div>
 
     <SettingsModal v-model="isSettingsOpen" />
@@ -102,35 +82,6 @@ function setLocale(lang: typeof locales[number]) {
 
     &:hover {
       color: var(--surface-topbar-hover);
-    }
-  }
-
-  &__locale {
-    display: flex;
-    gap: $spacing-1;
-  }
-
-  &__locale-btn {
-    color: var(--surface-topbar-text);
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    padding: $spacing-1 $spacing-2;
-    border-radius: $border-radius-sm;
-    transition: color $transition-fast;
-    letter-spacing: 0.05em;
-
-    @include breakpoint-down($breakpoint-sm) {
-      font-size: $font-size-base;
-      padding: $spacing-1 $spacing-3;
-    }
-
-    &:hover {
-      color: var(--surface-topbar-hover);
-    }
-
-    &.is-active {
-      color: var(--surface-topbar-text-active);
-      font-weight: $font-weight-semibold;
     }
   }
 }

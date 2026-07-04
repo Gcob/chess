@@ -4,6 +4,23 @@
     <template #header>{{ $t('settings.title') }}</template>
 
     <div class="settings-modal">
+      <div class="c-label">
+        <span>{{ $t('settings.language') }}</span>
+        <div class="settings-modal__langs">
+          <button
+            v-for="lang in languages"
+            :key="lang.code"
+            type="button"
+            class="settings-modal__lang"
+            :class="{ 'is-active': locale === lang.code }"
+            @click="setLocale(lang.code)"
+          >
+            <LocaleFlag :locale="lang.code" class="settings-modal__flag" />
+            <span>{{ lang.name }}</span>
+          </button>
+        </div>
+      </div>
+
       <label class="c-label">
         <span>{{ $t('settings.boardTheme') }}</span>
         <select class="c-select" v-model="store.settings.boardThemeId">
@@ -35,12 +52,24 @@ import {useI18n} from 'vue-i18n'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
 import {enumToOptions} from '@/utils/enumOptions'
+import LocaleFlag from '@/components/parts/LocaleFlag.vue'
 
 defineProps<{ modelValue: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const store = useSettingsStore()
-const {t} = useI18n()
+const {t, locale} = useI18n()
+
+// Endonyms — a language names itself the same way regardless of the current UI locale.
+const languages = [
+  {code: 'fr', name: 'Français'},
+  {code: 'en', name: 'English'},
+] as const
+
+function setLocale(code: 'fr' | 'en') {
+  locale.value = code
+  localStorage.setItem('locale', code)
+}
 
 const boardThemeOptions = computed(() => enumToOptions(BoardThemes, 'settings.boardThemes', t as (key: string) => string))
 const pieceThemeOptions = computed(() => enumToOptions(PieceThemes, 'settings.pieceThemes', t as (key: string) => string))
@@ -51,5 +80,42 @@ const pieceThemeOptions = computed(() => enumToOptions(PieceThemes, 'settings.pi
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
+
+  &__langs {
+    display: flex;
+    gap: $spacing-2;
+  }
+
+  &__lang {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-2 $spacing-3;
+    color: var(--text-secondary);
+    background: transparent;
+    border: $border-width-base solid var(--border-color);
+    border-radius: $border-radius-base;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    &.is-active {
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+  }
+
+  &__flag {
+    width: 22px;
+    height: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 }
 </style>
