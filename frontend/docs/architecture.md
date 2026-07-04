@@ -137,6 +137,11 @@ overlays translucides sur `cSquare`. Câblé : `drop-target`.
 
 ## Flux de création de partie
 
+`NewGameForm` est un orchestrateur découpé en sections (`NewGameModeSection`, `NewGamePlayersSection`,
+`NewGameTimerSection`). Chacune reçoit **une seule prop DTO** : l'objet réactif `settings` du store, qu'elle
+lit/mute directement (pas de props/events à l'infini). La validation vit dans la section Joueurs et est
+appelée par le parent via `validate()` exposé (`defineExpose`).
+
 ```
 NewGameSettings (useNewGameStore)
   → toBackendPayload()
