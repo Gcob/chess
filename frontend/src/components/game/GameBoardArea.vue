@@ -46,12 +46,13 @@ onBeforeUnmount(() => observer?.disconnect())
 
 <style lang="scss" scoped>
 .game-board-area {
-  // Fills its slot via flex stretch (not height:100%, which collapses to 0 when an ancestor
-  // height is indefinite). Padding gives the board room to breathe inside its zone.
+  // Fills the box the layout gives it (now definite in both layouts) and centers the board.
+  // Padding gives the board room to breathe inside its zone.
   display: flex;
-  flex: 1;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   min-height: 0;
   min-width: 0;
   padding: $spacing-6;

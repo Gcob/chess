@@ -37,12 +37,16 @@ usePreventLeave(() => !!view.game)
   flex-direction: column;
   width: 100%;
   padding: $spacing-4;
+  // Mobile: grow to fill so the fixed-height footer sticks to the bottom; still grows (never
+  // shrinks) with tall content, letting the page scroll normally.
+  flex: 1 0 auto;
 
   // Desktop: a DEFINITE height (viewport minus the fixed top bar and the fixed-height footer)
   // so the flex chain can bound the board — no page scroll; inner zones (history) scroll instead.
   // A flex:1 / min-height chain alone doesn't work here: #app-main is min-height (auto), so there
   // is no free space to distribute and nothing bounds the board → it grows past the viewport.
   @include lg {
+    flex: 0 0 auto;
     height: calc(100svh - #{$topbar-height} - #{$footer-height});
     overflow: hidden;
   }
