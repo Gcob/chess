@@ -7,8 +7,7 @@
     <aside ref="sidebarRef" class="game-desktop__sidebar">
       <PlayersPanel :view="view" />
       <GameInfo :view="view" />
-      <!-- Placeholders — filled in the next steps. -->
-      <div class="game-desktop__zone game-desktop__zone--sponge">Historique (à venir)</div>
+      <MoveHistory :view="view" />
       <GameActions :view="view" />
     </aside>
   </div>
@@ -19,6 +18,7 @@ import {onBeforeUnmount, onMounted, ref} from 'vue'
 import GameBoardArea from '@/components/game/GameBoardArea.vue'
 import PlayersPanel from '@/components/game/PlayersPanel.vue'
 import GameInfo from '@/components/game/GameInfo.vue'
+import MoveHistory from '@/components/game/MoveHistory.vue'
 import GameActions from '@/components/game/GameActions.vue'
 import type {GameView} from '@/composables/useGameView'
 
@@ -78,23 +78,6 @@ onBeforeUnmount(() => observer?.disconnect())
     flex-shrink: 0;
     min-height: 0;
     width: 25rem;
-  }
-
-  &__zone {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: $spacing-4;
-    color: var(--text-muted);
-    border: $border-width-thin dashed var(--border-color-strong);
-    border-radius: $border-radius-base;
-
-    // sponge — takes the remaining height and scrolls internally instead of growing the page
-    &--sponge {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-    }
   }
 }
 </style>

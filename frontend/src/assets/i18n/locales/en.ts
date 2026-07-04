@@ -108,6 +108,7 @@ export default {
     newGame: 'New game',
     rotateBoard: 'Rotate chessboard',
     leaveConfirm: 'A game is in progress. Leave anyway?',
+    history: 'Move history',
     actions: {
       proposeDraw: 'Offer draw',
       resign: 'Resign',

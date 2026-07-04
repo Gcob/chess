@@ -32,9 +32,11 @@ function onResign() {
   display: flex;
   gap: $spacing-2;
 
-  // both buttons share the row
-  > * {
+  // both buttons share the row, with a slimmer vertical padding than the default cButton
+  :deep(.c-button) {
     flex: 1;
+    padding-top: $spacing-2;
+    padding-bottom: $spacing-2;
   }
 }
 </style>

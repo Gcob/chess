@@ -1,7 +1,7 @@
 <template>
   <div class="game-mobile">
-    <PlayersPanel :view="view" />
     <GameInfo :view="view" />
+    <PlayersPanel :view="view" />
 
     <div class="game-mobile__board">
       <GameBoardArea :view="view" />

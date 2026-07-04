@@ -131,15 +131,15 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   le board auto-flip pour suivre le joueur au trait (`orientation = activeColor`). D'où le retrait du
   bouton « tourner » de `cBoard` (l'orientation est pilotée par la policy).
 - `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `PlayersPanel` → `PlayerCard`,
-  `GameInfo`, `GameActions` (proposer nulle / abandonner, via `view.proposeDraw`/`resign` ; abandon confirmé).
-  Historique = placeholder.
+  `GameInfo`, `MoveHistory` (SAN par tour, **desktop-only**, données hardcodées), `GameActions`
+  (proposer nulle / abandonner, via `view.proposeDraw`/`resign` ; abandon confirmé).
 - **Identités** : `PlayersPanel` groupe les deux `PlayerCard` **en haut** (ordre par orientation → suit la
   rotation). Chaque carte : avatar (propagé du form via `PlayerMetas.image`), nom + **suffixe couleur**
   « (Blanc)/(Noir) », pastille de trait, `CapturedPieces` + **diff matériel (±)**, horloge. Capturées + diff
   **hardcodés** (`engine/material.ts`), horloge **statique** (`game.time` optionnel = sans chrono) tant que le
   timer ne tourne pas.
-- **`GameInfo`** : récap compact (contrôle de temps « 5 min + 2 s » + mode). Ordre sidebar : joueurs → infos →
-  historique → actions ; mobile : joueurs → infos → board → actions.
+- **`GameInfo`** : récap compact (contrôle de temps « 5 min + 2 s » + mode). Ordre sidebar desktop :
+  joueurs → infos → historique → actions ; mobile : infos → joueurs → board → actions.
 - **Pas de scroll en desktop** : topbar et footer ont des **hauteurs fixes** (`$topbar-height`,
   `$footer-height`), donc `#game-page` prend `height: calc(100svh - topbar - footer)` (≥ `lg`) — le board
   se dimensionne à sa zone bornée (`ResizeObserver`), l'historique scrolle en interne. Mobile : hauteur
