@@ -85,6 +85,7 @@ export default {
       black: 'Black',
       whitePlaceholder: 'Player 1',
       blackPlaceholder: 'Player 2',
+      randomName: 'Random name',
     },
     timer: {
       title: 'Clock',

@@ -40,13 +40,24 @@
             <span class="new-game-form__piece">♔</span>
             {{ $t('newGame.players.white') }}
           </span>
-          <input
-            class="c-input"
-            :class="{ 'is-invalid': startAttempted && errors.playerWhiteName }"
-            type="text"
-            v-model="settings.playerWhiteName"
-            :placeholder="$t('newGame.players.whitePlaceholder')"
-          />
+          <div class="new-game-form__name-row">
+            <input
+              class="c-input"
+              :class="{ 'is-invalid': startAttempted && errors.playerWhiteName }"
+              type="text"
+              v-model="settings.playerWhiteName"
+              :placeholder="$t('newGame.players.whitePlaceholder')"
+            />
+            <button
+              v-tippy="$t('newGame.players.randomName')"
+              type="button"
+              class="new-game-form__dice"
+              :aria-label="$t('newGame.players.randomName')"
+              @click="generateName('white')"
+            >
+              <Dices :size="16" />
+            </button>
+          </div>
           <span v-if="startAttempted && errors.playerWhiteName" class="new-game-form__error">
             {{ $t(`newGame.validation.${errors.playerWhiteName}`) }}
           </span>
@@ -56,13 +67,24 @@
             <span class="new-game-form__piece">♚</span>
             {{ $t('newGame.players.black') }}
           </span>
-          <input
-            class="c-input"
-            :class="{ 'is-invalid': startAttempted && errors.playerBlackName }"
-            type="text"
-            v-model="settings.playerBlackName"
-            :placeholder="$t('newGame.players.blackPlaceholder')"
-          />
+          <div class="new-game-form__name-row">
+            <input
+              class="c-input"
+              :class="{ 'is-invalid': startAttempted && errors.playerBlackName }"
+              type="text"
+              v-model="settings.playerBlackName"
+              :placeholder="$t('newGame.players.blackPlaceholder')"
+            />
+            <button
+              v-tippy="$t('newGame.players.randomName')"
+              type="button"
+              class="new-game-form__dice"
+              :aria-label="$t('newGame.players.randomName')"
+              @click="generateName('black')"
+            >
+              <Dices :size="16" />
+            </button>
+          </div>
           <span v-if="startAttempted && errors.playerBlackName" class="new-game-form__error">
             {{ $t(`newGame.validation.${errors.playerBlackName}`) }}
           </span>
@@ -125,13 +147,14 @@
 import {computed, ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {storeToRefs} from 'pinia'
-import {Users, Bot, Globe, Link} from 'lucide-vue-next'
+import {Users, Bot, Globe, Link, Dices} from 'lucide-vue-next'
 import {useNewGameStore} from '@/stores/useNewGameStore'
 import {validateNewGamePlayers} from '@/validation/newGame'
+import {randomPlayerName} from '@/utils/randomName'
 import type {GameMode} from '@/types/chess'
 import type {Component} from 'vue'
 
-const {t} = useI18n()
+const {t, locale} = useI18n()
 const store = useNewGameStore()
 const {settings} = storeToRefs(store)
 
@@ -150,6 +173,21 @@ function handleStart() {
   startAttempted.value = true
   if (Object.keys(errors.value).length === 0) {
     emit('start')
+  }
+}
+
+// Fills a player's name with a random funny one, retrying so it never matches the other player.
+function generateName(color: 'white' | 'black') {
+  const other = color === 'white' ? settings.value.playerBlackName : settings.value.playerWhiteName
+  let name = randomPlayerName(locale.value)
+  for (let guard = 0; name.trim() === other.trim() && guard < 10; guard++) {
+    name = randomPlayerName(locale.value)
+  }
+
+  if (color === 'white') {
+    settings.value.playerWhiteName = name
+  } else {
+    settings.value.playerBlackName = name
   }
 }
 
@@ -338,12 +376,38 @@ const timerSummary = computed(() => {
     align-items: flex-start;
     gap: $spacing-2;
 
-    .c-input {
-      width: 100%;
+    .c-input.is-invalid {
+      border-color: var(--danger);
+    }
+  }
 
-      &.is-invalid {
-        border-color: var(--danger);
-      }
+  &__name-row {
+    display: flex;
+    gap: $spacing-2;
+    width: 100%;
+
+    .c-input {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__dice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 $spacing-3;
+    color: var(--text-secondary);
+    background: transparent;
+    border: $border-width-base solid var(--border-color);
+    border-radius: $border-radius-base;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: var(--accent);
+      border-color: var(--accent);
     }
   }
 
