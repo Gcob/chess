@@ -2,12 +2,15 @@ import { defineStore } from 'pinia'
 import { ref, watch, unref } from 'vue'
 import type { GameMode } from '@/types/chess'
 import { randomPlayerName } from '@/utils/randomName'
+import { AVATAR_IDS } from '@/themes/avatars'
 import i18n from '@/assets/i18n'
 
 export interface NewGameSettings {
   mode: GameMode
   playerWhiteName: string
   playerBlackName: string
+  playerWhiteAvatar: string
+  playerBlackAvatar: string
   timerEnabled: boolean
   timerMinutes: number
   timerIncrement: number
@@ -29,6 +32,8 @@ function makeDefaults(): NewGameSettings {
     mode: 'local',
     playerWhiteName,
     playerBlackName,
+    playerWhiteAvatar: AVATAR_IDS[0]!, // at least two avatars exist
+    playerBlackAvatar: AVATAR_IDS[1]!,
     timerEnabled: true,
     timerMinutes: 10,
     timerIncrement: 0,

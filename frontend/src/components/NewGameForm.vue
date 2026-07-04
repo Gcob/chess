@@ -35,61 +35,94 @@
     <section class="new-game-form__section">
       <h2 class="c-h4">{{ $t('newGame.players.title') }}</h2>
       <div class="new-game-form__players">
-        <label class="c-label new-game-form__player">
+        <div class="new-game-form__player">
           <span class="new-game-form__player-label">
             <span class="new-game-form__piece">♔</span>
             {{ $t('newGame.players.white') }}
           </span>
-          <div class="new-game-form__name-row">
-            <input
-              class="c-input"
-              :class="{ 'is-invalid': startAttempted && errors.playerWhiteName }"
-              type="text"
-              v-model="settings.playerWhiteName"
-              :placeholder="$t('newGame.players.whitePlaceholder')"
-            />
+          <div class="new-game-form__identity">
             <button
-              v-tippy="$t('newGame.players.randomName')"
+              v-tippy="$t('newGame.players.chooseAvatar')"
               type="button"
-              class="new-game-form__dice"
-              :aria-label="$t('newGame.players.randomName')"
-              @click="generateName('white')"
+              class="new-game-form__avatar-frame"
+              :aria-label="$t('newGame.players.chooseAvatar')"
+              @click="avatarPickerFor = 'white'"
             >
-              <Dices :size="16" />
+              <PlayerAvatar :id="settings.playerWhiteAvatar" />
             </button>
+            <div class="new-game-form__name-row">
+              <input
+                class="c-input"
+                :class="{ 'is-invalid': startAttempted && errors.playerWhiteName }"
+                type="text"
+                v-model="settings.playerWhiteName"
+                :aria-label="$t('newGame.players.white')"
+                :placeholder="$t('newGame.players.whitePlaceholder')"
+              />
+              <button
+                v-tippy="$t('newGame.players.randomName')"
+                type="button"
+                class="new-game-form__dice"
+                :aria-label="$t('newGame.players.randomName')"
+                @click="generateName('white')"
+              >
+                <Dices :size="16" />
+              </button>
+            </div>
           </div>
           <span v-if="startAttempted && errors.playerWhiteName" class="new-game-form__error">
             {{ $t(`newGame.validation.${errors.playerWhiteName}`) }}
           </span>
-        </label>
-        <label class="c-label new-game-form__player">
+        </div>
+
+        <div class="new-game-form__player">
           <span class="new-game-form__player-label">
             <span class="new-game-form__piece">♚</span>
             {{ $t('newGame.players.black') }}
           </span>
-          <div class="new-game-form__name-row">
-            <input
-              class="c-input"
-              :class="{ 'is-invalid': startAttempted && errors.playerBlackName }"
-              type="text"
-              v-model="settings.playerBlackName"
-              :placeholder="$t('newGame.players.blackPlaceholder')"
-            />
+          <div class="new-game-form__identity">
             <button
-              v-tippy="$t('newGame.players.randomName')"
+              v-tippy="$t('newGame.players.chooseAvatar')"
               type="button"
-              class="new-game-form__dice"
-              :aria-label="$t('newGame.players.randomName')"
-              @click="generateName('black')"
+              class="new-game-form__avatar-frame"
+              :aria-label="$t('newGame.players.chooseAvatar')"
+              @click="avatarPickerFor = 'black'"
             >
-              <Dices :size="16" />
+              <PlayerAvatar :id="settings.playerBlackAvatar" />
             </button>
+            <div class="new-game-form__name-row">
+              <input
+                class="c-input"
+                :class="{ 'is-invalid': startAttempted && errors.playerBlackName }"
+                type="text"
+                v-model="settings.playerBlackName"
+                :aria-label="$t('newGame.players.black')"
+                :placeholder="$t('newGame.players.blackPlaceholder')"
+              />
+              <button
+                v-tippy="$t('newGame.players.randomName')"
+                type="button"
+                class="new-game-form__dice"
+                :aria-label="$t('newGame.players.randomName')"
+                @click="generateName('black')"
+              >
+                <Dices :size="16" />
+              </button>
+            </div>
           </div>
           <span v-if="startAttempted && errors.playerBlackName" class="new-game-form__error">
             {{ $t(`newGame.validation.${errors.playerBlackName}`) }}
           </span>
-        </label>
+        </div>
       </div>
+
+      <AvatarPickerModal
+        :model-value="avatarPickerFor !== null"
+        :selected="editingAvatar"
+        :taken="otherAvatar"
+        @update:model-value="(open) => !open && (avatarPickerFor = null)"
+        @select="selectAvatar"
+      />
     </section>
 
     <!-- Section 3 — Timer -->
@@ -151,6 +184,8 @@ import {Users, Bot, Globe, Link, Dices} from 'lucide-vue-next'
 import {useNewGameStore} from '@/stores/useNewGameStore'
 import {validateNewGamePlayers} from '@/validation/newGame'
 import {randomPlayerName} from '@/utils/randomName'
+import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
+import AvatarPickerModal from '@/components/parts/AvatarPickerModal.vue'
 import type {GameMode} from '@/types/chess'
 import type {Component} from 'vue'
 
@@ -162,10 +197,31 @@ const emit = defineEmits<{ start: [] }>()
 
 // Errors are always computed; shown only after a start attempt, then update live as the user fixes.
 const startAttempted = ref(false)
+// Which player's avatar the modal is editing (null = closed).
+const avatarPickerFor = ref<'white' | 'black' | null>(null)
+const editingAvatar = computed(() =>
+  avatarPickerFor.value === 'black' ? settings.value.playerBlackAvatar : settings.value.playerWhiteAvatar,
+)
+const otherAvatar = computed(() =>
+  avatarPickerFor.value === 'black' ? settings.value.playerWhiteAvatar : settings.value.playerBlackAvatar,
+)
+
+function selectAvatar(id: string) {
+  if (avatarPickerFor.value === 'white') {
+    settings.value.playerWhiteAvatar = id
+  } else if (avatarPickerFor.value === 'black') {
+    settings.value.playerBlackAvatar = id
+  }
+
+  avatarPickerFor.value = null
+}
+
 const errors = computed(() =>
   validateNewGamePlayers({
     playerWhiteName: settings.value.playerWhiteName,
     playerBlackName: settings.value.playerBlackName,
+    playerWhiteAvatar: settings.value.playerWhiteAvatar,
+    playerBlackAvatar: settings.value.playerBlackAvatar,
   }),
 )
 
@@ -368,13 +424,16 @@ const timerSummary = computed(() => {
   &__players {
     display: flex;
     flex-direction: column;
-    gap: $spacing-3;
+    gap: $spacing-5;
   }
 
   &__player {
+    // was a .c-label (which provided display:flex) — now a plain div, so set it here,
+    // otherwise the column gap collapses and the label sticks to the input.
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: $spacing-2;
+    gap: $spacing-3;
 
     .c-input.is-invalid {
       border-color: var(--danger);
@@ -383,8 +442,9 @@ const timerSummary = computed(() => {
 
   &__name-row {
     display: flex;
+    flex: 1;
     gap: $spacing-2;
-    width: 100%;
+    min-width: 0;
 
     .c-input {
       flex: 1;
@@ -407,6 +467,31 @@ const timerSummary = computed(() => {
 
     &:hover {
       color: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+
+  &__identity {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-2;
+    width: 100%;
+  }
+
+  &__avatar-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    padding: 5px;
+    background: var(--bg-elevated);
+    border: $border-width-base solid var(--border-color);
+    border-radius: $border-radius-base;
+    cursor: pointer;
+    transition: border-color $transition-fast;
+
+    &:hover {
       border-color: var(--accent);
     }
   }

@@ -86,6 +86,7 @@ export default {
       whitePlaceholder: 'Player 1',
       blackPlaceholder: 'Player 2',
       randomName: 'Random name',
+      chooseAvatar: 'Choose an avatar',
     },
     timer: {
       title: 'Clock',

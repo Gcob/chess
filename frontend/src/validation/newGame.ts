@@ -7,15 +7,23 @@ const playersSchema = z
   .object({
     playerWhiteName: z.string().trim().min(1, 'required'),
     playerBlackName: z.string().trim().min(1, 'required'),
+    playerWhiteAvatar: z.string(),
+    playerBlackAvatar: z.string(),
   })
   .refine(d => d.playerWhiteName !== d.playerBlackName, {
     path: ['playerBlackName'],
     message: 'sameName',
   })
+  .refine(d => d.playerWhiteAvatar !== d.playerBlackAvatar, {
+    path: ['playerBlackAvatar'],
+    message: 'sameImage',
+  })
 
 export interface NewGamePlayersInput {
   playerWhiteName: string
   playerBlackName: string
+  playerWhiteAvatar: string
+  playerBlackAvatar: string
 }
 
 export type NewGamePlayersErrors = Partial<Record<keyof NewGamePlayersInput, string>>

@@ -102,3 +102,11 @@ Ce fallback vit uniquement dans `useChessTheme`, nulle part ailleurs.
 `Piece` dans `chess.ts` n'a plus de champ `images`.
 Les images viennent exclusivement du thème actif via `useChessTheme().getPieceImage()`.
 Un composant identifie la bonne image avec `piece.color` + `piece.type`.
+
+## Avatars de joueur — `src/themes/avatars.ts`
+
+Liste **hardcodée** d'avatars SVG placeholder (`{ id, svg }`, formes plates simples), rendus par
+`PlayerAvatar` (v-html du SVG statique). Dans le new-game form, l'avatar choisi s'affiche dans un cadre
+à gauche du nom (l'identité du joueur) ; cliquer ouvre `AvatarPickerModal`.
+Règle Zod : deux joueurs ne peuvent pas partager le même avatar (la modale désactive aussi l'avatar
+déjà pris par l'autre). À remplacer par de vrais avatars plus tard.
