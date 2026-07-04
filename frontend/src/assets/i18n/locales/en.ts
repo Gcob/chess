@@ -63,6 +63,10 @@ export default {
     title: 'New Game',
     subtitle: 'Configure your game before starting.',
     startButton: 'Start Game',
+    validation: {
+      required: 'Enter a name',
+      sameName: 'Players must have different names',
+    },
     mode: {
       title: 'Game Mode',
       comingSoon: 'Coming soon',

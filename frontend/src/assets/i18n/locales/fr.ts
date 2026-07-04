@@ -63,6 +63,10 @@ export default {
     title: 'Nouvelle partie',
     subtitle: 'Configure ta partie avant de commencer.',
     startButton: 'Lancer la partie',
+    validation: {
+      required: 'Entre un nom',
+      sameName: 'Les joueurs doivent avoir des noms différents',
+    },
     mode: {
       title: 'Mode de jeu',
       comingSoon: 'À venir',

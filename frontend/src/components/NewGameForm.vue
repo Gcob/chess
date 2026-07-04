@@ -42,10 +42,14 @@
           </span>
           <input
             class="c-input"
+            :class="{ 'is-invalid': startAttempted && errors.playerWhiteName }"
             type="text"
             v-model="settings.playerWhiteName"
             :placeholder="$t('newGame.players.whitePlaceholder')"
           />
+          <span v-if="startAttempted && errors.playerWhiteName" class="new-game-form__error">
+            {{ $t(`newGame.validation.${errors.playerWhiteName}`) }}
+          </span>
         </label>
         <label class="c-label new-game-form__player">
           <span class="new-game-form__player-label">
@@ -54,10 +58,14 @@
           </span>
           <input
             class="c-input"
+            :class="{ 'is-invalid': startAttempted && errors.playerBlackName }"
             type="text"
             v-model="settings.playerBlackName"
             :placeholder="$t('newGame.players.blackPlaceholder')"
           />
+          <span v-if="startAttempted && errors.playerBlackName" class="new-game-form__error">
+            {{ $t(`newGame.validation.${errors.playerBlackName}`) }}
+          </span>
         </label>
       </div>
     </section>
@@ -107,18 +115,19 @@
     <!-- Section 4 — Actions -->
     <div class="new-game-form__actions">
       <cButton variant="ter" :to="{ name: 'home' }">{{ $t('common.cancel') }}</cButton>
-      <cButton @click="$emit('start')">{{ $t('newGame.startButton') }}</cButton>
+      <cButton @click="handleStart">{{ $t('newGame.startButton') }}</cButton>
     </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed} from 'vue'
+import {computed, ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {storeToRefs} from 'pinia'
 import {Users, Bot, Globe, Link} from 'lucide-vue-next'
 import {useNewGameStore} from '@/stores/useNewGameStore'
+import {validateNewGamePlayers} from '@/validation/newGame'
 import type {GameMode} from '@/types/chess'
 import type {Component} from 'vue'
 
@@ -126,7 +135,23 @@ const {t} = useI18n()
 const store = useNewGameStore()
 const {settings} = storeToRefs(store)
 
-defineEmits<{ start: [] }>()
+const emit = defineEmits<{ start: [] }>()
+
+// Errors are always computed; shown only after a start attempt, then update live as the user fixes.
+const startAttempted = ref(false)
+const errors = computed(() =>
+  validateNewGamePlayers({
+    playerWhiteName: settings.value.playerWhiteName,
+    playerBlackName: settings.value.playerBlackName,
+  }),
+)
+
+function handleStart() {
+  startAttempted.value = true
+  if (Object.keys(errors.value).length === 0) {
+    emit('start')
+  }
+}
 
 interface ModeOption {
   value: GameMode
@@ -315,7 +340,16 @@ const timerSummary = computed(() => {
 
     .c-input {
       width: 100%;
+
+      &.is-invalid {
+        border-color: var(--danger);
+      }
     }
+  }
+
+  &__error {
+    color: var(--danger);
+    font-size: $font-size-sm;
   }
 
   &__player-label {

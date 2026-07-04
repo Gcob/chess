@@ -9,6 +9,7 @@
 - i18n pour les traductions
 - Lucide pour les icônes (import individuel depuis `lucide-vue-next`, pas d'enregistrement global)
 - vue-tippy pour les tooltips (plugin global dans `main.ts`, directive `v-tippy`)
+- Zod pour la validation (schémas purs dans `src/validation/`, agnostiques de Vue)
 
 ## Structure des dossiers
 
@@ -41,7 +42,8 @@ src/
 ├── stores/
 ├── types/
 │   └── chess.ts                   # tout le domaine échecs
-└── utils/                         # helpers purs (ex. boardCoords — case ↔ coords de grille)
+├── utils/                         # helpers purs (ex. boardCoords — case ↔ coords de grille)
+└── validation/                    # schémas Zod purs (messages = codes, mappés en i18n par l'UI)
 ```
 
 ## Conventions générales
