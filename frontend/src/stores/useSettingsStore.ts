@@ -1,10 +1,12 @@
 import {defineStore} from 'pinia'
 import {ref, watch} from 'vue'
 import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
+import type {BoardSize} from '@/types/look-and-feel'
 
 export interface Settings {
   boardThemeId: BoardThemes
   pieceThemeId: PieceThemes
+  boardSize: BoardSize
 }
 
 const STORAGE_KEY = 'settings'
@@ -12,6 +14,7 @@ const STORAGE_KEY = 'settings'
 const DEFAULTS: Settings = {
   boardThemeId: BoardThemes.Wood,
   pieceThemeId: PieceThemes.Classic,
+  boardSize: 'normal',
 }
 
 function loadFromStorage(): Settings {

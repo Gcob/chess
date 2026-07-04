@@ -5,10 +5,10 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  padding-top: 40px;
+  padding-top: $topbar-height;
 
   @include breakpoint-down($breakpoint-sm) {
-    padding-top: 52px;
+    padding-top: $topbar-height-mobile;
   }
 }
 

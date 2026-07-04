@@ -19,6 +19,10 @@ export type ImageFormat = 'svg' | 'png'
 // apply at once and stack. New states = add a value here, a colour, and a source.
 export type SquareHighlight = 'drop-target' | 'last-move' | 'selected'
 
+// Board display size — a per-viewer preference. 'full' fills the available height; the others
+// are fixed steps. Mapped to concrete pixels by the board area.
+export type BoardSize = 'small' | 'normal' | 'large' | 'full'
+
 // How a piece animates when it changes cell. Pure view vocabulary — the engine never
 // knows about it; the render layer decides which one applies to a given move.
 //   slide     — straight-line translate (covers both linear and diagonal moves)

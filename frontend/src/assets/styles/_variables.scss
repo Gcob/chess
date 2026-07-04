@@ -112,3 +112,9 @@ $breakpoint-sm: 640px;
 $breakpoint-md: 768px;
 $breakpoint-lg: 1024px;
 $breakpoint-xl: 1280px;
+
+// --- Shell heights (fixed, so layouts can compute available space) ---
+
+$topbar-height: 40px;
+$topbar-height-mobile: 52px;
+$footer-height: 80px;

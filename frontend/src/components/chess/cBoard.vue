@@ -1,17 +1,5 @@
 <template>
   <div class="c-board">
-    <div class="c-board__controls">
-      <button
-        v-tippy="$t('game.rotateBoard')"
-        type="button"
-        class="c-board__rotate"
-        :aria-label="$t('game.rotateBoard')"
-        @click="rotate"
-      >
-        <ArrowUpDown :size="18" />
-      </button>
-    </div>
-
     <cBoardFrame :orientation="orientation" :highlight-file="hoveredFile" :highlight-rank="hoveredRank">
       <div
         ref="areaEl"
@@ -55,7 +43,6 @@
 
 <script lang="ts" setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ArrowUpDown} from 'lucide-vue-next'
 import type {Board, PieceColor, SquareFile, SquareKey, SquareRank} from '@/types/chess'
 import type {PieceAnimation, SquareHighlight} from '@/types/look-and-feel'
 import {getBoardPieces} from '@/engine/board'
@@ -69,12 +56,11 @@ const props = defineProps<{
   board: Board
   // px — controls everything inside via the grid
   size?: number
-  // which color sits at the bottom; defaults to white (v-model)
+  // which color sits at the bottom; driven by the parent (mode policy). Defaults to white.
   orientation?: PieceColor
 }>()
 
 const emit = defineEmits<{
-  'update:orientation': [PieceColor]
   move: [from: SquareKey, to: SquareKey]
 }>()
 
@@ -85,11 +71,6 @@ const orientation = computed<PieceColor>(() => props.orientation ?? 'white')
 
 // Selected square for click-to-move. Any unrelated action clears it (drag start, rotation, a move).
 const selected = ref<SquareKey | null>(null)
-
-function rotate() {
-  selected.value = null
-  emit('update:orientation', orientation.value === 'white' ? 'black' : 'white')
-}
 
 // Rows top → bottom, columns left → right, both flipped for a black-down board.
 // Order must mirror squareToCoords so the piece overlay lines up with the grid.
@@ -227,7 +208,10 @@ function teleportThenRestore() {
     })
   })
 }
-watch(orientation, teleportThenRestore)
+watch(orientation, () => {
+  selected.value = null // a flip is an unrelated action — drop any selection
+  teleportThenRestore()
+})
 onBeforeUnmount(() => cancelAnimationFrame(restoreRaf))
 
 const areaStyle = computed(() => {
@@ -238,39 +222,7 @@ const areaStyle = computed(() => {
 
 <style lang="scss">
 .c-board {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-2;
   flex-shrink: 0;
-
-  &__controls {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  &__rotate {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: $spacing-2;
-    color: var(--text-secondary);
-    background: transparent;
-    border: $border-width-base solid var(--border-color-strong);
-    border-radius: $border-radius-base;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-      color: var(--text-primary);
-      background: var(--bg-hover);
-      border-color: var(--text-muted);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-  }
 
   &__area {
     // anchors the grid, the overlay, and the drag rect math

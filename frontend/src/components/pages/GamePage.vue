@@ -1,12 +1,9 @@
 <template>
-  <main id="game-page" class="c-page">
-    <cBoard
-      v-if="game"
-      v-model:orientation="orientation"
-      :board="game.board"
-      :size="boardSize"
-      @move="makeMove"
-    />
+  <main id="game-page">
+    <template v-if="view.game">
+      <GameLayoutMobile v-if="isMobile" :view="view" />
+      <GameLayoutDesktop v-else :view="view" />
+    </template>
 
     <div v-else class="game-page__not-found">
       <h1 class="c-h1">{{ $t('game.notFound') }}</h1>
@@ -20,29 +17,35 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { useGameSession } from '@/composables/useGameSession'
-import { usePreventLeave } from '@/composables/usePreventLeave'
-import cBoard from '@/components/chess/cBoard.vue'
-import type { PieceColor } from '@/types/chess'
+import {useRoute} from 'vue-router'
+import {useGameView} from '@/composables/useGameView'
+import {useIsMobile} from '@/composables/useMediaQuery'
+import {usePreventLeave} from '@/composables/usePreventLeave'
+import GameLayoutDesktop from '@/components/game/GameLayoutDesktop.vue'
+import GameLayoutMobile from '@/components/game/GameLayoutMobile.vue'
 
 const route = useRoute()
-const { game, makeMove } = useGameSession(Number(route.params.id))
+const view = useGameView(Number(route.params.id))
+const isMobile = useIsMobile()
 
-usePreventLeave(() => !!game.value)
-
-// Per-viewer render preference, sibling to the themes. Defaults to white-down;
-// later seeded from the local player's color (e.g. black-down vs a bot/online).
-const orientation = ref<PieceColor>('white')
-
-// Fits the board in the available viewport, capped at 640px
-const boardSize = computed(() => Math.min(window.innerWidth, window.innerHeight, 640) * 0.85)
+usePreventLeave(() => !!view.game)
 </script>
 
 <style lang="scss" scoped>
 #game-page {
-  gap: $spacing-8;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: $spacing-4;
+
+  // Desktop: a DEFINITE height (viewport minus the fixed top bar and the fixed-height footer)
+  // so the flex chain can bound the board — no page scroll; inner zones (history) scroll instead.
+  // A flex:1 / min-height chain alone doesn't work here: #app-main is min-height (auto), so there
+  // is no free space to distribute and nothing bounds the board → it grows past the viewport.
+  @include lg {
+    height: calc(100svh - #{$topbar-height} - #{$footer-height});
+    overflow: hidden;
+  }
 }
 
 .game-page__not-found {

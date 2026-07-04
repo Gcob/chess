@@ -119,6 +119,23 @@ overlays translucides sur `cSquare`. Câblé : `drop-target`.
 > le reste (patterns de déplacement, tour, échec) est encore permis. `applyMove` = capture par écrasement.
 > Pas encore de tour / `Move` / pgn.
 
+## Vue de partie (game view)
+
+`GamePage` est un orchestrateur : il crée le **DTO de vue** via `useGameView(id)` (objet réactif — `game`,
+`orientation`, `boardSize`, `activeColor`, handlers `move`/`resign`/`proposeDraw`) et choisit un **layout selon
+la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayoutMobile` vs `GameLayoutDesktop`.
+
+- Les **sections sont partagées** ; seuls les layouts les arrangent (desktop = board + sidebar 3 zones ;
+  mobile = empilé). Le DTO passe en **une prop `:view`** partout (pas de drilling).
+- Les **différences de mode** vivent dans `useGameView` (policy-données). Seul `local` est câblé :
+  le board auto-flip pour suivre le joueur au trait (`orientation = activeColor`). D'où le retrait du
+  bouton « tourner » de `cBoard` (l'orientation est pilotée par la policy).
+- `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, puis les sections (à venir).
+- **Pas de scroll en desktop** : topbar et footer ont des **hauteurs fixes** (`$topbar-height`,
+  `$footer-height`), donc `#game-page` prend `height: calc(100svh - topbar - footer)` (≥ `lg`) — le board
+  se dimensionne à sa zone bornée (`ResizeObserver`), l'historique scrolle en interne. Mobile : hauteur
+  naturelle, la page peut scroller.
+
 ## Settings
 
 - Gérés par `useSettingsStore` (`src/stores/useSettingsStore.ts`)

@@ -72,8 +72,12 @@ const year = new Date().getFullYear()
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: $spacing-2;
-  padding: $spacing-6 $spacing-4;
+  // fixed height (see $footer-height) so layouts can compute available space; never shrinks
+  min-height: $footer-height;
+  flex-shrink: 0;
+  padding: $spacing-2 $spacing-4;
   border-top: 1px solid var(--border-color);
 
   &__links {
