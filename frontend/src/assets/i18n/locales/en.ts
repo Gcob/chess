@@ -96,6 +96,7 @@ export default {
     notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',
     newGame: 'New game',
     rotateBoard: 'Rotate chessboard',
+    leaveConfirm: 'A game is in progress. Leave anyway?',
   },
   chessRules: {
     title: "How to Play Chess",

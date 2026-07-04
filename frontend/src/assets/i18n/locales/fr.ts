@@ -96,6 +96,7 @@ export default {
     notFoundDesc: 'La session #{id} n\'existe pas ou est déjà terminée.',
     newGame: 'Nouvelle partie',
     rotateBoard: "Tourner l'échiquier",
+    leaveConfirm: 'Une partie est en cours. Quitter quand même ?',
   },
   chessRules: {
     "title": "Comment jouer aux échecs",
