@@ -27,12 +27,23 @@ defineProps<{ view: GameView }>()
   flex-direction: column;
   gap: $spacing-2;
   width: 100%;
+  // Grows into whatever leftover height #game-page has (mirrors #game-page's own growth against
+  // #app-main) — never shrinks below its natural content height, so short content still scrolls
+  // normally instead of being squeezed.
+  flex: 1 0 auto;
 
-  // Full-width board; height follows content (the board is square, but its coordinate frame
-  // adds a bit more — forcing aspect-ratio:1 here would clip it). The page may scroll (that's fine).
+  // The one section that consumes leftover height: it grows to fill the space left after the
+  // other sections' natural size. GameBoardArea's own height:100% needs a definite containing
+  // block to resolve, which a flex-grown height isn't always treated as — so centering is done
+  // here too, on the outer box, as the mechanism that actually works. On short content there's
+  // no leftover space, so this just settles at the board's own height like the others.
   &__board {
     display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    flex: 1 0 auto;
+    min-height: 0;
   }
 }
 </style>
