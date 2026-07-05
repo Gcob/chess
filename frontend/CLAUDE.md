@@ -23,6 +23,7 @@ La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier perti
 | `docs/styles.md`        | SCSS, thèmes, typographie, palette                   |
 | `docs/core-ui.md`       | Composants core-ui, composables associés             |
 | `docs/look-and-feel.md` | Thèmes de pièces et de board, assets, useChessTheme  |
+| `docs/engine-roadmap.md`| Phases à venir de l'engine, dettes connues           |
 | `docs/linting.md`       | Conventions de formatage du code (if, accolades…)    |
 
 ## Style de la doc
