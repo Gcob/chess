@@ -66,16 +66,16 @@ describe('adjectiveTextFor', () => {
   it('agrees with the given avatar gender in French', () => {
     setLocale('fr')
     try {
-      expect(adjectiveTextFor('affame', 'unicorn')).toBe('Affamée') // feminine
-      expect(adjectiveTextFor('affame', 'lion')).toBe('Affamé') // masculine
+      expect(adjectiveTextFor('starving', 'unicorn')).toBe('Affamée') // feminine
+      expect(adjectiveTextFor('starving', 'lion')).toBe('Affamé') // masculine
     } finally {
       setLocale('en')
     }
   })
 
   it('ignores gender in English', () => {
-    expect(adjectiveTextFor('affame', 'unicorn')).toBe('Starving')
-    expect(adjectiveTextFor('affame', 'lion')).toBe('Starving')
+    expect(adjectiveTextFor('starving', 'unicorn')).toBe('Starving')
+    expect(adjectiveTextFor('starving', 'lion')).toBe('Starving')
   })
 })
 

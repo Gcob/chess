@@ -48,24 +48,24 @@ export default {
   randomName: {
     format: '{adjective} {noun}',
     // English never conjugates for gender, so there's never a `_f` key here — see tGender.ts.
-    // Keys match the French ids 1:1 (accurate translations, not the old array's arbitrary picks).
+    // Ids are English words (code prioritizes English); fr.ts uses the same keys with French text.
     adjectives: {
-      rapide: 'Swift', rebelle: 'Rebel', timide: 'Shy', feroce: 'Fierce', increvable: 'Tireless',
-      drole: 'Funny', enorme: 'Giant', magique: 'Magic', cosmique: 'Cosmic', tranquille: 'Chill',
-      terrible: 'Terrible', supreme: 'Supreme', adorable: 'Adorable', incroyable: 'Incredible',
-      invincible: 'Invincible', sauvage: 'Wild', bizarre: 'Bizarre', atomique: 'Atomic',
-      redoutable: 'Fearsome', legendaire: 'Legendary', turbo: 'Turbo',
-      volcanique: 'Volcanic', indomptable: 'Untamed', fantastique: 'Fantastic', formidable: 'Mighty',
-      sympathique: 'Friendly', extraordinaire: 'Extraordinary', habile: 'Skillful', agile: 'Agile',
-      solide: 'Sturdy', heroique: 'Heroic', epique: 'Epic', galactique: 'Galactic',
-      stellaire: 'Stellar', vorace: 'Ravenous', tenace: 'Relentless', sublime: 'Sublime',
-      intrepide: 'Intrepid', splendide: 'Splendid',
+      swift: 'Swift', rebel: 'Rebel', shy: 'Shy', fierce: 'Fierce', tireless: 'Tireless',
+      funny: 'Funny', giant: 'Giant', magic: 'Magic', cosmic: 'Cosmic', chill: 'Chill',
+      terrible: 'Terrible', supreme: 'Supreme', adorable: 'Adorable', incredible: 'Incredible',
+      invincible: 'Invincible', wild: 'Wild', bizarre: 'Bizarre', atomic: 'Atomic',
+      fearsome: 'Fearsome', legendary: 'Legendary',
+      untamed: 'Untamed', fantastic: 'Fantastic', mighty: 'Mighty',
+      friendly: 'Friendly', extraordinary: 'Extraordinary', skillful: 'Skillful', agile: 'Agile',
+      sturdy: 'Sturdy', heroic: 'Heroic', epic: 'Epic',
+      ravenous: 'Ravenous', relentless: 'Relentless', sublime: 'Sublime',
+      intrepid: 'Intrepid', splendid: 'Splendid',
       // Emotions and silly physical traits — pairs with the gendered FR forms above (no `_f` here).
-      affame: 'Starving', repu: 'Stuffed', monocle: 'Monocled', moustachu: 'Mustachioed',
-      barbu: 'Bearded', cornu: 'Horned', dodu: 'Chubby', jaloux: 'Jealous', amoureux: 'Smitten',
-      anxieux: 'Anxious', joyeux: 'Joyful', curieux: 'Curious', confus: 'Confused',
-      epuise: 'Exhausted', effronte: 'Cheeky', fache: 'Cranky', etonne: 'Astonished',
-      ebouriffe: 'Tousled', chatouilleux: 'Ticklish', grognon: 'Grumpy',
+      starving: 'Starving', stuffed: 'Stuffed', monocled: 'Monocled', mustachioed: 'Mustachioed',
+      bearded: 'Bearded', chubby: 'Chubby', jealous: 'Jealous', smitten: 'Smitten',
+      anxious: 'Anxious', joyful: 'Joyful', curious: 'Curious', confused: 'Confused',
+      cheeky: 'Cheeky', astonished: 'Astonished',
+      ticklish: 'Ticklish', grumpy: 'Grumpy',
     },
   },
   footer: {

@@ -10,19 +10,19 @@ function fakeTranslator(messages: Record<string, string>) {
 
 describe('tGender', () => {
   it('uses the gendered key when it exists', () => {
-    const i18n = fakeTranslator({affame: 'Affamé', affame_f: 'Affamée'})
-    expect(tGender(i18n, 'affame', 'f')).toBe('Affamée')
-    expect(tGender(i18n, 'affame', 'm')).toBe('Affamé')
+    const i18n = fakeTranslator({starving: 'Affamé', starving_f: 'Affamée'})
+    expect(tGender(i18n, 'starving', 'f')).toBe('Affamée')
+    expect(tGender(i18n, 'starving', 'm')).toBe('Affamé')
   })
 
   it('falls back to the base key when the gendered key does not exist', () => {
-    const i18n = fakeTranslator({rapide: 'Rapide'})
-    expect(tGender(i18n, 'rapide', 'f')).toBe('Rapide')
-    expect(tGender(i18n, 'rapide', 'm')).toBe('Rapide')
+    const i18n = fakeTranslator({swift: 'Rapide'})
+    expect(tGender(i18n, 'swift', 'f')).toBe('Rapide')
+    expect(tGender(i18n, 'swift', 'm')).toBe('Rapide')
   })
 
   it('uses the base key directly when gender is undefined', () => {
-    const i18n = fakeTranslator({affame: 'Affamé', affame_f: 'Affamée'})
-    expect(tGender(i18n, 'affame')).toBe('Affamé')
+    const i18n = fakeTranslator({starving: 'Affamé', starving_f: 'Affamée'})
+    expect(tGender(i18n, 'starving')).toBe('Affamé')
   })
 })

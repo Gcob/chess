@@ -11,15 +11,14 @@ import {tGender} from '@/utils/tGender'
 // Internal ids for the adjective pool — every locale must provide a base translation for each one;
 // only locales that conjugate (currently French) add `_f` overrides for the ones that vary.
 export const ADJECTIVE_IDS = [
-  'rapide', 'rebelle', 'timide', 'feroce', 'increvable', 'drole', 'enorme', 'magique', 'cosmique',
-  'tranquille', 'terrible', 'supreme', 'adorable', 'incroyable', 'invincible', 'sauvage', 'bizarre',
-  'atomique', 'redoutable', 'legendaire', 'turbo', 'volcanique', 'indomptable',
-  'fantastique', 'formidable', 'sympathique', 'extraordinaire', 'habile', 'agile', 'solide',
-  'heroique', 'epique', 'galactique', 'stellaire', 'vorace', 'tenace', 'sublime', 'intrepide',
-  'splendide',
-  'affame', 'repu', 'monocle', 'moustachu', 'barbu', 'cornu', 'dodu', 'jaloux', 'amoureux',
-  'anxieux', 'joyeux', 'curieux', 'confus', 'epuise', 'effronte', 'fache', 'etonne', 'ebouriffe',
-  'chatouilleux', 'grognon',
+  'swift', 'rebel', 'shy', 'fierce', 'tireless', 'funny', 'giant', 'magic', 'cosmic',
+  'chill', 'terrible', 'supreme', 'adorable', 'incredible', 'invincible', 'wild', 'bizarre',
+  'atomic', 'fearsome', 'legendary', 'untamed',
+  'fantastic', 'mighty', 'friendly', 'extraordinary', 'skillful', 'agile', 'sturdy',
+  'heroic', 'epic', 'ravenous', 'relentless', 'sublime', 'intrepid', 'splendid',
+  'starving', 'stuffed', 'monocled', 'mustachioed', 'bearded', 'chubby', 'jealous', 'smitten',
+  'anxious', 'joyful', 'curious', 'confused', 'cheeky', 'astonished',
+  'ticklish', 'grumpy',
 ] as const
 
 function pick<T>(list: readonly T[]): T {
