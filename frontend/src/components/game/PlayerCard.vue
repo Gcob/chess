@@ -67,6 +67,11 @@ const clock = computed(() => {
   border-radius: $border-radius-base;
   transition: border-color $transition-fast, background $transition-fast;
 
+  @include breakpoint-down($breakpoint-sm) {
+    gap: $spacing-2;
+    padding: $spacing-1 $spacing-2;
+  }
+
   &.is-active {
     border-color: var(--accent);
     background: var(--accent-subtle);
@@ -77,6 +82,11 @@ const clock = computed(() => {
     flex-shrink: 0;
     width: 2.5rem;
     height: 2.5rem;
+
+    @include breakpoint-down($breakpoint-sm) {
+      width: 2rem;
+      height: 2rem;
+    }
   }
 
   &__info {
@@ -92,6 +102,10 @@ const clock = computed(() => {
     align-items: center;
     gap: $spacing-2;
     min-width: 0;
+
+    @include breakpoint-down($breakpoint-sm) {
+      gap: $spacing-1;
+    }
   }
 
   &__turn {
@@ -106,6 +120,10 @@ const clock = computed(() => {
     font-weight: $font-weight-semibold;
     color: var(--text-primary);
     @include text-truncate;
+
+    @include breakpoint-down($breakpoint-sm) {
+      font-size: $font-size-sm;
+    }
   }
 
   &__color {
@@ -119,6 +137,10 @@ const clock = computed(() => {
     align-items: center;
     gap: $spacing-2;
     min-height: 1rem;
+
+    @include breakpoint-down($breakpoint-sm) {
+      gap: $spacing-1;
+    }
   }
 
   &__material {
@@ -132,6 +154,10 @@ const clock = computed(() => {
     font-family: $font-family-mono;
     font-size: $font-size-lg;
     color: var(--text-primary);
+
+    @include breakpoint-down($breakpoint-sm) {
+      font-size: $font-size-base;
+    }
   }
 }
 </style>

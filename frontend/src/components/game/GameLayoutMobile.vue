@@ -25,7 +25,7 @@ defineProps<{ view: GameView }>()
 .game-mobile {
   display: flex;
   flex-direction: column;
-  gap: $spacing-5;
+  gap: $spacing-2;
   width: 100%;
 
   // full-width square board; the page may scroll on mobile (that's fine)

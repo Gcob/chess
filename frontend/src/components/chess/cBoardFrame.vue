@@ -78,6 +78,15 @@ const rankLabels = computed(() => (props.orientation === 'white' ? [...RANKS].re
   border-radius: $border-radius-base;
   box-shadow: $shadow-xl;
 
+  // labels float directly on the page background — no frame to contain them
+  @include breakpoint-down($breakpoint-sm) {
+    --coord: 1rem;
+    background: none;
+    border: none;
+    box-shadow: none;
+
+  }
+
   &__files,
   &__ranks {
     display: grid;
@@ -87,6 +96,10 @@ const rankLabels = computed(() => (props.orientation === 'white' ? [...RANKS].re
     line-height: 1;
     color: var(--text-muted);
     user-select: none;
+
+    @include breakpoint-down($breakpoint-sm) {
+      font-size: 0.6rem;
+    }
   }
 
   &__files {
