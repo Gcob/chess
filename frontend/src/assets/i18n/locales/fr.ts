@@ -159,8 +159,6 @@ export default {
       blackPlaceholder: 'Joueur 2',
       randomName: 'Nom aléatoire',
       chooseAvatar: 'Choisir un avatar',
-      avatarConfirm: 'Choisir',
-      avatarConfirmWithName: 'Choisir + nom rigolo',
     },
     timer: {
       title: 'Horloge',

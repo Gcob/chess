@@ -143,8 +143,6 @@ export default {
       blackPlaceholder: 'Player 2',
       randomName: 'Random name',
       chooseAvatar: 'Choose an avatar',
-      avatarConfirm: 'Choose',
-      avatarConfirmWithName: 'Choose + fun name',
     },
     timer: {
       title: 'Clock',

@@ -13,36 +13,43 @@ export interface Avatar {
 }
 
 export const AVATARS: Avatar[] = [
+  // Animals
   {id: 'fox', emoji: '🦊', gender: {fr: 'm'}},
   {id: 'frog', emoji: '🐸', gender: {fr: 'f'}},
   {id: 'octopus', emoji: '🐙', gender: {fr: 'f'}},
   {id: 'cat', emoji: '🐱', gender: {fr: 'm'}},
   {id: 'owl', emoji: '🦉', gender: {fr: 'm'}},
   {id: 'penguin', emoji: '🐧', gender: {fr: 'm'}},
-  {id: 'unicorn', emoji: '🦄', gender: {fr: 'f'}},
   {id: 'turtle', emoji: '🐢', gender: {fr: 'f'}},
   {id: 'dino', emoji: '🦖', gender: {fr: 'm'}},
   {id: 'panda', emoji: '🐼', gender: {fr: 'm'}},
   {id: 'lion', emoji: '🦁', gender: {fr: 'm'}},
   {id: 'monkey', emoji: '🐵', gender: {fr: 'm'}},
+  {id: 'dog', emoji: '🐶', gender: {fr: 'm'}},
+  {id: 'ecureuil', emoji: '🐿️', gender: {fr: 'm'}},
+
+  // Fantasy characters
+  {id: 'unicorn', emoji: '🦄', gender: {fr: 'f'}},
   {id: 'robot', emoji: '🤖', gender: {fr: 'm'}},
   {id: 'alien', emoji: '👽', gender: {fr: 'm'}},
   {id: 'ghost', emoji: '👻', gender: {fr: 'm'}},
-  {id: 'dog', emoji: '🐶', gender: {fr: 'm'}},
+
+  // Food & veggies
   {id: 'patate', emoji: '🥔', gender: {fr: 'f'}},
   {id: 'brocoli', emoji: '🥦', gender: {fr: 'm'}},
-  {id: 'moustache', emoji: '🥸', gender: {fr: 'f'}},
-  {id: 'chaussette', emoji: '🧦', gender: {fr: 'f'}},
-  {id: 'casquette', emoji: '🧢', gender: {fr: 'f'}},
-  {id: 'pantoufle', emoji: '🥿', gender: {fr: 'f'}},
-  {id: 'cactus', emoji: '🌵', gender: {fr: 'm'}},
   {id: 'ketchup', emoji: '🍅', gender: {fr: 'm'}},
   {id: 'gaufre', emoji: '🧇', gender: {fr: 'f'}},
   {id: 'nouille', emoji: '🍜', gender: {fr: 'f'}},
   {id: 'guimauve', emoji: '🍬', gender: {fr: 'f'}},
   {id: 'citrouille', emoji: '🎃', gender: {fr: 'f'}},
   {id: 'concombre', emoji: '🥒', gender: {fr: 'm'}},
-  {id: 'ecureuil', emoji: '🐿️', gender: {fr: 'm'}},
+
+  // Objects
+  {id: 'moustache', emoji: '🥸', gender: {fr: 'f'}},
+  {id: 'chaussette', emoji: '🧦', gender: {fr: 'f'}},
+  {id: 'casquette', emoji: '🧢', gender: {fr: 'f'}},
+  {id: 'pantoufle', emoji: '🥿', gender: {fr: 'f'}},
+  {id: 'cactus', emoji: '🌵', gender: {fr: 'm'}},
 ]
 
 export const AVATAR_IDS = AVATARS.map(a => a.id)

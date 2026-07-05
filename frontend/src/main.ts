@@ -21,6 +21,11 @@ app.use(VueTippy, {
   defaultProps: {
     delay: 0,
     arrow: true,
+    // Touch trigger shows the tooltip AND fires the underlying click at once, so on action
+    // buttons (all our tippy usages) it can outlive the click's effect — e.g. a leftover
+    // tooltip floating over a modal the click just opened. Tooltips are a hover affordance
+    // anyway; touch devices have no hover, so just skip them there.
+    touch: false,
   },
 })
 

@@ -4,7 +4,6 @@
     <div class="players-section__players">
       <div class="players-section__player">
         <span class="players-section__label">
-          <span class="players-section__piece">♔</span>
           {{ $t('newGame.players.white') }}
         </span>
         <div class="players-section__identity">
@@ -44,7 +43,6 @@
 
       <div class="players-section__player">
         <span class="players-section__label">
-          <span class="players-section__piece">♚</span>
           {{ $t('newGame.players.black') }}
         </span>
         <div class="players-section__identity">
@@ -159,9 +157,10 @@ const otherAvatar = computed(() =>
   avatarPickerFor.value === 'black' ? props.settings.playerWhiteAvatar : props.settings.playerBlackAvatar,
 )
 
-// Applies the chosen avatar; withName also renames the player after it ("{Avatar} {random adjective}"),
-// so renaming is opt-in and never a surprise side effect.
-function selectAvatar(id: string, withName: boolean) {
+// Applies the chosen avatar. If the current name still contains the previous avatar's noun
+// (e.g. "Patate Folle"), swap it for the new one ("Robot Folle") — a custom name (e.g. "Bob")
+// has no such substring, so it's left untouched.
+function selectAvatar(id: string) {
   const color = avatarPickerFor.value
   if (!color) {
     return
@@ -169,12 +168,12 @@ function selectAvatar(id: string, withName: boolean) {
 
   const nameKey = color === 'white' ? 'playerWhiteName' : 'playerBlackName'
   const avatarKey = color === 'white' ? 'playerWhiteAvatar' : 'playerBlackAvatar'
+  const previousNoun = t(`avatars.${props.settings[avatarKey]}`)
+  const newNoun = t(`avatars.${id}`)
+  props.settings[nameKey] = props.settings[nameKey].replace(previousNoun, newNoun)
   props.settings[avatarKey] = id
   // New avatar → new noun → start a fresh adjective bag for this player.
   adjectiveBags[color] = []
-  if (withName) {
-    props.settings[nameKey] = buildName(color, id)
-  }
 
   avatarPickerFor.value = null
 }
@@ -196,7 +195,7 @@ function selectAvatar(id: string, withName: boolean) {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: $spacing-3;
+    gap: $spacing-1;
 
     .c-input.is-invalid {
       border-color: var(--danger);
@@ -206,8 +205,8 @@ function selectAvatar(id: string, withName: boolean) {
   &__label {
     display: flex;
     align-items: center;
-    gap: $spacing-2;
-    font-weight: $font-weight-medium;
+    gap: 0;
+    font-size: 0.8rem;
     color: var(--text-primary);
   }
 

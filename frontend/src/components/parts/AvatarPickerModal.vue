@@ -13,28 +13,22 @@
         v-tippy="$t(`avatars.${id}`)"
         type="button"
         class="avatar-picker__item"
-        :class="{ 'is-selected': id === localId, 'is-disabled': id === taken }"
+        :class="{ 'is-selected': id === selected, 'is-disabled': id === taken }"
         :disabled="id === taken"
         :aria-label="$t(`avatars.${id}`)"
-        @click="localId = id"
+        @click="choose(id)"
       >
         <PlayerAvatar :id="id" />
       </button>
     </div>
-
-    <template #footer>
-      <cButton variant="sec" @click="confirm(false)">{{ $t('newGame.players.avatarConfirm') }}</cButton>
-      <cButton @click="confirm(true)">{{ $t('newGame.players.avatarConfirmWithName') }}</cButton>
-    </template>
   </cModal>
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue'
 import {AVATAR_IDS} from '@/themes/avatars'
 import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
 
-const props = defineProps<{
+defineProps<{
   modelValue: boolean
   selected: string      // the editing player's current avatar
   taken: string         // the other player's avatar — disabled to prevent duplicates
@@ -42,24 +36,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  select: [id: string, withName: boolean]
+  select: [id: string]
 }>()
 
 const avatarIds = AVATAR_IDS
 
-// Local (tentative) selection — committed only when a footer button is pressed.
-const localId = ref(props.selected)
-watch(
-  () => props.modelValue,
-  open => {
-    if (open) {
-      localId.value = props.selected
-    }
-  },
-)
-
-function confirm(withName: boolean) {
-  emit('select', localId.value, withName)
+// Picking an avatar commits immediately and closes the modal — no separate confirm step.
+// (Taken avatars are disabled, so this never fires for them.)
+function choose(id: string) {
+  emit('select', id)
+  emit('update:modelValue', false)
 }
 </script>
 
