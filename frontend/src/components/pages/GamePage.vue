@@ -25,7 +25,11 @@ import GameLayoutDesktop from '@/components/game/GameLayoutDesktop.vue'
 import GameLayoutMobile from '@/components/game/GameLayoutMobile.vue'
 
 const route = useRoute()
-const view = useGameView(Number(route.params.id))
+
+// route.params.id is string | string[] — normalize to one string; an unknown or malformed id
+// simply finds no session and falls into the not-found state below.
+const rawId = route.params.id
+const view = useGameView(Array.isArray(rawId) ? (rawId[0] ?? '') : (rawId ?? ''))
 const isMobile = useIsMobile()
 
 usePreventLeave(() => !!view.game)

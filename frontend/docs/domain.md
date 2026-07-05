@@ -36,7 +36,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans les
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
 | `Capture`     | Capture (pièce capturée)                                                                                    |
-| `Move`        | Déplacement (pgn, elapsedSeconds, fromSquare, toSquare, affectedPieces, moveTypes, capture?, previousMove?) |
+| `Move`        | Déplacement plain data (san, color, from/to en SquareKey, elapsedSeconds, capture?)                         |
 | `Game`        | Partie (createdAt, startedAt, status, mode, activeColor, time?, type, players{white,black}, board, moves)   |
 | `GameSession` | Composition `{ id: number, game: Game }` — pas d'héritage de `Game`                                         |
 
@@ -118,8 +118,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Sert de `key` Vue pour la couche d'animation des pièces — la même pièce = le même nœud DOM qui glisse.
 - `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement.
   Requis pour : droits de roque (roi + tours), double avance initiale du pion.
-- `Move.pgn` contient la notation **SAN** (Standard Algebraic Notation) —
-  ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`
+- `Move.san` contient la notation **SAN** (Standard Algebraic Notation) —
+  ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`. Le PGN (format de partie complète) viendra plus tard.
 
 ## Concepts à intégrer éventuellement
 

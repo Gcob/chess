@@ -8,7 +8,7 @@ import type {PieceColor, SquareKey} from '@/types/chess'
 //
 // Mode-dependent behaviour lives here in ONE place (the orientation policy for now). Only 'local'
 // is implemented — other modes add their case here rather than scattering conditions in the UI.
-export function useGameView(id: number) {
+export function useGameView(id: string) {
   const session = useGameSession(id)
   const settingsStore = useSettingsStore()
 

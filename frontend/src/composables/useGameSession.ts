@@ -3,7 +3,7 @@ import { useGamesStore } from '@/stores/useGamesStore'
 import { canMove, applyMove } from '@/engine/move'
 import type { SquareKey } from '@/types/chess'
 
-export function useGameSession(id: number) {
+export function useGameSession(id: string) {
   const store = useGamesStore()
 
   const session = computed(() => store.get(id))
@@ -25,7 +25,7 @@ export function useGameSession(id: number) {
   const isGameOver = computed(() => game.value?.status === 'finished')
 
   // Routes every move through the engine, even while its rules are a placeholder.
-  // TODO: flip activeColor and record the Move/pgn once the rules engine lands.
+  // TODO: flip activeColor and record the Move/san once engine/game.ts lands.
   function makeMove(from: SquareKey, to: SquareKey) {
     const b = board.value
     if (!b || !canMove(b, from, to)) {
@@ -35,11 +35,18 @@ export function useGameSession(id: number) {
     applyMove(b, from, to)
   }
 
-  // TODO: update game status and winner when player model supports it
+  // Interim: the resigner is the player to move (local mode). Moves into engine/game.ts next,
+  // where every finishing path settles result/drawOffer/turnStartedAt together with the status.
   function resign() {
     const g = game.value
-    if (!g) return
+    if (!g || g.status === 'finished') {
+      return
+    }
+
     g.status = 'finished'
+    g.result = {winner: g.activeColor === 'white' ? 'black' : 'white', reason: 'resignation'}
+    g.drawOffer = null
+    g.turnStartedAt = null
   }
 
   return {

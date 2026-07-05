@@ -127,7 +127,7 @@ overlays translucides sur `cSquare`. Câblé : `drop-target`.
 
 > Engine (règles incrémentales) : `canMove` refuse origine vide, non-coup et capture d'une pièce alliée ;
 > le reste (patterns de déplacement, tour, échec) est encore permis. `applyMove` = capture par écrasement.
-> Pas encore de tour / `Move` / pgn.
+> Pas encore de tour / `Move` / san.
 
 ## Vue de partie (game view)
 

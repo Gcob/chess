@@ -7,7 +7,17 @@ export type SquareFile = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h'
 export type SquareRank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type SquareKey = `${SquareFile}${SquareRank}` // 'a1' | 'a2' | ... | 'h8' — all 64 squares
 export type AccountStatus = 'active' | 'inactive' | 'banned'
-export type GameStatus = 'waiting' | 'active' | 'paused' | 'finished'
+export type GameStatus = 'waiting' | 'active' | 'finished'
+// Full domain declared up front — the engine only produces the first three until auto endings land
+export type GameEndReason =
+  | 'resignation'
+  | 'timeout'
+  | 'draw-agreement'
+  | 'checkmate'
+  | 'stalemate'
+  | 'fifty-move-rule'
+  | 'threefold-repetition'
+  | 'insufficient-material'
 export type GameMode = 'local' | 'private-remote' | 'public-remote' | 'vs-bot'
 export type Direction =
   | 'top'
@@ -71,8 +81,9 @@ export interface GameType {
   maxSeconds: number | null
 }
 
+// Whether a clock is running is derived: status + activeColor + turnStartedAt.
+// secondsRemaining is only settled when a move is played — display subtracts the elapsed turn time.
 export interface Timer {
-  isActive: boolean
   secondsRemaining: number
   secondsIncrement: number
 }
@@ -128,26 +139,35 @@ export interface Capture {
   capturedPiece: Piece
 }
 
+// Plain serializable data — SquareKeys instead of Square references (the board graph is circular).
+// En passant context = the previous entry in Game.moves.
 export interface Move {
-  pgn: string // SAN — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
+  san: string // Standard Algebraic Notation — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
+  color: PieceColor
+  from: SquareKey
+  to: SquareKey
   elapsedSeconds: number
-  fromSquare: Square
-  toSquare: Square
-  affectedPieces: Piece[]
-  moveTypes: MoveType[]
   capture?: Capture
-  previousMove?: Move // context required for en passant validation
 }
 
 // ─── Game ────────────────────────────────────────────────────────────────────
+
+// winner null = draw
+export interface GameResult {
+  winner: PieceColor | null
+  reason: GameEndReason
+}
 
 export interface Game {
   createdAt: Date
   startedAt: Date | null // null = not started
   status: GameStatus
+  result: GameResult | null // set exactly when status becomes 'finished'
   mode: GameMode
   activeColor: PieceColor // whose turn it is — source of truth (aligns with FEN w/b)
-  time?: GameTime         // undefined = untimed game
+  drawOffer: PieceColor | null // pending draw offer — playing a move declines it
+  turnStartedAt: number | null // epoch ms — clock base; remaining time is computed, never ticked down
+  time?: GameTime         // undefined = untimed game (local mode only)
   type: GameType
   players: { white: Player; black: Player }
   board: Board
@@ -157,9 +177,9 @@ export interface Game {
 // ─── Session ─────────────────────────────────────────────────────────────────
 
 // A self-contained, independent game instance managed by useGamesStore.
-// id is a simple integer assigned by the store (eventually by the backend).
+// id is a ULID — simulated on the frontend for local games, backend-assigned eventually.
 export interface GameSession {
-  id: number
+  id: string
   game: Game
 }
 

@@ -69,14 +69,25 @@ describe('toBackendPayload', () => {
   })
 })
 
+// Any ULID-shaped string works — the factory doesn't validate it
+const TEST_ID = '01ARZ3NDEKTSV4RRFFQ69G5FAV'
+
 describe('createGameSession', () => {
   it('assigns the given id', () => {
-    const session = createGameSession(basePayload, 42)
-    expect(session.id).toBe(42)
+    const session = createGameSession(basePayload, TEST_ID)
+    expect(session.id).toBe(TEST_ID)
+  })
+
+  it('initializes end-of-game and clock fields empty', () => {
+    const session = createGameSession(basePayload, TEST_ID)
+    expect(session.game.result).toBeNull()
+    expect(session.game.drawOffer).toBeNull()
+    expect(session.game.turnStartedAt).toBeNull()
+    expect(session.game.startedAt).toBeNull()
   })
 
   it('initializes players with correct colors and names', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.players.white.color).toBe('white')
     expect(session.game.players.black.color).toBe('black')
     expect(session.game.players.white.metas.name).toBe('Alice')
@@ -84,43 +95,43 @@ describe('createGameSession', () => {
   })
 
   it('carries the chosen avatar into player metas', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.players.white.metas.image).toBe('circle')
     expect(session.game.players.black.metas.image).toBe('square')
   })
 
   it('initializes players with isInCheck false', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.players.white.isInCheck).toBe(false)
     expect(session.game.players.black.isInCheck).toBe(false)
   })
 
   it('sets no timer when no time provided', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.players.white.timer).toBeUndefined()
     expect(session.game.players.black.timer).toBeUndefined()
   })
 
   it('sets timer on both players when time is provided', () => {
-    const session = createGameSession(timedPayload, 1)
+    const session = createGameSession(timedPayload, TEST_ID)
     expect(session.game.players.white.timer?.secondsRemaining).toBe(600)
     expect(session.game.players.black.timer?.secondsRemaining).toBe(600)
     expect(session.game.players.white.timer?.secondsIncrement).toBe(5)
   })
 
   it('starts with white active and waiting status', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.activeColor).toBe('white')
     expect(session.game.status).toBe('waiting')
   })
 
   it('initializes board with 64 squares', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(Object.keys(session.game.board.squares)).toHaveLength(64)
   })
 
   it('starts with no moves', () => {
-    const session = createGameSession(basePayload, 1)
+    const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.moves).toHaveLength(0)
   })
 })

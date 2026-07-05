@@ -33,9 +33,9 @@ export function toBackendPayload(settings: NewGameSettings): CreateGamePayload {
   }
 }
 
-// Creates a self-contained GameSession from a payload and a store-assigned id.
+// Creates a self-contained GameSession from a payload and a store-assigned ULID.
 // When the backend is wired up, the id will come from the backend response instead.
-export function createGameSession(payload: CreateGamePayload, id: number): GameSession {
+export function createGameSession(payload: CreateGamePayload, id: string): GameSession {
   const {time} = payload
 
   return {
@@ -44,8 +44,11 @@ export function createGameSession(payload: CreateGamePayload, id: number): GameS
       createdAt: new Date(),
       startedAt: null,
       status: 'waiting',
+      result: null,
       mode: payload.mode,
       activeColor: 'white',
+      drawOffer: null,
+      turnStartedAt: null,
       time,
       type: resolveGameType(time),
       players: buildPlayers(payload, time),
@@ -169,7 +172,6 @@ function buildPlayers(payload: CreateGamePayload, time: GameTime | undefined): {
 
 function buildTimer(time: GameTime): Timer {
   return {
-    isActive: false,
     secondsRemaining: time.minutes * 60,
     secondsIncrement: time.secondsIncrement,
   }

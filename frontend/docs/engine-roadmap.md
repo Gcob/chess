@@ -3,6 +3,11 @@
 Point de repère pour suivre la progression de l'engine : les principes sont figés ici, les phases sont des
 checklists cochées au fil du développement.
 
+**Portée : le mode `local` seulement.** On développe l'engine frontend en local exprès pour progresser une
+étape à la fois, avec un retour visuel immédiat — même machine, même client, pas de réseau. La suite
+(backend Laravel : DB, websocket, inter-langue, parties multi-machines) est un autre univers, gardé pour
+plus tard ; cet engine servira de référence pour le bâtir.
+
 ## Principes directeurs (décidés, non négociables)
 
 - **Un gros DTO par partie** — `Game` (wrappé dans `GameSession`) encapsule tout : board, joueurs, coups,
@@ -50,9 +55,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 - [x] Roadmap (ce fichier)
 - [ ] Statuts : `waiting | active | finished` (`paused` retiré), guards par commande dans l'engine
-- [ ] `GameResult` (`winner: PieceColor | null` + `GameEndReason`) dans le DTO
-- [ ] ULID simulé (`src/utils/ulid.ts`) + `GameSession.id: string` propagé (store, factory, routes)
-- [ ] `Move` simplifié et sérialisable (`from`/`to: SquareKey`, couleur, pgn, temps écoulé, capture)
+- [x] `GameResult` (`winner: PieceColor | null` + `GameEndReason`) dans le DTO
+- [x] ULID simulé (`src/utils/ulid.ts`) + `GameSession.id: string` propagé (store, factory, routes)
+- [x] `Move` simplifié et sérialisable (`from`/`to: SquareKey`, couleur, san, temps écoulé, capture)
 - [ ] Respect du trait dans `makeMove` (pièce du joueur au trait seulement)
 - [ ] Historique : enregistrement des `Move` + SAN naïf
 - [ ] Captures et diff matériel dérivés de l'historique (fin du hardcode `material.ts`)
@@ -77,7 +82,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Règle des 50 coups
 - [ ] Triple répétition
 - [ ] Matériel insuffisant
-- [ ] Extension de `GameEndReason` en conséquence
+- [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
 
 ### ④ Coups spéciaux
 
@@ -91,7 +96,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] `+` / `#`, `O-O` / `O-O-O`, `=Q`
 - [ ] Export PGN complet (en-têtes, résultat)
 
-### ⑥ Sync backend / websocket
+### ⑥ Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
 
 - [ ] Backend = source de vérité (vrais ULID, arbitrage des coups, horloge serveur)
 - [ ] Format wire du DTO (liste de coups ou FEN — le board circulaire ne voyage pas, il se reconstruit)

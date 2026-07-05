@@ -9,7 +9,7 @@ const payload: CreateGamePayload = {
 }
 
 function freshBoard(): Board {
-  return createGameSession(payload, 1).game.board
+  return createGameSession(payload, 'test-id').game.board
 }
 
 describe('canMove', () => {
