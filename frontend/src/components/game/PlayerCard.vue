@@ -67,7 +67,7 @@ const clock = computed(() => {
   border-radius: $border-radius-base;
   transition: border-color $transition-fast, background $transition-fast;
 
-  @include breakpoint-down($breakpoint-sm) {
+  @include breakpoint-down($breakpoint-lg) {
     gap: $spacing-2;
     padding: $spacing-1 $spacing-2;
   }
@@ -83,7 +83,7 @@ const clock = computed(() => {
     width: 2.5rem;
     height: 2.5rem;
 
-    @include breakpoint-down($breakpoint-sm) {
+    @include breakpoint-down($breakpoint-lg) {
       width: 2rem;
       height: 2rem;
     }
@@ -103,7 +103,7 @@ const clock = computed(() => {
     gap: $spacing-2;
     min-width: 0;
 
-    @include breakpoint-down($breakpoint-sm) {
+    @include breakpoint-down($breakpoint-lg) {
       gap: $spacing-1;
     }
   }
@@ -121,7 +121,7 @@ const clock = computed(() => {
     color: var(--text-primary);
     @include text-truncate;
 
-    @include breakpoint-down($breakpoint-sm) {
+    @include breakpoint-down($breakpoint-lg) {
       font-size: $font-size-sm;
     }
   }
@@ -138,7 +138,7 @@ const clock = computed(() => {
     gap: $spacing-2;
     min-height: 1rem;
 
-    @include breakpoint-down($breakpoint-sm) {
+    @include breakpoint-down($breakpoint-lg) {
       gap: $spacing-1;
     }
   }
@@ -155,7 +155,7 @@ const clock = computed(() => {
     font-size: $font-size-lg;
     color: var(--text-primary);
 
-    @include breakpoint-down($breakpoint-sm) {
+    @include breakpoint-down($breakpoint-lg) {
       font-size: $font-size-base;
     }
   }

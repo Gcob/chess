@@ -227,6 +227,16 @@ const areaStyle = computed(() => {
   &__area {
     // anchors the grid, the overlay, and the drag rect math
     position: relative;
+
+    // Capped by viewport HEIGHT only, on both axes (so it stays 1:1). Mobile sizes the board from
+    // width alone (see GameBoardArea's `fit` prop), which is already bounded by the real available
+    // width — the only runaway case is landscape, where that width is generous but the viewport is
+    // short. In portrait, svh is large so this never clamps and the board keeps matching the
+    // player-cards' width.
+    @include breakpoint-down($breakpoint-lg) {
+      max-width: 75svh;
+      max-height: 75svh;
+    }
   }
 
   &__grid {

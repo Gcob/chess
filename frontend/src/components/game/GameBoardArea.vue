@@ -66,7 +66,7 @@ onBeforeUnmount(() => observer?.disconnect())
   padding: $spacing-6;
 
   // #game-page already has its own padding on mobile — no need to double it up here.
-  @include breakpoint-down($breakpoint-sm) {
+  @include breakpoint-down($breakpoint-lg) {
     padding: 0;
   }
 }
