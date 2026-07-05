@@ -56,6 +56,16 @@ src/
 - Pages : id suffixé `-page`, classe `page` — ex. `<div id="home-page" class="page">`
 - Routes avec dynamic import dans `src/router/index.ts`
 
+## Textes genrés (i18n)
+
+`vue-i18n` n'a pas d'équivalent à la feature `context` d'i18next (clés `_male`/`_female` + option
+`context` sur `t()`). Convention maison à la place : `tGender(i18n, key, gender, params?)`
+(`src/utils/tGender.ts`) essaie `` `${key}_${gender}` `` (`te()`), retombe sur `key` si absent ou si
+`gender` est `undefined`. Une locale ne définit une clé `_f` (ou `_m`) que pour les mots qui varient
+réellement — pas besoin de dupliquer les invariables. Généralisable à tout texte genré, pas
+spécifique à un feature en particulier. Voir `docs/look-and-feel.md` pour l'usage dans le
+générateur de noms rigolos.
+
 ## Couches
 
 | Couche             | Connaît Vue ? | Rôle                                                  |

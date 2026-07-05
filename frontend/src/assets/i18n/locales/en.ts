@@ -46,13 +46,27 @@ export default {
     ecureuil: 'Squirrel',
   },
   randomName: {
-    adjectives: [
-      'Swift', 'Rebel', 'Shy', 'Fierce', 'Sneaky', 'Funny', 'Giant', 'Magic', 'Cosmic',
-      'Chill', 'Terrible', 'Supreme', 'Adorable', 'Unstoppable', 'Invincible', 'Wild',
-      'Bizarre', 'Atomic', 'Fearless', 'Legendary', 'Electric', 'Turbo', 'Explosive', 'Unhinged',
-      'Fantastic', 'Mighty', 'Clever', 'Nimble', 'Sturdy', 'Heroic', 'Epic', 'Galactic',
-      'Stellar', 'Relentless', 'Bold', 'Dazzling', 'Zany', 'Grumpy', 'Sparkly', 'Rowdy',
-    ],
+    format: '{adjective} {noun}',
+    // English never conjugates for gender, so there's never a `_f` key here — see tGender.ts.
+    // Keys match the French ids 1:1 (accurate translations, not the old array's arbitrary picks).
+    adjectives: {
+      rapide: 'Swift', rebelle: 'Rebel', timide: 'Shy', feroce: 'Fierce', increvable: 'Tireless',
+      drole: 'Funny', enorme: 'Giant', magique: 'Magic', cosmique: 'Cosmic', tranquille: 'Chill',
+      terrible: 'Terrible', supreme: 'Supreme', adorable: 'Adorable', incroyable: 'Incredible',
+      invincible: 'Invincible', sauvage: 'Wild', bizarre: 'Bizarre', atomique: 'Atomic',
+      redoutable: 'Fearsome', legendaire: 'Legendary', turbo: 'Turbo',
+      volcanique: 'Volcanic', indomptable: 'Untamed', fantastique: 'Fantastic', formidable: 'Mighty',
+      sympathique: 'Friendly', extraordinaire: 'Extraordinary', habile: 'Skillful', agile: 'Agile',
+      solide: 'Sturdy', heroique: 'Heroic', epique: 'Epic', galactique: 'Galactic',
+      stellaire: 'Stellar', vorace: 'Ravenous', tenace: 'Relentless', sublime: 'Sublime',
+      intrepide: 'Intrepid', splendide: 'Splendid',
+      // Emotions and silly physical traits — pairs with the gendered FR forms above (no `_f` here).
+      affame: 'Starving', repu: 'Stuffed', monocle: 'Monocled', moustachu: 'Mustachioed',
+      barbu: 'Bearded', cornu: 'Horned', dodu: 'Chubby', jaloux: 'Jealous', amoureux: 'Smitten',
+      anxieux: 'Anxious', joyeux: 'Joyful', curieux: 'Curious', confus: 'Confused',
+      epuise: 'Exhausted', effronte: 'Cheeky', fache: 'Cranky', etonne: 'Astonished',
+      ebouriffe: 'Tousled', chatouilleux: 'Ticklish', grognon: 'Grumpy',
+    },
   },
   footer: {
     howToPlay: 'How to play',

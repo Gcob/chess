@@ -2,9 +2,13 @@ import { createI18n } from 'vue-i18n'
 import fr from './locales/fr'
 import en from './locales/en'
 
-export type MessageSchema = typeof fr
+// randomName.adjectives is loosened to Record<string, string>: French adds `_f` override keys that
+// English never needs (see tGender.ts), so the two locales legitimately don't share that exact shape.
+export type MessageSchema = Omit<typeof fr, 'randomName'> & {
+  randomName: { format: string; adjectives: Record<string, string> }
+}
 
-type SupportedLocale = 'fr' | 'en'
+export type SupportedLocale = 'fr' | 'en'
 const SUPPORTED: SupportedLocale[] = ['fr', 'en']
 const STORAGE_KEY = 'locale'
 

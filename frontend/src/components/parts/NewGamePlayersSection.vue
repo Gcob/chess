@@ -98,7 +98,7 @@ import {computed, ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {Dices} from 'lucide-vue-next'
 import {validateNewGamePlayers} from '@/validation/newGame'
-import {shuffledAdjectives, formatName} from '@/utils/randomName'
+import {shuffledAdjectiveIds, formatName, adjectiveTextFor} from '@/utils/randomName'
 import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
 import AvatarPickerModal from '@/components/parts/AvatarPickerModal.vue'
 import type {NewGameSettings} from '@/stores/useNewGameStore'
@@ -131,16 +131,16 @@ defineExpose({validate})
 // Not reactive: it never appears in the template.
 const adjectiveBags: {white: string[]; black: string[]} = {white: [], black: []}
 
-function nextAdjective(color: 'white' | 'black'): string {
+function nextAdjectiveId(color: 'white' | 'black'): string {
   if (adjectiveBags[color].length === 0) {
-    adjectiveBags[color] = shuffledAdjectives()
+    adjectiveBags[color] = shuffledAdjectiveIds()
   }
 
   return adjectiveBags[color].pop()!
 }
 
 function buildName(color: 'white' | 'black', avatarId: string): string {
-  return formatName(t(`avatars.${avatarId}`), nextAdjective(color))
+  return formatName(t(`avatars.${avatarId}`), adjectiveTextFor(nextAdjectiveId(color), avatarId))
 }
 
 // Re-rolls a fun name: the player's current avatar (noun) + the next adjective from its bag.

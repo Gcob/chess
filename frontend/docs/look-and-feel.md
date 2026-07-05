@@ -105,27 +105,49 @@ Un composant identifie la bonne image avec `piece.color` + `piece.type`.
 
 ## Avatars de joueur — `src/themes/avatars.ts`
 
-Liste **hardcodée** d'avatars **emoji** (`{ id, emoji }`), rendus par `PlayerAvatar` (glyphe dimensionné à sa
-boîte via container queries — `cqmin`). Dans le new-game form, l'avatar choisi s'affiche dans un cadre
+Liste **hardcodée** d'avatars **emoji** (`{ id, emoji, gender? }`), rendus par `PlayerAvatar` (glyphe dimensionné
+à sa boîte via container queries — `cqmin`). Dans le new-game form, l'avatar choisi s'affiche dans un cadre
 à gauche du nom (l'identité du joueur) ; cliquer ouvre `AvatarPickerModal`.
 Règle Zod : deux joueurs ne peuvent pas partager le même avatar (la modale désactive aussi l'avatar
 déjà pris par l'autre). Les ids d'avatar stockés (settings) invalides sont réassignés au défaut au chargement.
 Chaque avatar a un **nom i18n** (`avatars.{id}`) affiché en tooltip dans la modale. La modale fonctionne en
 **sélection → confirmation** avec deux boutons : « Choisir » (avatar seul) et « Choisir + nom rigolo » (avatar
 + renommage). Le renommage est donc **opt-in**, jamais un side-effect surprise.
+`gender` (`Partial<Record<SupportedLocale, 'm' | 'f'>>`) est le genre grammatical du nom, **qualifié par
+langue** — pas une propriété universelle de l'avatar (une locale future, ex. espagnol, pourrait diverger du
+français). Utilisé par le générateur de noms rigolos pour accorder les adjectifs ; absent = pas d'accord requis
+pour cette langue (ex. l'anglais n'en a jamais besoin).
 
 ## Générateur de noms rigolos — `src/utils/randomName.ts`
 
-Le vocabulaire vit **en i18n** ; le code ne garde que la logique. Format simple : **nom + adjectif**
-(ordre par locale — fr « Nom Adjectif », en « Adjective Noun »).
+Le vocabulaire vit **en i18n** ; le code ne garde que la logique. Format simple : **nom + adjectif**, mais
+l'ordre des mots est lui-même une donnée i18n (`randomName.format`, ex. fr `'{noun} {adjective}'` / en
+`'{adjective} {noun}'`) — pas une branche de code par locale.
 
 - **Noms** = noms d'avatars (`avatars.{id}`).
-- **Adjectifs** = `randomName.adjectives` (lus via `getLocaleMessage`, raw).
-- `formatName(noun, adjective)` assemble selon la locale ; `nameForNoun(noun)` = adjectif aléatoire one-shot.
+- **Adjectifs** = `randomName.adjectives` — un dictionnaire `{id: texte}` par locale. `ADJECTIVE_IDS`
+  (dans `randomName.ts`) liste les ids partagés ; chaque locale doit fournir une traduction de base pour
+  chacun. Le français ajoute des clés `{id}_f` pour les ~20 mots qui varient en genre (ex. `affame` /
+  `affame_f` → Affamé / Affamée) ; l'anglais n'a jamais de suffixe. Voir accord de genre ci-dessous.
+- `adjectiveTextFor(id, avatarId)` résout le texte (accordé si besoin) ; `formatName(noun, adjective)`
+  assemble via `randomName.format` ; `nameForAvatar(avatarId)` = adjectif aléatoire one-shot pour un avatar.
 - `randomIdentity(exclude?)` tire un avatar + nom assorti — utilisé pour les **défauts** (localStorage vide
   → chaque joueur a un avatar + nom rigolo aléatoires, avatars distincts).
 
-**Bouton dé (shuffle bag).** Dans le new-game form, chaque joueur a un **sac** d'adjectifs mélangé
-(`shuffledAdjectives`, Fisher-Yates) consommé un à un → aucun adjectif ne se répète tant que le sac n'est
+**Accord de genre — `src/utils/tGender.ts`.** `vue-i18n` n'a pas d'équivalent à la feature `context`
+d'i18next (clés `_male`/`_female` + option `context` sur `t()`) ; `tGender(i18n, key, gender, params?)`
+réimplémente la même idée à la main avec la convention `_m`/`_f` : si `gender` est fourni et que
+`` `${key}_${gender}` `` existe (`te()`), on l'utilise, sinon on retombe sur `key`. `gender` peut être
+`undefined` (anglais, ou avatar sans genre déclaré pour la locale active) → utilise directement `key`.
+Générique, réutilisable pour tout futur texte genré, pas seulement les noms.
+
+**Compromis de typage.** `randomName.adjectives` est assoupli à `Record<string, string>` dans
+`MessageSchema` (`src/assets/i18n/index.ts`) plutôt que d'exiger la forme exacte de `fr.ts` — le français a
+des clés `_f` que l'anglais n'a jamais, donc les deux locales ne partagent plus une forme identique sur
+cette branche. Compensé par un test de parité (`randomName.spec.ts`) qui vérifie que chaque id de
+`ADJECTIVE_IDS` a une traduction de base dans les deux locales.
+
+**Bouton dé (shuffle bag).** Dans le new-game form, chaque joueur a un **sac** d'ids d'adjectifs mélangé
+(`shuffledAdjectiveIds`, Fisher-Yates) consommé un à un → aucun adjectif ne se répète tant que le sac n'est
 pas vide (re-mélange à vide). Le sac se **réinitialise quand l'avatar change** (nouveau noun). Pas de garde
 anti-collision : les avatars sont toujours distincts, donc les noms diffèrent forcément.
