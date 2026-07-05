@@ -98,14 +98,14 @@ import {computed, ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {Dices} from 'lucide-vue-next'
 import {validateNewGamePlayers} from '@/validation/newGame'
-import {randomPlayerName} from '@/utils/randomName'
+import {shuffledAdjectives, formatName} from '@/utils/randomName'
 import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
 import AvatarPickerModal from '@/components/parts/AvatarPickerModal.vue'
 import type {NewGameSettings} from '@/stores/useNewGameStore'
 
 const props = defineProps<{ settings: NewGameSettings }>()
 
-const {locale} = useI18n()
+const {t} = useI18n()
 
 // Errors are always computed; shown only after a start attempt, then update live as the user fixes.
 const startAttempted = ref(false)
@@ -126,19 +126,28 @@ function validate(): boolean {
 
 defineExpose({validate})
 
-// Fills a player's name with a random funny one, retrying so it never matches the other player.
-function generateName(color: 'white' | 'black') {
-  const other = color === 'white' ? props.settings.playerBlackName : props.settings.playerWhiteName
-  let name = randomPlayerName(locale.value)
-  for (let guard = 0; name.trim() === other.trim() && guard < 10; guard++) {
-    name = randomPlayerName(locale.value)
+// One shuffled adjective "bag" per player, consumed one at a time so a name never repeats until the
+// bag empties (then it reshuffles). Reset when the player's avatar changes — new noun, fresh bag.
+// Not reactive: it never appears in the template.
+const adjectiveBags: {white: string[]; black: string[]} = {white: [], black: []}
+
+function nextAdjective(color: 'white' | 'black'): string {
+  if (adjectiveBags[color].length === 0) {
+    adjectiveBags[color] = shuffledAdjectives()
   }
 
-  if (color === 'white') {
-    props.settings.playerWhiteName = name
-  } else {
-    props.settings.playerBlackName = name
-  }
+  return adjectiveBags[color].pop()!
+}
+
+function buildName(color: 'white' | 'black', avatarId: string): string {
+  return formatName(t(`avatars.${avatarId}`), nextAdjective(color))
+}
+
+// Re-rolls a fun name: the player's current avatar (noun) + the next adjective from its bag.
+function generateName(color: 'white' | 'black') {
+  const nameKey = color === 'white' ? 'playerWhiteName' : 'playerBlackName'
+  const avatarKey = color === 'white' ? 'playerWhiteAvatar' : 'playerBlackAvatar'
+  props.settings[nameKey] = buildName(color, props.settings[avatarKey])
 }
 
 // Which player's avatar the modal is editing (null = closed).
@@ -150,11 +159,21 @@ const otherAvatar = computed(() =>
   avatarPickerFor.value === 'black' ? props.settings.playerWhiteAvatar : props.settings.playerBlackAvatar,
 )
 
-function selectAvatar(id: string) {
-  if (avatarPickerFor.value === 'white') {
-    props.settings.playerWhiteAvatar = id
-  } else if (avatarPickerFor.value === 'black') {
-    props.settings.playerBlackAvatar = id
+// Applies the chosen avatar; withName also renames the player after it ("{Avatar} {random adjective}"),
+// so renaming is opt-in and never a surprise side effect.
+function selectAvatar(id: string, withName: boolean) {
+  const color = avatarPickerFor.value
+  if (!color) {
+    return
+  }
+
+  const nameKey = color === 'white' ? 'playerWhiteName' : 'playerBlackName'
+  const avatarKey = color === 'white' ? 'playerWhiteAvatar' : 'playerBlackAvatar'
+  props.settings[avatarKey] = id
+  // New avatar → new noun → start a fresh adjective bag for this player.
+  adjectiveBags[color] = []
+  if (withName) {
+    props.settings[nameKey] = buildName(color, id)
   }
 
   avatarPickerFor.value = null

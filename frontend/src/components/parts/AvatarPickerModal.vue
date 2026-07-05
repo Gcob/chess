@@ -10,38 +10,57 @@
       <button
         v-for="id in avatarIds"
         :key="id"
+        v-tippy="$t(`avatars.${id}`)"
         type="button"
         class="avatar-picker__item"
-        :class="{ 'is-selected': id === selected, 'is-disabled': id === taken }"
+        :class="{ 'is-selected': id === localId, 'is-disabled': id === taken }"
         :disabled="id === taken"
-        @click="$emit('select', id)"
+        :aria-label="$t(`avatars.${id}`)"
+        @click="localId = id"
       >
         <PlayerAvatar :id="id" />
       </button>
     </div>
 
-    <template #footer="{ close }">
-      <cButton variant="ter" @click="close">{{ $t('common.close') }}</cButton>
+    <template #footer>
+      <cButton variant="sec" @click="confirm(false)">{{ $t('newGame.players.avatarConfirm') }}</cButton>
+      <cButton @click="confirm(true)">{{ $t('newGame.players.avatarConfirmWithName') }}</cButton>
     </template>
   </cModal>
 </template>
 
 <script lang="ts" setup>
+import {ref, watch} from 'vue'
 import {AVATAR_IDS} from '@/themes/avatars'
 import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
 
-defineProps<{
+const props = defineProps<{
   modelValue: boolean
   selected: string      // the editing player's current avatar
   taken: string         // the other player's avatar — disabled to prevent duplicates
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  select: [id: string]
+  select: [id: string, withName: boolean]
 }>()
 
 const avatarIds = AVATAR_IDS
+
+// Local (tentative) selection — committed only when a footer button is pressed.
+const localId = ref(props.selected)
+watch(
+  () => props.modelValue,
+  open => {
+    if (open) {
+      localId.value = props.selected
+    }
+  },
+)
+
+function confirm(withName: boolean) {
+  emit('select', localId.value, withName)
+}
 </script>
 
 <style lang="scss" scoped>

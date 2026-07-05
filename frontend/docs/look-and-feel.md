@@ -105,8 +105,27 @@ Un composant identifie la bonne image avec `piece.color` + `piece.type`.
 
 ## Avatars de joueur — `src/themes/avatars.ts`
 
-Liste **hardcodée** d'avatars SVG placeholder (`{ id, svg }`, formes plates simples), rendus par
-`PlayerAvatar` (v-html du SVG statique). Dans le new-game form, l'avatar choisi s'affiche dans un cadre
+Liste **hardcodée** d'avatars **emoji** (`{ id, emoji }`), rendus par `PlayerAvatar` (glyphe dimensionné à sa
+boîte via container queries — `cqmin`). Dans le new-game form, l'avatar choisi s'affiche dans un cadre
 à gauche du nom (l'identité du joueur) ; cliquer ouvre `AvatarPickerModal`.
 Règle Zod : deux joueurs ne peuvent pas partager le même avatar (la modale désactive aussi l'avatar
-déjà pris par l'autre). À remplacer par de vrais avatars plus tard.
+déjà pris par l'autre). Les ids d'avatar stockés (settings) invalides sont réassignés au défaut au chargement.
+Chaque avatar a un **nom i18n** (`avatars.{id}`) affiché en tooltip dans la modale. La modale fonctionne en
+**sélection → confirmation** avec deux boutons : « Choisir » (avatar seul) et « Choisir + nom rigolo » (avatar
++ renommage). Le renommage est donc **opt-in**, jamais un side-effect surprise.
+
+## Générateur de noms rigolos — `src/utils/randomName.ts`
+
+Le vocabulaire vit **en i18n** ; le code ne garde que la logique. Format simple : **nom + adjectif**
+(ordre par locale — fr « Nom Adjectif », en « Adjective Noun »).
+
+- **Noms** = noms d'avatars (`avatars.{id}`).
+- **Adjectifs** = `randomName.adjectives` (lus via `getLocaleMessage`, raw).
+- `formatName(noun, adjective)` assemble selon la locale ; `nameForNoun(noun)` = adjectif aléatoire one-shot.
+- `randomIdentity(exclude?)` tire un avatar + nom assorti — utilisé pour les **défauts** (localStorage vide
+  → chaque joueur a un avatar + nom rigolo aléatoires, avatars distincts).
+
+**Bouton dé (shuffle bag).** Dans le new-game form, chaque joueur a un **sac** d'adjectifs mélangé
+(`shuffledAdjectives`, Fisher-Yates) consommé un à un → aucun adjectif ne se répète tant que le sac n'est
+pas vide (re-mélange à vide). Le sac se **réinitialise quand l'avatar change** (nouveau noun). Pas de garde
+anti-collision : les avatars sont toujours distincts, donc les noms diffèrent forcément.

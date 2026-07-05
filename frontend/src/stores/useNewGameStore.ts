@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, watch, unref } from 'vue'
+import { ref, watch } from 'vue'
 import type { GameMode } from '@/types/chess'
-import { randomPlayerName } from '@/utils/randomName'
+import { randomIdentity } from '@/utils/randomName'
 import { AVATAR_IDS } from '@/themes/avatars'
-import i18n from '@/assets/i18n'
 
 export interface NewGameSettings {
   mode: GameMode
@@ -18,22 +17,17 @@ export interface NewGameSettings {
 
 const STORAGE_KEY = 'new-game-settings'
 
-// Fresh defaults: two distinct random names in the current UI language.
+// Fresh defaults: each player gets a random avatar and a matching funny name (distinct avatars).
 function makeDefaults(): NewGameSettings {
-  // unref: i18n.global.locale is a ref at runtime (legacy:false) despite its plain-union type here.
-  const locale = String(unref(i18n.global.locale))
-  const playerWhiteName = randomPlayerName(locale)
-  let playerBlackName = randomPlayerName(locale)
-  for (let guard = 0; playerBlackName === playerWhiteName && guard < 10; guard++) {
-    playerBlackName = randomPlayerName(locale)
-  }
+  const white = randomIdentity()
+  const black = randomIdentity(white.avatar)
 
   return {
     mode: 'local',
-    playerWhiteName,
-    playerBlackName,
-    playerWhiteAvatar: AVATAR_IDS[0]!, // at least two avatars exist
-    playerBlackAvatar: AVATAR_IDS[1]!,
+    playerWhiteName: white.name,
+    playerBlackName: black.name,
+    playerWhiteAvatar: white.avatar,
+    playerBlackAvatar: black.avatar,
     timerEnabled: true,
     timerMinutes: 10,
     timerIncrement: 0,
@@ -44,7 +38,18 @@ function loadFromStorage(): NewGameSettings {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      return { ...makeDefaults(), ...JSON.parse(stored) }
+      const defaults = makeDefaults()
+      const merged: NewGameSettings = { ...defaults, ...JSON.parse(stored) }
+
+      // Drop avatar ids that no longer exist (e.g. after changing the avatar set).
+      if (!AVATAR_IDS.includes(merged.playerWhiteAvatar)) {
+        merged.playerWhiteAvatar = defaults.playerWhiteAvatar
+      }
+      if (!AVATAR_IDS.includes(merged.playerBlackAvatar)) {
+        merged.playerBlackAvatar = defaults.playerBlackAvatar
+      }
+
+      return merged
     }
   } catch {
     // corrupted data, ignore
