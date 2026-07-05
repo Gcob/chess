@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useGamesStore } from '@/stores/useGamesStore'
-import { canMove, applyMove } from '@/engine/move'
+import * as engine from '@/engine/game'
 import type { SquareKey } from '@/types/chess'
 
 export function useGameSession(id: string) {
@@ -24,29 +24,24 @@ export function useGameSession(id: string) {
 
   const isGameOver = computed(() => game.value?.status === 'finished')
 
-  // Routes every move through the engine, even while its rules are a placeholder.
-  // TODO: flip activeColor and record the Move/san once engine/game.ts lands.
+  // All game commands go through the engine — guards (status, turn, legality) live there.
   function makeMove(from: SquareKey, to: SquareKey) {
-    const b = board.value
-    if (!b || !canMove(b, from, to)) {
+    const g = game.value
+    if (!g) {
       return
     }
 
-    applyMove(b, from, to)
+    engine.makeMove(g, from, to)
   }
 
-  // Interim: the resigner is the player to move (local mode). Moves into engine/game.ts next,
-  // where every finishing path settles result/drawOffer/turnStartedAt together with the status.
+  // Local mode: the resigner is the player to move.
   function resign() {
     const g = game.value
-    if (!g || g.status === 'finished') {
+    if (!g) {
       return
     }
 
-    g.status = 'finished'
-    g.result = {winner: g.activeColor === 'white' ? 'black' : 'white', reason: 'resignation'}
-    g.drawOffer = null
-    g.turnStartedAt = null
+    engine.resign(g, g.activeColor)
   }
 
   return {

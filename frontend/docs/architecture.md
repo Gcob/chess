@@ -19,8 +19,8 @@ src/
 │   ├── i18n/
 │   │   ├── index.ts               # importé dans main.ts
 │   │   └── locales/
-│   │       ├── en.json
-│   │       └── fr.json
+│   │       ├── en.ts
+│   │       └── fr.ts
 │   └── styles/
 │       ├── main.scss              # point d'entrée importé dans main.ts
 │       ├── _variables.scss

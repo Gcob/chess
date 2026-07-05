@@ -54,12 +54,12 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 ### ① Fondations — gestion de partie *(en cours)*
 
 - [x] Roadmap (ce fichier)
-- [ ] Statuts : `waiting | active | finished` (`paused` retiré), guards par commande dans l'engine
+- [x] Statuts : `waiting | active | finished` (`paused` retiré), guards par commande dans l'engine
 - [x] `GameResult` (`winner: PieceColor | null` + `GameEndReason`) dans le DTO
 - [x] ULID simulé (`src/utils/ulid.ts`) + `GameSession.id: string` propagé (store, factory, routes)
 - [x] `Move` simplifié et sérialisable (`from`/`to: SquareKey`, couleur, san, temps écoulé, capture)
-- [ ] Respect du trait dans `makeMove` (pièce du joueur au trait seulement)
-- [ ] Historique : enregistrement des `Move` + SAN naïf
+- [x] Respect du trait dans `makeMove` (pièce du joueur au trait seulement)
+- [x] Historique : enregistrement des `Move` + SAN naïf
 - [ ] Captures et diff matériel dérivés de l'historique (fin du hardcode `material.ts`)
 - [ ] Cadran : `turnStartedAt` + incrément au coup + `useGameClock` + affichage réel + victoire au temps
 - [ ] Abandon (bouton, confirmation) → `finished` + résultat

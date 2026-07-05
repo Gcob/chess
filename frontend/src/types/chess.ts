@@ -83,6 +83,7 @@ export interface GameType {
 
 // Whether a clock is running is derived: status + activeColor + turnStartedAt.
 // secondsRemaining is only settled when a move is played — display subtracts the elapsed turn time.
+// Seconds are deliberately fractional (sub-second precision from ms timestamps); display rounds.
 export interface Timer {
   secondsRemaining: number
   secondsIncrement: number

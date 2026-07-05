@@ -182,6 +182,28 @@ export default {
       resign: 'Abandonner',
       resignConfirm: 'Abandonner la partie ?',
     },
+    state: {
+      waiting: 'En attente du premier coup',
+      turn: {
+        white: 'Trait aux blancs',
+        black: 'Trait aux noirs',
+      },
+      win: {
+        white: 'Victoire des blancs',
+        black: 'Victoire des noirs',
+      },
+      draw: 'Nulle',
+      reason: {
+        'resignation': 'abandon',
+        'timeout': 'au temps',
+        'draw-agreement': 'accord mutuel',
+        'checkmate': 'échec et mat',
+        'stalemate': 'pat',
+        'fifty-move-rule': 'règle des 50 coups',
+        'threefold-repetition': 'triple répétition',
+        'insufficient-material': 'matériel insuffisant',
+      },
+    },
   },
   chessRules: {
     "title": "Comment jouer aux échecs",

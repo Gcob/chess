@@ -163,10 +163,9 @@ function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey):
 // ─── Internals ───────────────────────────────────────────────────────────────
 
 function buildPlayers(payload: CreateGamePayload, time: GameTime | undefined): { white: Player; black: Player } {
-  const timer = time ? buildTimer(time) : undefined
   return {
-    white: {color: 'white', isInCheck: false, timer, metas: {name: payload.players.white.name, image: payload.players.white.avatar}},
-    black: {color: 'black', isInCheck: false, timer, metas: {name: payload.players.black.name, image: payload.players.black.avatar}},
+    white: {color: 'white', isInCheck: false, timer: time && buildTimer(time), metas: {name: payload.players.white.name, image: payload.players.white.avatar}},
+    black: {color: 'black', isInCheck: false, timer: time && buildTimer(time), metas: {name: payload.players.black.name, image: payload.players.black.avatar}},
   }
 }
 

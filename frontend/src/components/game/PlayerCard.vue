@@ -6,7 +6,6 @@
 
     <div class="player-card__info">
       <div class="player-card__name-row">
-        <span v-if="isActive" class="player-card__turn" aria-hidden="true" />
         <span class="player-card__name">{{ player?.metas.name }}</span>
         <span class="player-card__color">({{ colorLabel }})</span>
       </div>
@@ -106,14 +105,6 @@ const clock = computed(() => {
     @include breakpoint-down($breakpoint-lg) {
       gap: $spacing-1;
     }
-  }
-
-  &__turn {
-    flex-shrink: 0;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: $border-radius-full;
-    background: var(--accent);
   }
 
   &__name {

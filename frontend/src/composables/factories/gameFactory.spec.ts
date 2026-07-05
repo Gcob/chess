@@ -119,6 +119,11 @@ describe('createGameSession', () => {
     expect(session.game.players.white.timer?.secondsIncrement).toBe(5)
   })
 
+  it('gives each player an independent timer instance', () => {
+    const session = createGameSession(timedPayload, TEST_ID)
+    expect(session.game.players.white.timer).not.toBe(session.game.players.black.timer)
+  })
+
   it('starts with white active and waiting status', () => {
     const session = createGameSession(basePayload, TEST_ID)
     expect(session.game.activeColor).toBe('white')

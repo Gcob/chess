@@ -170,6 +170,28 @@ export default {
       resign: 'Resign',
       resignConfirm: 'Resign the game?',
     },
+    state: {
+      waiting: 'Waiting for the first move',
+      turn: {
+        white: 'White to move',
+        black: 'Black to move',
+      },
+      win: {
+        white: 'White wins',
+        black: 'Black wins',
+      },
+      draw: 'Draw',
+      reason: {
+        'resignation': 'resignation',
+        'timeout': 'on time',
+        'draw-agreement': 'mutual agreement',
+        'checkmate': 'checkmate',
+        'stalemate': 'stalemate',
+        'fifty-move-rule': 'fifty-move rule',
+        'threefold-repetition': 'threefold repetition',
+        'insufficient-material': 'insufficient material',
+      },
+    },
   },
   chessRules: {
     title: "How to Play Chess",
