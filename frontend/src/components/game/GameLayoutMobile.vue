@@ -4,7 +4,7 @@
     <PlayersPanel :view="view" />
 
     <div class="game-mobile__board">
-      <GameBoardArea :view="view" />
+      <GameBoardArea :view="view" fit="width" />
     </div>
 
     <GameActions :view="view" />
@@ -28,12 +28,11 @@ defineProps<{ view: GameView }>()
   gap: $spacing-2;
   width: 100%;
 
-  // full-width square board; the page may scroll on mobile (that's fine)
+  // Full-width board; height follows content (the board is square, but its coordinate frame
+  // adds a bit more — forcing aspect-ratio:1 here would clip it). The page may scroll (that's fine).
   &__board {
     display: flex;
     width: 100%;
-    aspect-ratio: 1;
-    min-height: 0;
   }
 }
 </style>
