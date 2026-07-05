@@ -37,6 +37,7 @@ function onResign() {
     flex: 1;
     padding-top: $spacing-2;
     padding-bottom: $spacing-2;
+    font-size: 0.8rem;
   }
 }
 </style>

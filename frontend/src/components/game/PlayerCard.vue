@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <div class="player-card__clock">{{ clock }}</div>
+    <div class="player-card__clock" v-if="hasClock">{{ clock }}</div>
   </div>
 </template>
 
@@ -45,6 +45,7 @@ const advantageLabel = computed(() => (advantage.value > 0 ? `+${advantage.value
 
 // Static for now — shows the configured starting time. game.time is optional (untimed → dash);
 // a real ticking clock comes with the timer.
+const hasClock = computed(() => !!props.view.game?.time)
 const clock = computed(() => {
   const time = props.view.game?.time
   if (!time) {
