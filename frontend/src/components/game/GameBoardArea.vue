@@ -5,6 +5,8 @@
       :board="view.game.board"
       :orientation="view.orientation"
       :size="boardSizePx"
+      :last-move="view.lastMove"
+      :movable-color="view.movableColor"
       @move="view.move"
     />
   </div>

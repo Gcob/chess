@@ -1,7 +1,7 @@
 <template>
   <div
     class="c-piece"
-    :class="[animationClass, { 'c-piece--moving': moving || dragging }]"
+    :class="[animationClass, { 'c-piece--moving': moving || dragging, 'c-piece--static': !movable }]"
     :style="style"
     @transitionstart="moving = true"
     @transitionend="moving = false"
@@ -39,10 +39,13 @@ const props = withDefaults(defineProps<{
   // px translate within the board (top-left origin), used while dragging.
   dragX?: number
   dragY?: number
+  // false = the piece doesn't react to the pointer (opponent piece, game over) — plain cursor
+  movable?: boolean
 }>(), {
   dragging: false,
   dragX: 0,
   dragY: 0,
+  movable: true,
 })
 
 const {getPieceImage} = useChessTheme()
@@ -100,6 +103,13 @@ const style = computed(() => ({
     // above the resting pieces for the duration of the slide/drag
     z-index: 1;
     cursor: grabbing;
+  }
+
+  &--static {
+    cursor: default;
+    // let the pointer fall through to the square below — a tap on an opponent piece must still
+    // reach cSquare's click-to-move logic (capture of a selected piece's target)
+    pointer-events: none;
   }
 
   &__img {

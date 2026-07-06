@@ -114,6 +114,7 @@ export default {
     themeDark: 'Sombre',
     sound: 'Effets sonores',
     boardTheme: 'Thème du plateau',
+    highlightLastMove: 'Surligner le dernier coup',
     boardThemes: {
       wood: 'Bois',
     },

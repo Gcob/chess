@@ -24,7 +24,7 @@ import {computed} from 'vue'
 import {useI18n} from 'vue-i18n'
 import type {GameView} from '@/composables/useGameView'
 import type {PieceColor} from '@/types/chess'
-import {getCapturedPieces, materialDiff} from '@/engine/material'
+import {materialDiff} from '@/engine/material'
 import PlayerAvatar from '@/components/parts/PlayerAvatar.vue'
 import CapturedPieces from '@/components/game/CapturedPieces.vue'
 
@@ -36,10 +36,9 @@ const player = computed(() => props.view.game?.players[props.color])
 const isActive = computed(() => props.view.activeColor === props.color)
 const colorLabel = computed(() => t(`newGame.players.${props.color}`))
 
-// HARDCODED for now — swapped for board-derived captures later.
-const captured = getCapturedPieces()
-const capturedPieces = computed(() => captured[props.color])
-const advantage = computed(() => materialDiff(captured, props.color))
+// Derived once in useGameView from the move history — shared by both cards.
+const capturedPieces = computed(() => props.view.captured[props.color])
+const advantage = computed(() => materialDiff(props.view.captured, props.color))
 const advantageLabel = computed(() => (advantage.value > 0 ? `+${advantage.value}` : String(advantage.value)))
 
 // Static for now — shows the configured starting time. game.time is optional (untimed → dash);

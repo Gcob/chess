@@ -112,7 +112,10 @@ s'illumine (`cBoard` traque la case sous la souris et passe `highlightFile`/`hig
 et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteur de règles. `cPiece` → classe
 `c-piece--anim-{name}` ; un drag n'anime jamais.
 
-**Interaction** — `usePieceDrag` distingue **tap** (presse sans bouger, sous un seuil) et **drag** (au-delà) :
+**Interaction** — gatée par la prop `movableColor` de `cBoard` (policy `useGameView.movableColor` :
+en local, le joueur au trait ; personne si la partie est finie ; `undefined` = board libre hors game view).
+Les pièces adverses ignorent le pointeur (drag, sélection, curseur normal — `cPiece --static`).
+`usePieceDrag` distingue **tap** (presse sans bouger, sous un seuil) et **drag** (au-delà) :
 
 - **Drag** → la pièce suit le curseur ; drop → `cBoard` émet `move` → `makeMove` → engine. Relâchement =
   snap instantané (anim `none`, la pièce est déjà sous le curseur). Bouton droit enfoncé pendant le drag =
@@ -123,7 +126,8 @@ et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteu
   Toute action « pas rapport » annule la sélection (début de drag, rotation, coup).
 
 **Highlights** — `SquareHighlight` (look-and-feel, hors domaine) : sources par état → `highlightsFor` →
-overlays translucides sur `cSquare`. Câblé : `drop-target`.
+overlays translucides sur `cSquare`. Câblés : `drop-target`, `selected`, `last-move` (from/to du dernier
+coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove` — défaut activé).
 
 > Engine (règles incrémentales) : `canMove` refuse origine vide, non-coup et capture d'une pièce alliée ;
 > le reste (patterns de déplacement, tour, échec) est encore permis. `applyMove` = capture par écrasement.
@@ -145,9 +149,9 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   (proposer nulle / abandonner, via `view.proposeDraw`/`resign` ; abandon confirmé).
 - **Identités** : `PlayersPanel` groupe les deux `PlayerCard` **en haut** (ordre par orientation → suit la
   rotation). Chaque carte : avatar (propagé du form via `PlayerMetas.image`), nom + **suffixe couleur**
-  « (Blanc)/(Noir) », pastille de trait, `CapturedPieces` + **diff matériel (±)**, horloge. Capturées + diff
-  **hardcodés** (`engine/material.ts`), horloge **statique** (`game.time` optionnel = sans chrono) tant que le
-  timer ne tourne pas.
+  « (Blanc)/(Noir) », `CapturedPieces` + **diff matériel (±)** — dérivés de l'historique des coups
+  (`engine/material.ts`) —, horloge **statique** (`game.time` optionnel = sans chrono) tant que le timer ne
+  tourne pas. Le trait est indiqué par le highlight `is-active` de la carte et la ligne d'état de `GameInfo`.
 - **`GameInfo`** : récap compact (contrôle de temps « 5 min + 2 s » + mode). Ordre sidebar desktop :
   joueurs → infos → historique → actions ; mobile : infos → joueurs → board → actions.
 - **Pas de scroll en desktop** : topbar et footer ont des **hauteurs fixes** (`$topbar-height`,

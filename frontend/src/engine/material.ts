@@ -1,4 +1,4 @@
-import type {PieceColor, PieceType} from '@/types/chess'
+import type {Game, PieceColor, PieceType} from '@/types/chess'
 
 export interface CapturedPiece {
   color: PieceColor
@@ -19,20 +19,18 @@ const PIECE_VALUES: Record<PieceType, number> = {
   king: 0,
 }
 
-// HARDCODED placeholder — will be derived from the board once capture tracking exists.
+// Derived from the move history — moves are the source of truth, nothing is tracked separately.
 // Keyed by capturing color: the pieces are the opponent's, taken by that player.
-export function getCapturedPieces(): CapturedByColor {
-  return {
-    white: [
-      {color: 'black', type: 'pawn'},
-      {color: 'black', type: 'pawn'},
-      {color: 'black', type: 'knight'},
-    ],
-    black: [
-      {color: 'white', type: 'pawn'},
-      {color: 'white', type: 'bishop'},
-    ],
+export function getCapturedPieces(game: Game): CapturedByColor {
+  const captured: CapturedByColor = {white: [], black: []}
+  for (const move of game.moves) {
+    if (move.capture) {
+      const piece = move.capture.capturedPiece
+      captured[move.color].push({color: piece.color, type: piece.type})
+    }
   }
+
+  return captured
 }
 
 function materialValue(pieces: CapturedPiece[]): number {

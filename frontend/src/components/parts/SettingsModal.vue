@@ -38,6 +38,11 @@
           </option>
         </select>
       </label>
+
+      <label class="c-label">
+        <span>{{ $t('settings.highlightLastMove') }}</span>
+        <input type="checkbox" class="c-checkbox" v-model="store.settings.highlightLastMove" />
+      </label>
     </div>
 
     <template #footer="{ close }">

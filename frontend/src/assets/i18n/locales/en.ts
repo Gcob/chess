@@ -102,6 +102,7 @@ export default {
     themeDark: 'Dark',
     sound: 'Sound effects',
     boardTheme: 'Board theme',
+    highlightLastMove: 'Highlight last move',
     boardThemes: {
       wood: 'Wood',
     },

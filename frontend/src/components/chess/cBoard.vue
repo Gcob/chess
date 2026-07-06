@@ -32,7 +32,8 @@
             :dragging="draggingId === p.id"
             :drag-x="draggingId === p.id ? dragX : 0"
             :drag-y="draggingId === p.id ? dragY : 0"
-            @pointerdown="start($event, p.square, p.id)"
+            :movable="isMovable(p.color)"
+            @pointerdown="onPiecePointerDown($event, p.square, p.id, p.color)"
             @mouseenter="hoveredSquare = p.square"
           />
         </div>
@@ -58,6 +59,11 @@ const props = defineProps<{
   size?: number
   // which color sits at the bottom; driven by the parent (mode policy). Defaults to white.
   orientation?: PieceColor
+  // from/to of the last played move; null/undefined = no highlight (setting off or no move yet)
+  lastMove?: { from: SquareKey; to: SquareKey } | null
+  // whose pieces react to drag/click-to-move; null = nobody (game over, pure spectating),
+  // undefined = everybody (standalone board with no policy)
+  movableColor?: PieceColor | null
 }>()
 
 const emit = defineEmits<{
@@ -71,6 +77,11 @@ const orientation = computed<PieceColor>(() => props.orientation ?? 'white')
 
 // Selected square for click-to-move. Any unrelated action clears it (drag start, rotation, a move).
 const selected = ref<SquareKey | null>(null)
+
+// Only movable pieces react to interaction — opponent pieces can't be grabbed or selected.
+function isMovable(color: PieceColor): boolean {
+  return props.movableColor === undefined || props.movableColor === color
+}
 
 // Rows top → bottom, columns left → right, both flipped for a black-down board.
 // Order must mirror squareToCoords so the piece overlay lines up with the grid.
@@ -115,15 +126,24 @@ const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
   },
 })
 
-// Click-to-move: tap a piece to select, then tap a destination. Tapping the selected square
-// clears it; tapping another friendly piece reselects; anything else attempts the move (the
-// engine validates). Reached from a piece tap (onTap) and from an empty square click.
+// Only movable pieces start a drag — an opponent piece ignores the pointer entirely.
+function onPiecePointerDown(event: PointerEvent, square: SquareKey, id: string, color: PieceColor) {
+  if (!isMovable(color)) {
+    return
+  }
+
+  start(event, square, id)
+}
+
+// Click-to-move: tap a movable piece to select, then tap a destination. Tapping the selected
+// square clears it; tapping another friendly piece reselects; anything else attempts the move
+// (the engine validates). Reached from a piece tap (onTap) and from an empty square click.
 function activateSquare(square: SquareKey) {
   const current = selected.value
   const piece = props.board.squares[square].piece
 
   if (!current) {
-    if (piece) {
+    if (piece && isMovable(piece.color)) {
       selected.value = square
     }
 
@@ -175,6 +195,10 @@ const hoveredRank = computed<SquareRank | null>(() =>
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
   const result: SquareHighlight[] = []
+  if (props.lastMove && (props.lastMove.from === square || props.lastMove.to === square)) {
+    result.push('last-move')
+  }
+
   if (dropTarget.value === square) {
     result.push('drop-target')
   }

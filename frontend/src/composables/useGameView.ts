@@ -1,6 +1,7 @@
 import {computed, reactive} from 'vue'
 import {useGameSession} from '@/composables/useGameSession'
 import {useSettingsStore} from '@/stores/useSettingsStore'
+import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import type {PieceColor, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
@@ -27,6 +28,34 @@ export function useGameView(id: string) {
     session.makeMove(from, to)
   }
 
+  // Which color's pieces accept interaction (drag / click-to-move). Local mode: the player to
+  // move; nobody once the game is over. Remote modes will pin this to the local player's color.
+  const movableColor = computed<PieceColor | null>(() => {
+    const game = session.game.value
+    if (!game || game.status === 'finished') {
+      return null
+    }
+
+    return game.activeColor
+  })
+
+  // From/to squares of the last played move, for the board highlight.
+  // Gated by a per-viewer setting (default on) — null hides the highlight.
+  const lastMove = computed<{ from: SquareKey; to: SquareKey } | null>(() => {
+    if (!settingsStore.settings.highlightLastMove) {
+      return null
+    }
+
+    const moves = session.moves.value
+    const last = moves[moves.length - 1]
+    return last ? {from: last.from, to: last.to} : null
+  })
+
+  // Captures derived once from the move history — both player cards consume this.
+  const captured = computed<CapturedByColor>(() =>
+    session.game.value ? getCapturedPieces(session.game.value) : {white: [], black: []},
+  )
+
   function proposeDraw() {
     // TODO: implement with the rules/flow engine
   }
@@ -45,6 +74,9 @@ export function useGameView(id: string) {
     topColor,
     bottomColor,
     boardSize: computed(() => settingsStore.settings.boardSize),
+    lastMove,
+    movableColor,
+    captured,
     isGameOver: session.isGameOver,
     move,
     resign: session.resign,
