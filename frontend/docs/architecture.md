@@ -139,7 +139,8 @@ coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove
 ## Vue de partie (game view)
 
 `GamePage` est un orchestrateur : il crée le **DTO de vue** via `useGameView(id)` (objet réactif — `game`,
-`orientation`, `boardSize`, `activeColor`, handlers `move`/`resign`/`proposeDraw`) et choisit un **layout selon
+`orientation`, `boardSize`, `activeColor`, commandes `move`/`resign`/`offerDraw`/`acceptDraw`/`declineDraw` —
+même vocabulaire que l'engine) et choisit un **layout selon
 la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayoutMobile` vs `GameLayoutDesktop`.
 
 - Les **sections sont partagées** ; seuls les layouts les arrangent (desktop = board + sidebar 3 zones ;
@@ -148,8 +149,10 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   le board auto-flip pour suivre le joueur au trait (`orientation = activeColor`). D'où le retrait du
   bouton « tourner » de `cBoard` (l'orientation est pilotée par la policy).
 - `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `PlayersPanel` → `PlayerCard`,
-  `GameInfo`, `MoveHistory` (SAN par tour, **desktop-only**, données hardcodées), `GameActions`
-  (proposer nulle / abandonner, via `view.proposeDraw`/`resign` ; abandon confirmé).
+  `GameInfo` (contrôle de temps, mode, **état de partie** sur sa propre ligne : attente / trait / résultat),
+  `MoveHistory` (SAN par tour depuis `view.moves`, **desktop-only**), `GameActions` (masqué si partie finie ;
+  proposer nulle / abandonner confirmé ; offre pendante → « Les blancs proposent la nulle » + Accepter /
+  Refuser — policy locale : l'offre vient du joueur au trait, jouer un coup la refuse).
 - **Identités** : `PlayersPanel` groupe les deux `PlayerCard` **en haut** (ordre par orientation → suit la
   rotation). Chaque carte : avatar (propagé du form via `PlayerMetas.image`), nom + **suffixe couleur**
   « (Blanc)/(Noir) », `CapturedPieces` + **diff matériel (±)** — dérivés de l'historique des coups

@@ -62,9 +62,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Historique : enregistrement des `Move` + SAN naïf
 - [x] Captures et diff matériel dérivés de l'historique (fin du hardcode `material.ts`)
 - [x] Cadran : `turnStartedAt` + incrément au coup + `useGameClock` + affichage réel + victoire au temps
-- [ ] Abandon (bouton, confirmation) → `finished` + résultat
-- [ ] Nulle par accord : offre / acceptation / refus (jouer un coup = refuser)
-- [ ] Historique branché dans `MoveHistory`, résultat affiché en fin de partie
+- [x] Abandon (bouton, confirmation) → `finished` + résultat
+- [x] Nulle par accord : offre / acceptation / refus (jouer un coup = refuser)
+- [x] Historique branché dans `MoveHistory`, résultat affiché en fin de partie
 - [ ] Doc (`domain.md`, `architecture.md`) + tests unitaires + spec Playwright features
 
 ### ② Moteur de légalité
@@ -99,6 +99,8 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 ### ⑥ Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
 
 - [ ] Backend = source de vérité (vrais ULID, arbitrage des coups, horloge serveur)
+- [ ] Identité des commandes : qui a le droit de jouer / accepter / refuser (sans objet en local — un
+      seul écran, une seule souris)
 - [ ] Format wire du DTO (liste de coups ou FEN — le board circulaire ne voyage pas, il se reconstruit)
 - [ ] Sync du DTO par websocket — le mode `local` reste 100 % hors ligne
 - [ ] Spectateurs : observer une ou plusieurs parties sur une même page

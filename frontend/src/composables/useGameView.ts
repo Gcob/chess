@@ -61,9 +61,8 @@ export function useGameView(id: string) {
   // flags the timeout at zero. One clock instance shared by both player cards.
   const clocks = useGameClock(session.game)
 
-  function proposeDraw() {
-    // TODO: implement with the rules/flow engine
-  }
+  // Pending draw offer (who offered) — drives the accept/decline UI in GameActions.
+  const drawOffer = computed<PieceColor | null>(() => session.game.value?.drawOffer ?? null)
 
   // Which color sits at the top / bottom of the board — the layout places each player accordingly.
   const bottomColor = computed<PieceColor>(() => orientation.value)
@@ -84,9 +83,12 @@ export function useGameView(id: string) {
     captured,
     clocks,
     isGameOver: session.isGameOver,
+    drawOffer,
     move,
     resign: session.resign,
-    proposeDraw,
+    offerDraw: session.offerDraw,
+    acceptDraw: session.acceptDraw,
+    declineDraw: session.declineDraw,
   })
 }
 

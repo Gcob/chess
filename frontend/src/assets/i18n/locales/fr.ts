@@ -179,9 +179,15 @@ export default {
     leaveConfirm: 'Une partie est en cours. Quitter quand même ?',
     history: 'Historique',
     actions: {
-      proposeDraw: 'Proposer la nulle',
+      offerDraw: 'Proposer la nulle',
       resign: 'Abandonner',
       resignConfirm: 'Abandonner la partie ?',
+      drawOfferedBy: {
+        white: 'Les blancs proposent la nulle',
+        black: 'Les noirs proposent la nulle',
+      },
+      acceptDraw: 'Accepter',
+      declineDraw: 'Refuser',
     },
     state: {
       waiting: 'En attente du premier coup',

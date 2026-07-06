@@ -15,14 +15,7 @@
 import {computed} from 'vue'
 import type {GameView} from '@/composables/useGameView'
 
-defineProps<{ view: GameView }>()
-
-// HARDCODED placeholder — replaced by view.moves (SAN) once move recording exists.
-const SAMPLE_SANS = [
-  'e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7',
-  'Re1', 'b5', 'Bb3', 'd6', 'c3', 'O-O', 'h3', 'Nb8', 'd4', 'Nbd7',
-  'Nbd2', 'Bb7', 'Bc2', 'Re8', 'Nf1', 'Bf8', 'Ng3', 'g6', 'a4', 'c5',
-]
+const props = defineProps<{ view: GameView }>()
 
 interface Turn {
   number: number
@@ -30,10 +23,22 @@ interface Turn {
   black?: string
 }
 
+// Real history, paired by turn on move color — robust to a black start (future FEN resume).
 const turns = computed(() => {
   const result: Turn[] = []
-  for (let i = 0; i < SAMPLE_SANS.length; i += 2) {
-    result.push({number: i / 2 + 1, white: SAMPLE_SANS[i]!, black: SAMPLE_SANS[i + 1]})
+  for (const move of props.view.moves) {
+    const last = result[result.length - 1]
+
+    if (move.color === 'black' && last && last.black === undefined) {
+      last.black = move.san
+      continue
+    }
+
+    result.push({
+      number: result.length + 1,
+      white: move.color === 'white' ? move.san : '…',
+      black: move.color === 'black' ? move.san : undefined,
+    })
   }
 
   return result

@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useGamesStore } from '@/stores/useGamesStore'
 import * as engine from '@/engine/game'
-import type { SquareKey } from '@/types/chess'
+import type { Game, SquareKey } from '@/types/chess'
 
 export function useGameSession(id: string) {
   const store = useGamesStore()
@@ -25,23 +25,35 @@ export function useGameSession(id: string) {
   const isGameOver = computed(() => game.value?.status === 'finished')
 
   // All game commands go through the engine — guards (status, turn, legality) live there.
-  function makeMove(from: SquareKey, to: SquareKey) {
+  // This only centralizes the "session still exists" check.
+  function withGame(command: (g: Game) => void) {
     const g = game.value
-    if (!g) {
-      return
+    if (g) {
+      command(g)
     }
+  }
 
-    engine.makeMove(g, from, to)
+  function makeMove(from: SquareKey, to: SquareKey) {
+    withGame(g => engine.makeMove(g, from, to))
   }
 
   // Local mode: the resigner is the player to move.
   function resign() {
-    const g = game.value
-    if (!g) {
-      return
-    }
+    withGame(g => engine.resign(g, g.activeColor))
+  }
 
-    engine.resign(g, g.activeColor)
+  // Local mode: the offer comes from the player to move; the opponent answers
+  // (accept/decline buttons, or simply playing a move — the engine declines it then).
+  function offerDraw() {
+    withGame(g => engine.offerDraw(g, g.activeColor))
+  }
+
+  function acceptDraw() {
+    withGame(engine.acceptDraw)
+  }
+
+  function declineDraw() {
+    withGame(engine.declineDraw)
   }
 
   return {
@@ -55,5 +67,8 @@ export function useGameSession(id: string) {
     isGameOver,
     makeMove,
     resign,
+    offerDraw,
+    acceptDraw,
+    declineDraw,
   }
 }

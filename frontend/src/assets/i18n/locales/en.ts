@@ -167,9 +167,15 @@ export default {
     leaveConfirm: 'A game is in progress. Leave anyway?',
     history: 'Move history',
     actions: {
-      proposeDraw: 'Offer draw',
+      offerDraw: 'Offer draw',
       resign: 'Resign',
       resignConfirm: 'Resign the game?',
+      drawOfferedBy: {
+        white: 'White offers a draw',
+        black: 'Black offers a draw',
+      },
+      acceptDraw: 'Accept',
+      declineDraw: 'Decline',
     },
     state: {
       waiting: 'Waiting for the first move',
