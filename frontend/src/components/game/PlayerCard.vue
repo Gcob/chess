@@ -15,7 +15,9 @@
       </div>
     </div>
 
-    <div class="player-card__clock" v-if="hasClock">{{ clock }}</div>
+    <div class="player-card__clock" :class="{ 'player-card__clock--low': isLowTime }" v-if="hasClock">
+      {{ clock }}
+    </div>
   </div>
 </template>
 
@@ -41,16 +43,52 @@ const capturedPieces = computed(() => props.view.captured[props.color])
 const advantage = computed(() => materialDiff(props.view.captured, props.color))
 const advantageLabel = computed(() => (advantage.value > 0 ? `+${advantage.value}` : String(advantage.value)))
 
-// Static for now — shows the configured starting time. game.time is optional (untimed → dash);
-// a real ticking clock comes with the timer.
-const hasClock = computed(() => !!props.view.game?.time)
-const clock = computed(() => {
-  const time = props.view.game?.time
-  if (!time) {
-    return '—'
+// Live clock from the view — the color on the move ticks, the other is settled.
+// null = untimed game, no clock shown at all. The view is reactive(), so the nested computeds
+// of useGameClock arrive UNWRAPPED here: this reads a plain number | null, not a ref.
+const clockSeconds = computed(() => props.view.clocks[props.color])
+const hasClock = computed(() => clockSeconds.value !== null)
+
+// Time-pressure threshold scaled to the time control:
+// bullet (≤ 2 min) → 10 s, blitz (≤ 5 min) → 20 s, anything longer → 60 s.
+function lowTimeThreshold(baseSeconds: number): number {
+  if (baseSeconds <= 120) {
+    return 10
   }
 
-  return `${time.minutes}:00`
+  if (baseSeconds <= 300) {
+    return 20
+  }
+
+  return 60
+}
+
+const isLowTime = computed(() => {
+  const remaining = clockSeconds.value
+  const game = props.view.game
+  if (remaining === null || !game?.time || game.status !== 'active') {
+    return false
+  }
+
+  return remaining <= lowTimeThreshold(game.time.minutes * 60)
+})
+
+// Rounded UP like a real chess clock: 0:01 stays displayed until the flag actually falls.
+// Under time pressure the tenths show up (0:09.4).
+const clock = computed(() => {
+  const remaining = clockSeconds.value ?? 0
+
+  if (isLowTime.value) {
+    const total = Math.ceil(remaining * 10) / 10
+    const minutes = Math.floor(total / 60)
+    const seconds = total - minutes * 60
+    return `${minutes}:${seconds.toFixed(1).padStart(4, '0')}`
+  }
+
+  const total = Math.ceil(remaining)
+  const minutes = Math.floor(total / 60)
+  const seconds = total % 60
+  return `${minutes}:${String(seconds).padStart(2, '0')}`
 })
 </script>
 
@@ -142,11 +180,18 @@ const clock = computed(() => {
   &__clock {
     flex-shrink: 0;
     font-family: $font-family-mono;
+    // every digit takes the same width — the colon never shifts as the time ticks
+    font-variant-numeric: tabular-nums;
     font-size: $font-size-lg;
     color: var(--text-primary);
 
     @include breakpoint-down($breakpoint-lg) {
       font-size: $font-size-base;
+    }
+
+    // under a minute in an active game — time pressure
+    &--low {
+      color: var(--danger);
     }
   }
 }

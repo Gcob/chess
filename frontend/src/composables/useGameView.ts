@@ -1,5 +1,6 @@
 import {computed, reactive} from 'vue'
 import {useGameSession} from '@/composables/useGameSession'
+import {useGameClock} from '@/composables/useGameClock'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import type {PieceColor, SquareKey} from '@/types/chess'
@@ -56,6 +57,10 @@ export function useGameView(id: string) {
     session.game.value ? getCapturedPieces(session.game.value) : {white: [], black: []},
   )
 
+  // Live remaining seconds per color (null = untimed) — ticks while the game is active,
+  // flags the timeout at zero. One clock instance shared by both player cards.
+  const clocks = useGameClock(session.game)
+
   function proposeDraw() {
     // TODO: implement with the rules/flow engine
   }
@@ -77,6 +82,7 @@ export function useGameView(id: string) {
     lastMove,
     movableColor,
     captured,
+    clocks,
     isGameOver: session.isGameOver,
     move,
     resign: session.resign,

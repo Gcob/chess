@@ -153,8 +153,12 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 - **Identités** : `PlayersPanel` groupe les deux `PlayerCard` **en haut** (ordre par orientation → suit la
   rotation). Chaque carte : avatar (propagé du form via `PlayerMetas.image`), nom + **suffixe couleur**
   « (Blanc)/(Noir) », `CapturedPieces` + **diff matériel (±)** — dérivés de l'historique des coups
-  (`engine/material.ts`) —, horloge **statique** (`game.time` optionnel = sans chrono) tant que le timer ne
-  tourne pas. Le trait est indiqué par le highlight `is-active` de la carte et la ligne d'état de `GameInfo`.
+  (`engine/material.ts`) —, horloge **live** (`view.clocks`, via `useGameClock` : tick ~100 ms quand la
+  partie chronométrée est active, arrondi à la seconde supérieure comme une vraie horloge d'échecs, chiffres
+  tabulaires, flag automatique à zéro ; `game.time` optionnel = sans chrono, aucune horloge affichée).
+  Sous un seuil adapté au contrôle de temps (≤ 2 min → 10 s, ≤ 5 min → 20 s, sinon 60 s) : rouge + dixièmes
+  (`0:09.4`).
+  Le trait est indiqué par le highlight `is-active` de la carte et la ligne d'état de `GameInfo`.
 - **`GameInfo`** : récap compact (contrôle de temps « 5 min + 2 s » + mode). Ordre sidebar desktop :
   joueurs → infos → historique → actions ; mobile : infos → joueurs → board → actions.
 - **Pas de scroll en desktop** : topbar et footer ont des **hauteurs fixes** (`$topbar-height`,

@@ -61,7 +61,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Respect du trait dans `makeMove` (pièce du joueur au trait seulement)
 - [x] Historique : enregistrement des `Move` + SAN naïf
 - [x] Captures et diff matériel dérivés de l'historique (fin du hardcode `material.ts`)
-- [ ] Cadran : `turnStartedAt` + incrément au coup + `useGameClock` + affichage réel + victoire au temps
+- [x] Cadran : `turnStartedAt` + incrément au coup + `useGameClock` + affichage réel + victoire au temps
 - [ ] Abandon (bouton, confirmation) → `finished` + résultat
 - [ ] Nulle par accord : offre / acceptation / refus (jouer un coup = refuser)
 - [ ] Historique branché dans `MoveHistory`, résultat affiché en fin de partie
