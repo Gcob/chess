@@ -132,9 +132,12 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
 overlays translucides sur `cSquare`. Câblés : `drop-target`, `selected`, `last-move` (from/to du dernier
 coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove` — défaut activé).
 
-> Engine (règles incrémentales) : `canMove` refuse origine vide, non-coup et capture d'une pièce alliée ;
-> le reste (patterns de déplacement, tour, échec) est encore permis. `applyMove` = capture par écrasement.
-> Pas encore de tour / `Move` / san.
+> Engine : `engine/game.ts` = commandes gardées par statut (`startGame`, `makeMove`, `resign`,
+> `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helper `remainingSeconds`) — voir
+> `docs/engine-roadmap.md` pour les principes et la progression. `makeMove` exige le trait, enregistre le
+> `Move` (SAN naïf) avec temps débité + incrément, et le premier coup démarre une partie `waiting` (jamais
+> sur tentative invalide). `engine/move.ts` reste la couche board : `canMove` refuse origine vide, non-coup
+> et capture alliée — les patterns de déplacement et l'échec viennent en phase ②.
 
 ## Vue de partie (game view)
 
@@ -181,9 +184,9 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 - Factories dans `src/composables/factories/`
 - `gameFactory.ts` expose :
     - `toBackendPayload(settings: NewGameSettings): CreateGamePayload`
-    - `createGameSession(payload: CreateGamePayload, id: number): GameSession`
+    - `createGameSession(payload: CreateGamePayload, id: string): GameSession`
 - `CreateGamePayload` est la source de vérité pour la création de partie — c'est lui qu'on enverra au backend
-- `useGamesStore` orchestre : `open(payload)` → factory → enregistre la session
+- `useGamesStore` orchestre : `open(payload)` → ULID + factory → enregistre la session
 
 ## Flux de création de partie
 
@@ -211,6 +214,7 @@ si `shouldWarn`, un `window.confirm` s'affiche et annule la nav si refusée (top
 
 ## Conventions ID
 
-- IDs toujours des entiers simples (1, 2, 3...) — jamais de UUID
-- Le backend sera la source de vérité finale pour les IDs des parties distantes
-- L'`id` de session sera la clé dans l'URI de route pour les parties distantes
+- IDs de partie : **ULID** (string, 26 chars) — `GameSession.id`, clé de la route `/game/:id`.
+- Simulé côté frontend (`src/utils/ulid.ts`, fallback non-crypto documenté) tant qu'il n'y a pas de
+  backend ; le backend/DB deviendra la source des vrais ULID.
+- Triable par date de création, générable partout — exactement le cas d'usage du ULID.

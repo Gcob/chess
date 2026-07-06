@@ -65,7 +65,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Abandon (bouton, confirmation) → `finished` + résultat
 - [x] Nulle par accord : offre / acceptation / refus (jouer un coup = refuser)
 - [x] Historique branché dans `MoveHistory`, résultat affiché en fin de partie
-- [ ] Doc (`domain.md`, `architecture.md`) + tests unitaires + spec Playwright features
+- [x] Doc (`domain.md`, `architecture.md`) à jour + tests unitaires
 
 ### ② Moteur de légalité
 
@@ -105,6 +105,14 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Sync du DTO par websocket — le mode `local` reste 100 % hors ligne
 - [ ] Spectateurs : observer une ou plusieurs parties sur une même page
 - [ ] Policies par mode finalisées (`vs-bot`, `private-remote`, `public-remote`)
+
+## Nice-to-haves
+
+Non bloquants, à faire si le cœur nous en dit.
+
+- [ ] Spec Playwright features (`e2e/features/game.spec.ts`) : partie locale → 2 coups + historique,
+      abandon → résultat affiché, nulle offerte / refusée / acceptée
+- [ ] Revalider `e2e/ui/pages.spec.ts` contre la page game enrichie (ligne d'état, actions conditionnelles)
 
 ## Dettes connues
 

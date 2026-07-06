@@ -3,13 +3,15 @@
 ## Fichier unique : `src/types/chess.ts`
 
 Toutes les interfaces et types du domaine échecs dans un seul fichier.
-Types purs — pas de classes, pas de méthodes. La logique métier vit dans les composables.
+Types purs — pas de classes, pas de méthodes. La logique métier vit dans `src/engine/`.
 
 ## Philosophie
 
-- Types = le *quoi*. Composables = le *comment*.
+- Types = le *quoi*. Engine = le *comment*. Composables = wrappers réactifs minces.
+- Le DTO `Game` reste du plain data sérialisable — il voyagera un jour (websocket, DB).
 - Modèle de départ réfléchi, pas une spec rigide — on ajoute de la complexité au fil du temps.
-- Les `conditions` et `effects` dans `MoveType` sont des string identifiants interprétés par les composables.
+- Les `conditions` et `effects` dans `MoveType` sont des string identifiants qui seront interprétés
+  par l'engine (moteur de légalité, phase ② du roadmap).
 
 ## Hiérarchie des acteurs
 
@@ -29,7 +31,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans les
 | `Player`      | Participant en jeu (couleur, isInCheck, timer?)                                                             |
 | `GameTime`    | Temps de partie structuré (minutes, incrément en secondes)                                                  |
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                                     |
-| `Timer`       | Horloge active (isActive, secondsRemaining, secondsIncrement)                                               |
+| `Timer`       | Horloge (secondsRemaining, secondsIncrement) — « qui tourne » est dérivé, jamais stocké                     |
 | `MoveType`    | Type de déplacement (id, conditions[], effects[])                                                           |
 | `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, pinDirection, hasMoved, moveTypes)                    |
 | `Square`      | Case (couleur, file, rank, piece, neighbors)                                                                |
@@ -37,15 +39,20 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans les
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
 | `Capture`     | Capture (pièce capturée)                                                                                    |
 | `Move`        | Déplacement plain data (san, color, from/to en SquareKey, elapsedSeconds, capture?)                         |
-| `Game`        | Partie (createdAt, startedAt, status, mode, activeColor, time?, type, players{white,black}, board, moves)   |
-| `GameSession` | Composition `{ id: number, game: Game }` — pas d'héritage de `Game`                                         |
+| `GameResult`  | Fin de partie (winner — `null` = nulle —, reason)                                                           |
+| `Game`        | Partie (createdAt, startedAt, status, result, mode, activeColor, drawOffer, turnStartedAt, time?, type,     |
+|               | players{white,black}, board, moves)                                                                         |
+| `GameSession` | Composition `{ id: string, game: Game }` — id ULID, pas d'héritage de `Game`                                |
 
 ## Types primitifs
 
 ```ts
 type PieceColor = 'white' | 'black'
 type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn'
-type GameStatus = 'waiting' | 'active' | 'paused' | 'finished'
+type GameStatus = 'waiting' | 'active' | 'finished'
+type GameEndReason = 'resignation' | 'timeout' | 'draw-agreement' | 'checkmate' | 'stalemate'
+    | 'fifty-move-rule' | 'threefold-repetition' | 'insufficient-material'
+    // domaine complet déclaré d'emblée — l'engine ne produit que les 3 premières pour l'instant
 type GameMode = 'local' | 'private-remote' | 'public-remote' | 'vs-bot'
 type Direction = 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left' | 'top-left'
 type SquareKey = `${SquareFile}${SquareRank}` // 'a1' … 'h8' — 64 clés exactes
@@ -91,8 +98,9 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 
 ## Sessions de partie
 
-- `GameSession = { id: number, game: Game }` — composition, pas d'héritage
-- `id` : entier simple assigné par le store (1, 2, 3...). Sera l'id backend éventuellement.
+- `GameSession = { id: string, game: Game }` — composition, pas d'héritage
+- `id` : ULID, simulé côté frontend (`utils/ulid.ts`) tant qu'il n'y a pas de backend ;
+  le backend/DB deviendra la source des vrais ULID. C'est la clé de la route `/game/:id`.
 - Une session est autonome — elle contient tout ce dont une partie a besoin.
 - `useGamesStore` est un registre de sessions actives. Max 1 actuellement, prévu pour N (tournois).
 
@@ -100,7 +108,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 
 - `Square.file` = colonne (a–h), `Square.rank` = rangée (1–8) — notation standard
 - `Piece.textRepresentation` : `short` (ex. `'K'`) et `long` (ex. `'King'`)
-- `Move.previousMove` fournit le contexte pour la validation en passant
+- `Move` est du plain data sérialisable — `from`/`to` en `SquareKey`, jamais des références `Square`
+  (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves`.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case ET clouage de pièce)
@@ -113,6 +122,12 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Accès par couleur : `game.players[game.activeColor]`.
 - `Player.timer?` — le timer vit dans le joueur, pas dans `Game`. `Game.time` reste la config (GameTime),
   le timer runtime est dans `player.timer`. Partie non chronométrée = `timer: undefined`.
+- **Horloge par timestamps** — `Game.turnStartedAt` (epoch ms) est la base : le temps restant se
+  **calcule** (`remainingSeconds`), il ne se décrémente jamais. `timer.secondsRemaining` n'est réglé
+  qu'au moment du coup (débit + incrément). Secondes volontairement fractionnaires — l'affichage arrondit.
+- `Game.result` — réglé exactement quand `status` passe à `'finished'`, toujours via le `endGame()`
+  interne de l'engine (avec `drawOffer` et `turnStartedAt` remis à `null` ensemble).
+- `Game.drawOffer` — offre de nulle pendante (couleur de l'offreur). Jouer un coup la refuse.
 - `Piece.id` — identité stable `{short}{caseDeDépart}` (ex. `Pe2`, `Ra1`, `Ke1`), assignée à la création du board.
   Survit aux déplacements et à la promotion (`Pe7` reste `Pe7` même devenue dame).
   Sert de `key` Vue pour la couche d'animation des pièces — la même pièce = le même nœud DOM qui glisse.
@@ -123,5 +138,7 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 
 ## Concepts à intégrer éventuellement
 
-- **State pattern** pour `GameStatus` — l'union de types suffit pour l'instant
-- **GameMode** — les valeurs sont là, le comportement viendra plus tard
+- **State pattern** — réalisé en version *fonctionnelle* : le statut est une donnée du DTO, les
+  comportements par statut sont des guards dans les commandes de `engine/game.ts` (pas de classes,
+  le DTO reste sérialisable).
+- **GameMode** — les valeurs sont là ; `local` est câblé, les autres viendront avec le backend.
