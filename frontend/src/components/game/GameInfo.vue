@@ -69,7 +69,7 @@ const stateLabel = computed(() => {
     ? t(`game.state.win.${game.result.winner}`)
     : t('game.state.draw')
 
-  return `${outcome} — ${t(`game.state.reason.${game.result.reason}`)}`
+  return `${outcome}! ${t(`game.state.reason.${game.result.reason}`)}`
 })
 </script>
 
