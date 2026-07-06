@@ -207,7 +207,7 @@ NewGameSettings (useNewGameStore)
 ## Garde de sortie de page
 
 `usePageLeaveGuard` (store) déclenche le warning natif `beforeunload` ; `usePreventLeave(condition)`
-(composable) l'arme depuis un composant. `GamePage.vue` bloque tant qu'une partie existe.
+(composable) l'arme depuis un composant. `GamePage.vue` bloque tant qu'une partie **non terminée** existe.
 
 La **navigation interne** vue-router est couverte par un `beforeEach` global (`router/index.ts`) :
 si `shouldWarn`, un `window.confirm` s'affiche et annule la nav si refusée (top-bar, footer, etc.).

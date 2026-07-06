@@ -32,7 +32,8 @@ const rawId = route.params.id
 const view = useGameView(Array.isArray(rawId) ? (rawId[0] ?? '') : (rawId ?? ''))
 const isMobile = useIsMobile()
 
-usePreventLeave(() => !!view.game)
+// warn only while a live game could be lost — a finished game has nothing to protect
+usePreventLeave(() => !!view.game && !view.isGameOver)
 </script>
 
 <style lang="scss" scoped>
