@@ -24,16 +24,12 @@
           <cPiece
             v-for="p in placedPieces"
             :key="p.id"
-            :col="p.col"
-            :row="p.row"
-            :color="p.color"
-            :type="p.type"
+            :piece="p"
             :animation="animation"
             :dragging="draggingId === p.id"
             :drag-x="draggingId === p.id ? dragX : 0"
             :drag-y="draggingId === p.id ? dragY : 0"
-            :movable="isMovable(p.color)"
-            @pointerdown="onPiecePointerDown($event, p.square, p.id, p.color)"
+            @pointerdown="onPiecePointerDown($event, p)"
             @mouseenter="hoveredSquare = p.square"
           />
         </div>
@@ -45,7 +41,8 @@
 <script lang="ts" setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import type {Board, PieceColor, SquareFile, SquareKey, SquareRank} from '@/types/chess'
-import type {PieceAnimation, SquareHighlight} from '@/types/look-and-feel'
+import type {PieceAnimation, PlacedPiece, SquareHighlight} from '@/types/look-and-feel'
+import type {GameView} from '@/composables/useGameView'
 import {getBoardPieces} from '@/engine/board'
 import {squareToCoords} from '@/utils/boardCoords'
 import {usePieceDrag} from '@/composables/usePieceDrag'
@@ -53,42 +50,40 @@ import cSquare from './cSquare.vue'
 import cPiece from './cPiece.vue'
 import cBoardFrame from './cBoardFrame.vue'
 
+// The view is the single DTO prop — board, orientation, policies (movableColor, lastMove) and
+// the move command all come from it. Only `size` stays apart: it's measured by the parent's
+// ResizeObserver, not a view concern. cBoard renders under the parent's v-if="view.game".
 const props = defineProps<{
-  board: Board
+  view: GameView
   // px — controls everything inside via the grid
   size?: number
-  // which color sits at the bottom; driven by the parent (mode policy). Defaults to white.
-  orientation?: PieceColor
-  // from/to of the last played move; null/undefined = no highlight (setting off or no move yet)
-  lastMove?: { from: SquareKey; to: SquareKey } | null
-  // whose pieces react to drag/click-to-move; null = nobody (game over, pure spectating),
-  // undefined = everybody (standalone board with no policy)
-  movableColor?: PieceColor | null
-}>()
-
-const emit = defineEmits<{
-  move: [from: SquareKey, to: SquareKey]
 }>()
 
 const FILES: SquareFile[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS: SquareRank[] = [1, 2, 3, 4, 5, 6, 7, 8]
 
-const orientation = computed<PieceColor>(() => props.orientation ?? 'white')
+const board = computed<Board | null>(() => props.view.game?.board ?? null)
+const orientation = computed<PieceColor>(() => props.view.orientation)
 
 // Selected square for click-to-move. Any unrelated action clears it (drag start, rotation, a move).
 const selected = ref<SquareKey | null>(null)
 
 // Only movable pieces react to interaction — opponent pieces can't be grabbed or selected.
 function isMovable(color: PieceColor): boolean {
-  return props.movableColor === undefined || props.movableColor === color
+  return props.view.movableColor === color
 }
 
 // Rows top → bottom, columns left → right, both flipped for a black-down board.
 // Order must mirror squareToCoords so the piece overlay lines up with the grid.
 const orderedSquares = computed(() => {
+  const squares = board.value?.squares
+  if (!squares) {
+    return []
+  }
+
   const ranks = orientation.value === 'white' ? [...RANKS].reverse() : RANKS
   const files = orientation.value === 'white' ? FILES : [...FILES].reverse()
-  return ranks.flatMap(rank => files.map(file => props.board.squares[`${file}${rank}`]))
+  return ranks.flatMap(rank => files.map(file => squares[`${file}${rank}`]))
 })
 
 // Square under the mouse (set on hover); the frame highlights its file/rank.
@@ -98,17 +93,22 @@ const hoveredSquare = ref<SquareKey | null>(null)
 // Sorted by id so the v-for keeps a STABLE DOM order regardless of board position —
 // a move then only patches a piece's transform instead of reordering nodes, which would
 // reset the in-flight CSS transition and make the piece teleport.
-const placedPieces = computed(() =>
-  getBoardPieces(props.board)
+const placedPieces = computed<PlacedPiece[]>(() => {
+  if (!board.value) {
+    return []
+  }
+
+  return getBoardPieces(board.value)
     .map(({piece, square}) => ({
       id: piece.id,
       color: piece.color,
       type: piece.type,
       square,
+      movable: isMovable(piece.color),
       ...squareToCoords(square, orientation.value),
     }))
-    .sort((a, b) => a.id.localeCompare(b.id)),
-)
+    .sort((a, b) => a.id.localeCompare(b.id))
+})
 
 // ─── Drag and drop ─────────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
   orientation,
   onDrop: (from, to) => {
     selected.value = null
-    emit('move', from, to)
+    props.view.move(from, to)
   },
   onTap: activateSquare,
   onDragStart: () => {
@@ -127,20 +127,25 @@ const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
 })
 
 // Only movable pieces start a drag — an opponent piece ignores the pointer entirely.
-function onPiecePointerDown(event: PointerEvent, square: SquareKey, id: string, color: PieceColor) {
-  if (!isMovable(color)) {
+function onPiecePointerDown(event: PointerEvent, piece: PlacedPiece) {
+  if (!piece.movable) {
     return
   }
 
-  start(event, square, id)
+  start(event, piece.square, piece.id)
 }
 
 // Click-to-move: tap a movable piece to select, then tap a destination. Tapping the selected
 // square clears it; tapping another friendly piece reselects; anything else attempts the move
 // (the engine validates). Reached from a piece tap (onTap) and from an empty square click.
 function activateSquare(square: SquareKey) {
+  const squares = board.value?.squares
+  if (!squares) {
+    return
+  }
+
   const current = selected.value
-  const piece = props.board.squares[square].piece
+  const piece = squares[square].piece
 
   if (!current) {
     if (piece && isMovable(piece.color)) {
@@ -155,13 +160,13 @@ function activateSquare(square: SquareKey) {
     return
   }
 
-  const selectedPiece = props.board.squares[current].piece
+  const selectedPiece = squares[current].piece
   if (piece && selectedPiece && piece.color === selectedPiece.color) {
     selected.value = square
     return
   }
 
-  emit('move', current, square)
+  props.view.move(current, square)
   selected.value = null
 }
 
@@ -195,7 +200,8 @@ const hoveredRank = computed<SquareRank | null>(() =>
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
   const result: SquareHighlight[] = []
-  if (props.lastMove && (props.lastMove.from === square || props.lastMove.to === square)) {
+  const lastMove = props.view.lastMove
+  if (lastMove && (lastMove.from === square || lastMove.to === square)) {
     result.push('last-move')
   }
 

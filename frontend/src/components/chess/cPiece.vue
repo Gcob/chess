@@ -1,7 +1,7 @@
 <template>
   <div
     class="c-piece"
-    :class="[animationClass, { 'c-piece--moving': moving || dragging, 'c-piece--static': !movable }]"
+    :class="[animationClass, { 'c-piece--moving': moving || dragging, 'c-piece--static': !piece.movable }]"
     :style="style"
     @transitionstart="moving = true"
     @transitionend="moving = false"
@@ -9,8 +9,8 @@
   >
     <img
       class="c-piece__img"
-      :src="getPieceImage(color, type)"
-      :alt="`${color} ${type}`"
+      :src="getPieceImage(piece.color, piece.type)"
+      :alt="`${piece.color} ${piece.type}`"
       draggable="false"
     />
   </div>
@@ -18,34 +18,26 @@
 
 <script lang="ts" setup>
 import {computed, ref} from 'vue'
-import type {PieceColor, PieceType} from '@/types/chess'
-import type {PieceAnimation} from '@/types/look-and-feel'
+import type {PieceAnimation, PlacedPiece} from '@/types/look-and-feel'
 import {useChessTheme} from '@/composables/useChessTheme'
 
 // A piece is a square-sized sprite placed in absolute board coordinates.
-// col/row are 0-based grid indices already resolved for the board orientation —
-// cPiece knows nothing about files/ranks or which way the board faces.
+// The PlacedPiece DTO carries identity, sprite and grid cell already resolved for the board
+// orientation — cPiece knows nothing about files/ranks or which way the board faces.
 // Moving it = changing col/row; a CSS transition animates the slide.
 // animation='none' makes the move instant (teleport) — used at mount and on rotation.
 const props = withDefaults(defineProps<{
-  // 0-based grid cell: col 0 = leftmost column, row 0 = top row.
-  col: number
-  row: number
-  color: PieceColor
-  type: PieceType
+  piece: PlacedPiece
   animation: PieceAnimation
   // Following the cursor — overrides col/row and is always instant.
   dragging?: boolean
   // px translate within the board (top-left origin), used while dragging.
   dragX?: number
   dragY?: number
-  // false = the piece doesn't react to the pointer (opponent piece, game over) — plain cursor
-  movable?: boolean
 }>(), {
   dragging: false,
   dragX: 0,
   dragY: 0,
-  movable: true,
 })
 
 const {getPieceImage} = useChessTheme()
@@ -64,7 +56,7 @@ const animationClass = computed(() =>
 const style = computed(() => ({
   transform: props.dragging
     ? `translate(${props.dragX}px, ${props.dragY}px)`
-    : `translate(${props.col * 100}%, ${props.row * 100}%)`,
+    : `translate(${props.piece.col * 100}%, ${props.piece.row * 100}%)`,
 }))
 </script>
 

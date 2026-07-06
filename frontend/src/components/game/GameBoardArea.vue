@@ -1,14 +1,6 @@
 <template>
   <div ref="areaRef" class="game-board-area">
-    <cBoard
-      v-if="view.game && boardSizePx > 0"
-      :board="view.game.board"
-      :orientation="view.orientation"
-      :size="boardSizePx"
-      :last-move="view.lastMove"
-      :movable-color="view.movableColor"
-      @move="view.move"
-    />
+    <cBoard v-if="view.game && boardSizePx > 0" :view="view" :size="boardSizePx" />
   </div>
 </template>
 

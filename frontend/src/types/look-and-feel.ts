@@ -1,4 +1,4 @@
-import type { PieceColor, PieceType } from './chess'
+import type { PieceColor, PieceType, SquareKey } from './chess'
 
 // ─── Theme enums ─────────────────────────────────────────────────────────────
 
@@ -30,6 +30,20 @@ export type BoardSize = 'small' | 'normal' | 'large' | 'full'
 //   hop       — arc for the knight; DORMANT until the rules engine reports move types
 //   snap-back — return after an illegal drop; DORMANT until move validation exists
 export type PieceAnimation = 'slide' | 'none' | 'hop' | 'snap-back'
+
+// A piece resolved to render coordinates for the current orientation — the flat projection
+// cBoard hands to each cPiece as a single DTO prop.
+export interface PlacedPiece {
+  id: string
+  color: PieceColor
+  type: PieceType
+  square: SquareKey
+  // 0-based grid cell: col 0 = leftmost column, row 0 = top row
+  col: number
+  row: number
+  // false = the piece ignores the pointer (opponent piece, game over)
+  movable: boolean
+}
 
 // All 12 piece images: 2 colors × 6 types
 export type PieceImageSet = Record<PieceColor, Record<PieceType, string>>

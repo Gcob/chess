@@ -88,11 +88,14 @@ réactifs minces** : ils appellent l'engine et exposent le résultat en `ref`/`c
 
 ## Rendu de l'échiquier
 
-`cBoard` = deux couches dans une zone `__area` (ref qui ancre les calculs pointeur→pixel) :
+`cBoard` consomme le **DTO de vue en prop unique** (`view: GameView` — board, orientation, policies,
+commande `move` ; seule `size` reste à part, mesurée par le parent). Deux couches dans une zone `__area`
+(ref qui ancre les calculs pointeur→pixel) :
 
 - **Grille** (`__grid`) — 64 `cSquare` (CSS grid) : fond + highlights, cibles de clic/drop.
-- **Overlay pièces** (`__pieces`, non clippé) — `cPiece` en `transform: translate(col·100%, row·100%)`,
-  dérivé de `getBoardPieces`, keyé par `piece.id`.
+- **Overlay pièces** (`__pieces`, non clippé) — chaque `cPiece` reçoit un DTO `PlacedPiece`
+  (id, sprite, `col`/`row` résolus pour l'orientation, `movable`) et se place en
+  `transform: translate(col·100%, row·100%)` ; dérivé de `getBoardPieces`, keyé par `piece.id`.
 
 Deux pièges non-évidents :
 
@@ -100,8 +103,8 @@ Deux pièges non-évidents :
   la transition en cours → téléportation.
 - **`z-index`** monté pendant le glissement (`--moving`) pour passer au-dessus des autres pièces.
 
-**Orientation** — prop `orientation` en `v-model` (état chez `GamePage`, config *par observateur*, sœur des
-thèmes ; bouton dans `cBoard`). Pilote l'ordre de la grille et le mapping `case ↔ {col,row}`
+**Orientation** — `view.orientation` (policy par mode dans `useGameView`, config *par observateur*).
+Pilote l'ordre de la grille et le mapping `case ↔ {col,row}`
 (`utils/boardCoords.ts`, paire inverse pure). Rotation instantanée : frame du flip en `none`, puis `slide`
 restauré via **double `requestAnimationFrame`** (la frame sans transition doit être peinte avant de réarmer).
 `cBoardFrame` (composant à slot) entoure le board avec les coordonnées sur les **quatre côtés** (fichiers
@@ -112,12 +115,12 @@ s'illumine (`cBoard` traque la case sous la souris et passe `highlightFile`/`hig
 et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteur de règles. `cPiece` → classe
 `c-piece--anim-{name}` ; un drag n'anime jamais.
 
-**Interaction** — gatée par la prop `movableColor` de `cBoard` (policy `useGameView.movableColor` :
-en local, le joueur au trait ; personne si la partie est finie ; `undefined` = board libre hors game view).
-Les pièces adverses ignorent le pointeur (drag, sélection, curseur normal — `cPiece --static`).
-`usePieceDrag` distingue **tap** (presse sans bouger, sous un seuil) et **drag** (au-delà) :
+**Interaction** — gatée par `view.movableColor` (policy : en local, le joueur au trait ; personne si la
+partie est finie). Les pièces adverses ignorent le pointeur via `pointer-events: none` (`cPiece --static`) —
+le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceDrag` distingue **tap**
+(presse sans bouger, sous un seuil) et **drag** (au-delà) :
 
-- **Drag** → la pièce suit le curseur ; drop → `cBoard` émet `move` → `makeMove` → engine. Relâchement =
+- **Drag** → la pièce suit le curseur ; drop → `cBoard` appelle `view.move` → engine. Relâchement =
   snap instantané (anim `none`, la pièce est déjà sous le curseur). Bouton droit enfoncé pendant le drag =
   annulation immédiate (retour à l'origine, aucun coup). Menu contextuel supprimé (`@contextmenu.prevent`).
   Case cible par maths sur le rect (pas de hit-testing DOM).

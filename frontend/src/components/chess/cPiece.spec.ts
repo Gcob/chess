@@ -2,10 +2,33 @@ import {describe, it, expect, beforeEach} from 'vitest'
 import {mount} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
 import cPiece from './cPiece.vue'
+import type {PieceAnimation, PlacedPiece} from '@/types/look-and-feel'
 
-function mountPiece(props = {}) {
+function placed(overrides: Partial<PlacedPiece> = {}): PlacedPiece {
+  return {
+    id: 'Pe2',
+    color: 'white',
+    type: 'pawn',
+    square: 'e2',
+    col: 0,
+    row: 0,
+    movable: true,
+    ...overrides,
+  }
+}
+
+// Render-state props, distinct from the PlacedPiece DTO — typed so the two
+// parameters can't be swapped silently.
+interface RenderProps {
+  animation?: PieceAnimation
+  dragging?: boolean
+  dragX?: number
+  dragY?: number
+}
+
+function mountPiece(piece: Partial<PlacedPiece> = {}, props: RenderProps = {}) {
   return mount(cPiece, {
-    props: {col: 0, row: 0, color: 'white', type: 'pawn', animation: 'none', ...props},
+    props: {piece: placed(piece), animation: 'none', ...props},
   })
 }
 
@@ -25,9 +48,9 @@ describe('cPiece', () => {
   })
 
   it('maps the animation prop to a class, and none to no class', () => {
-    expect(mountPiece({animation: 'none'}).classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
-    expect(mountPiece({animation: 'slide'}).classes()).toContain('c-piece--anim-slide')
-    expect(mountPiece({animation: 'hop'}).classes()).toContain('c-piece--anim-hop')
+    expect(mountPiece({}, {animation: 'none'}).classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
+    expect(mountPiece({}, {animation: 'slide'}).classes()).toContain('c-piece--anim-slide')
+    expect(mountPiece({}, {animation: 'hop'}).classes()).toContain('c-piece--anim-hop')
   })
 
   it('renders an image described by color and type', () => {
@@ -37,9 +60,14 @@ describe('cPiece', () => {
   })
 
   it('follows the cursor in px and drops the transition while dragging', () => {
-    const wrapper = mountPiece({col: 2, row: 3, animation: 'slide', dragging: true, dragX: 120, dragY: 45})
+    const wrapper = mountPiece({col: 2, row: 3}, {animation: 'slide', dragging: true, dragX: 120, dragY: 45})
     expect(wrapper.attributes('style')).toContain('translate(120px, 45px)')
     expect(wrapper.classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
     expect(wrapper.classes()).toContain('c-piece--moving')
+  })
+
+  it('goes pointer-inert when not movable', () => {
+    expect(mountPiece({movable: false}).classes()).toContain('c-piece--static')
+    expect(mountPiece({movable: true}).classes()).not.toContain('c-piece--static')
   })
 })
