@@ -32,6 +32,67 @@ describe('canMove', () => {
   it('rejects a non-move (same square)', () => {
     expect(canMove(freshBoard(), 'e2', 'e2')).toBe(false)
   })
+
+  it('stays permissive for pieces with unvalidated move types', () => {
+    expect(canMove(freshBoard(), 'g1', 'h5')).toBe(true) // knight, not even an L-shape
+  })
+})
+
+describe('canMove — pawn', () => {
+  it('allows a single forward advance, both colors', () => {
+    expect(canMove(freshBoard(), 'e2', 'e3')).toBe(true)
+    expect(canMove(freshBoard(), 'e7', 'e6')).toBe(true)
+  })
+
+  it('allows a double advance from the start position, both colors', () => {
+    expect(canMove(freshBoard(), 'e2', 'e4')).toBe(true)
+    expect(canMove(freshBoard(), 'e7', 'e5')).toBe(true)
+  })
+
+  it('rejects a triple advance', () => {
+    expect(canMove(freshBoard(), 'e2', 'e5')).toBe(false)
+  })
+
+  it('rejects a forward advance onto an occupied square', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'e3') // teleport a black pawn in front
+    expect(canMove(board, 'e2', 'e3')).toBe(false)
+  })
+
+  it('rejects a double advance jumping over a piece', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'e3') // e3 occupied, e4 free
+    expect(canMove(board, 'e2', 'e4')).toBe(false)
+  })
+
+  it('rejects a double advance onto an occupied landing square', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'e4') // e3 free, e4 occupied — no forward capture either
+    expect(canMove(board, 'e2', 'e4')).toBe(false)
+  })
+
+  it('rejects a double advance once the pawn has moved', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e3')
+    expect(canMove(board, 'e3', 'e5')).toBe(false)
+  })
+
+  it('rejects backward and sideways moves', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e4')
+    expect(canMove(board, 'e4', 'e3')).toBe(false)
+    expect(canMove(board, 'e4', 'd4')).toBe(false)
+  })
+
+  it('allows a diagonal capture of an enemy piece', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'd3') // black pawn within reach
+    expect(canMove(board, 'e2', 'd3')).toBe(true)
+  })
+
+  it('rejects a diagonal move onto an empty square', () => {
+    expect(canMove(freshBoard(), 'e2', 'd3')).toBe(false)
+  })
 })
 
 describe('applyMove', () => {

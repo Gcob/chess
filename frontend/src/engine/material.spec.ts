@@ -23,9 +23,10 @@ describe('getCapturedPieces', () => {
 
   it('derives captures from the move history, keyed by capturing color', () => {
     const {game} = createGameSession(payload, 'test-id')
-    // No legality yet — pieces jump straight onto their victims
-    makeMove(game, 'e2', 'd7') // white pawn takes black pawn
-    makeMove(game, 'b8', 'd7') // black knight takes back
+    makeMove(game, 'e2', 'e4')
+    makeMove(game, 'd7', 'd5')
+    makeMove(game, 'e4', 'd5') // white pawn takes black pawn
+    makeMove(game, 'd8', 'd5') // black queen takes back
     expect(getCapturedPieces(game)).toEqual({
       white: [{color: 'black', type: 'pawn'}],
       black: [{color: 'white', type: 'pawn'}],

@@ -10,8 +10,9 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans `sr
 - Types = le *quoi*. Engine = le *comment*. Composables = wrappers réactifs minces.
 - Le DTO `Game` reste du plain data sérialisable — il voyagera un jour (websocket, DB).
 - Modèle de départ réfléchi, pas une spec rigide — on ajoute de la complexité au fil du temps.
-- Les `conditions` et `effects` dans `MoveType` sont des string identifiants qui seront interprétés
-  par l'engine (moteur de légalité, phase ② du roadmap).
+- Les move types d'une pièce sont dérivés de `piece.type` par l'engine (`getPieceMoveTypes`),
+  jamais stockés sur la pièce — donnée dérivable, et `type` change à la promotion.
+  `MoveTypeId` reste le vocabulaire partagé du domaine.
 
 ## Hiérarchie des acteurs
 
@@ -32,8 +33,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans `sr
 | `GameTime`    | Temps de partie structuré (minutes, incrément en secondes)                                                  |
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                                     |
 | `Timer`       | Horloge (secondsRemaining, secondsIncrement) — « qui tourne » est dérivé, jamais stocké                     |
-| `MoveType`    | Type de déplacement (id, conditions[], effects[])                                                           |
-| `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, pinDirection, hasMoved, moveTypes)                    |
+| `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, pinDirection, hasMoved)                               |
 | `Square`      | Case (couleur, file, rank, piece, neighbors)                                                                |
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
@@ -94,7 +94,6 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 
 `PIECE_DATA` centralise valeur, short et long text par type.
 `King.value = 0` est un sentinel — le roi ne peut pas être capturé.
-`moveTypes: []` pour l'instant — populé quand on implémente la logique de déplacement.
 
 ## Sessions de partie
 

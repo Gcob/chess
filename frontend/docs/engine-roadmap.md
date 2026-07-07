@@ -69,8 +69,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 ### ② Moteur de légalité
 
-- [ ] Patterns de déplacement par pièce via `moveTypes` (graphe de voisins pour les glissantes)
-- [ ] Pion : avance simple/double, capture diagonale
+- [ ] Patterns de déplacement par pièce via `MoveTypeId` — mapping `piece.type → move types` dans l'engine,
+      graphe de voisins pour les glissantes; fallback permissif tant qu'un move type n'est pas validé
+- [x] Pion : avance simple/double (case traversée libre, `hasMoved`), capture diagonale
 - [ ] Détection d'échec + `Player.isInCheck`
 - [ ] Clouages (`pinAbsoluteDirection`) — interdit d'exposer son roi
 - [ ] `canMove` complet : seuls les coups légaux passent
@@ -119,6 +120,5 @@ Non bloquants, à faire si le cœur nous en dit.
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
-- **`MoveType` / `moveTypes` inertes** — les types existent, la logique arrive en phase ②.
 - **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent la phase ②.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.

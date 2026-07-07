@@ -156,7 +156,6 @@ function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey):
     textRepresentation: {short, long},
     pinAbsoluteDirection: null,
     hasMoved: false,
-    moveTypes: [],                      // populated when implementing move logic
   }
 }
 

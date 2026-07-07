@@ -91,13 +91,6 @@ export interface Timer {
 
 // ─── Board & pieces ──────────────────────────────────────────────────────────
 
-// conditions and effects are string identifiers — logic lives in composables
-export interface MoveType {
-  id: MoveTypeId
-  conditions: string[]
-  effects: string[]
-}
-
 export interface Piece {
   id: string                     // stable identity: short text + start square (e.g. 'Pe2', 'Ra1') — survives moves and promotion
   color: PieceColor
@@ -109,7 +102,6 @@ export interface Piece {
   }
   pinAbsoluteDirection: Direction | null // null = not pinned; direction = pinned from that direction
   hasMoved: boolean              // required for castling rights and pawn double-advance eligibility
-  moveTypes: MoveType[]
 }
 
 // Squares are nodes in a graph — each linked to up to 8 neighbors.

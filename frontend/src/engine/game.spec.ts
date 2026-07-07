@@ -117,10 +117,11 @@ describe('makeMove', () => {
 
   it('records a capture with SAN x notation', () => {
     const game = untimedGame()
-    // No legality yet — a pawn can jump straight onto an enemy pawn
-    makeMove(game, 'e2', 'd7', T0)
-    const move = game.moves[0]!
-    expect(move.san).toBe('exd7')
+    makeMove(game, 'e2', 'e4', T0)
+    makeMove(game, 'd7', 'd5', T0)
+    makeMove(game, 'e4', 'd5', T0)
+    const move = game.moves[2]!
+    expect(move.san).toBe('exd5')
     expect(move.capture?.capturedPiece.id).toBe('Pd7')
   })
 

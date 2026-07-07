@@ -1,14 +1,22 @@
-import type {Board, MoveTypeId, PieceColor, PieceType, Square, SquareKey} from '@/types/chess'
+import type {Board, MoveTypeId, Piece, PieceColor, PieceType, Square, SquareKey} from '@/types/chess'
 
 // ─── Pure move logic ───────────────────────────────────────────────────────────
 // Vue-agnostic. Could one day live in a backend shared by both players.
 //
-// Rules are being filled in incrementally. Everything not yet checked (piece movement
-// patterns, turns, check…) is still permitted — for now only the basics below apply.
+// Rules are being filled in incrementally: each piece type declares its move types, and the
+// engine produces the reachable squares for the ones it validates (VALIDATED_MOVE_TYPES).
+// A piece holding a move type not yet validated keeps all its moves permitted for now.
 
+// Move types the engine can produce squares for — grows as rules get implemented.
+const VALIDATED_MOVE_TYPES: readonly MoveTypeId[] = [
+  'linear-forward',
+  'linear-forward-double',
+  'diagonal-forward-capture',
+]
 
 export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
-  const piece = board.squares[from].piece
+  const departureSquare = board.squares[from]
+  const piece = departureSquare.piece
   if (!piece) {
     return false
   }
@@ -23,10 +31,14 @@ export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
     return false
   }
 
-  const pieceMoveTypes = getPieceMoveTypes(piece.type)
-  const availableSquares = getSquaresRelativeToMoveTypes(board, from, to, pieceMoveTypes, piece.color)
-  console.log(availableSquares)
-  return availableSquares.some(square => square == to);
+  const moveTypes = getPieceMoveTypes(piece.type)
+  const availableSquares = getAvailableSquares(departureSquare, piece, moveTypes)
+
+  if (availableSquares.some(square => toSquareKey(square) === to)) {
+    return true
+  }
+
+  return hasUnvalidatedMoveTypes(moveTypes)
 }
 
 // Applies a move in place. Overwriting the target square is how a capture happens.
@@ -41,63 +53,94 @@ export function applyMove(board: Board, from: SquareKey, to: SquareKey): void {
   piece.hasMoved = true
 }
 
+// ─── Private move logic ───────────────────────────────────────────────────────────
+
 function getPieceMoveTypes(pieceType: PieceType): MoveTypeId[] {
   switch (pieceType) {
     case 'king':
-      return ['simple', 'castling'];
+      return ['simple', 'castling']
     case 'pawn':
-      return ['linear-forward', 'linear-forward-double', 'diagonal-forward-capture', 'en-passant', 'promotion'];
+      // 'en-passant' joins in phase ④; promotion is an effect of a move, not a movement pattern
+      return ['linear-forward', 'linear-forward-double', 'diagonal-forward-capture']
     case 'queen':
-      return ['diagonal', 'linear'];
+      return ['diagonal', 'linear']
     case 'rook':
-      return ['linear'];
+      return ['linear']
     case 'bishop':
-      return ['diagonal'];
+      return ['diagonal']
     case 'knight':
-      return ['l-shape'];
-    default:
-      return [];
+      return ['l-shape']
   }
 }
 
-function getSquaresRelativeToMoveTypes(board: Board, from: SquareKey, to: SquareKey, pieceMoveTypes: MoveTypeId[], color: PieceColor): SquareKey[] {
-  const departureSquare = board.squares[from]
-  let squares = []
+function hasUnvalidatedMoveTypes(moveTypes: MoveTypeId[]): boolean {
+  return moveTypes.some(type => !VALIDATED_MOVE_TYPES.includes(type))
+}
 
-  pieceMoveTypes.forEach((type: MoveTypeId) => {
+function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]): Square[] {
+  const squares: Square[] = []
+
+  for (const type of moveTypes) {
     switch (type) {
       case 'linear-forward':
-        squares = squares.concat(getAvailableSquaresForLinearForward(board, departureSquare, color))
+        squares.push(...getAvailableSquaresForLinearForward(from, piece))
         break
       case 'linear-forward-double':
-        squares = squares.concat(getAvailableSquaresForLinearForwardDouble(board, departureSquare, color))
+        squares.push(...getAvailableSquaresForLinearForwardDouble(from, piece))
+        break
+      case 'diagonal-forward-capture':
+        squares.push(...getAvailableSquaresForDiagonalForwardCapture(from, piece))
         break
     }
-  })
+  }
 
-  return squares.map((square: Square) => square.file + square.rank)
+  return squares
 }
 
-function getAvailableSquaresForLinearForward(board: Board, from: Square, color: PieceColor): Square[] {
-  const nextSquare = color === 'white' ? from.neighbors.top : from.neighbors.bottom
+function getAvailableSquaresForLinearForward(from: Square, piece: Piece): Square[] {
+  const next = forwardNeighbor(from, piece.color)
 
-  if (!nextSquare || nextSquare.piece) {
+  if (!next || next.piece) {
     return []
   }
 
-  return [nextSquare]
+  return [next]
 }
 
-function getAvailableSquaresForLinearForwardDouble(board: Board, from: Square, color: PieceColor): Square[] {
-  if ((color === 'white' && from.rank !== 2) || (color === 'black' && from.rank !== 7)) {
+function getAvailableSquaresForLinearForwardDouble(from: Square, piece: Piece): Square[] {
+  if (piece.hasMoved) {
     return []
   }
 
-  const nextSquare = color === 'white' ? from.neighbors.top?.neighbors?.top : from.neighbors.bottom?.neighbors?.bottom
-
-  if (!nextSquare || nextSquare.piece) {
+  // Both the crossed square and the landing square must be free — no jumping over pieces.
+  const crossed = forwardNeighbor(from, piece.color)
+  if (!crossed || crossed.piece) {
     return []
   }
 
-  return [nextSquare]
+  const landing = forwardNeighbor(crossed, piece.color)
+  if (!landing || landing.piece) {
+    return []
+  }
+
+  return [landing]
+}
+
+function getAvailableSquaresForDiagonalForwardCapture(from: Square, piece: Piece): Square[] {
+  const diagonals = piece.color === 'white'
+    ? [from.neighbors['top-left'], from.neighbors['top-right']]
+    : [from.neighbors['bottom-left'], from.neighbors['bottom-right']]
+
+  return diagonals.filter(
+    (square): square is Square => !!square?.piece && square.piece.color !== piece.color,
+  )
+}
+
+// "Forward" is relative to the piece's color: white goes up the board, black goes down.
+function forwardNeighbor(square: Square, color: PieceColor): Square | null {
+  return color === 'white' ? square.neighbors.top : square.neighbors.bottom
+}
+
+function toSquareKey(square: Square): SquareKey {
+  return `${square.file}${square.rank}`
 }
