@@ -72,6 +72,8 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Patterns de déplacement par pièce via `MoveTypeId` — mapping `piece.type → move types` dans l'engine,
       graphe de voisins pour les glissantes; fallback permissif tant qu'un move type n'est pas validé
 - [x] Pion : avance simple/double (case traversée libre, `hasMoved`), capture diagonale
+- [x] Glissantes : `linear` + `diagonal` (tour, fou, dame) via un walker commun par direction —
+      capture le premier ennemi rencontré, jamais de saut
 - [ ] Détection d'échec + `Player.isInCheck`
 - [ ] Clouages (`pinAbsoluteDirection`) — interdit d'exposer son roi
 - [ ] `canMove` complet : seuls les coups légaux passent

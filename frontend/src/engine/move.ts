@@ -1,4 +1,4 @@
-import type {Board, MoveTypeId, Piece, PieceColor, PieceType, Square, SquareKey} from '@/types/chess'
+import type {Board, Direction, MoveTypeId, Piece, PieceColor, PieceType, Square, SquareKey} from '@/types/chess'
 
 // ─── Pure move logic ───────────────────────────────────────────────────────────
 // Vue-agnostic. Could one day live in a backend shared by both players.
@@ -12,6 +12,8 @@ const VALIDATED_MOVE_TYPES: readonly MoveTypeId[] = [
   'linear-forward',
   'linear-forward-double',
   'diagonal-forward-capture',
+  'linear',
+  'diagonal',
 ]
 
 export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
@@ -91,6 +93,12 @@ function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]
       case 'diagonal-forward-capture':
         squares.push(...getAvailableSquaresForDiagonalForwardCapture(from, piece))
         break
+      case 'linear':
+        squares.push(...getAvailableSquaresForLinear(from, piece))
+        break
+      case 'diagonal':
+        squares.push(...getAvailableSquaresForDiagonal(from, piece))
+        break
     }
   }
 
@@ -124,6 +132,38 @@ function getAvailableSquaresForLinearForwardDouble(from: Square, piece: Piece): 
   }
 
   return [landing]
+}
+
+const LINEAR_DIRECTIONS: readonly Direction[] = ['top', 'right', 'bottom', 'left']
+const DIAGONAL_DIRECTIONS: readonly Direction[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left']
+
+function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
+  return LINEAR_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
+}
+
+function getAvailableSquaresForDiagonal(from: Square, piece: Piece): Square[] {
+  return DIAGONAL_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
+}
+
+// Slides square by square until blocked: an enemy square is reachable (capture) and ends the
+// slide, a friendly square ends it without being reachable.
+function slideInDirection(from: Square, piece: Piece, direction: Direction): Square[] {
+  const squares: Square[] = []
+  let current = from.neighbors[direction]
+
+  while (current) {
+    if (current.piece) {
+      if (current.piece.color !== piece.color) {
+        squares.push(current)
+      }
+      break
+    }
+
+    squares.push(current)
+    current = current.neighbors[direction]
+  }
+
+  return squares
 }
 
 function getAvailableSquaresForDiagonalForwardCapture(from: Square, piece: Piece): Square[] {

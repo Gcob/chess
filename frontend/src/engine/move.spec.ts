@@ -18,7 +18,10 @@ describe('canMove', () => {
   })
 
   it('allows capturing an enemy piece', () => {
-    expect(canMove(freshBoard(), 'a1', 'a7')).toBe(true) // white rook onto black pawn
+    const board = freshBoard()
+    applyMove(board, 'a2', 'a4') // open the rook's file
+    applyMove(board, 'd7', 'a3') // enemy pawn within reach
+    expect(canMove(board, 'a1', 'a3')).toBe(true) // white rook takes black pawn
   })
 
   it('allows moving onto an empty square', () => {
@@ -92,6 +95,65 @@ describe('canMove — pawn', () => {
 
   it('rejects a diagonal move onto an empty square', () => {
     expect(canMove(freshBoard(), 'e2', 'd3')).toBe(false)
+  })
+})
+
+describe('canMove — sliding pieces', () => {
+  it('rejects a rook sliding through its own pawn from the start position', () => {
+    expect(canMove(freshBoard(), 'a1', 'a3')).toBe(false)
+    expect(canMove(freshBoard(), 'a1', 'a5')).toBe(false)
+  })
+
+  it('allows a rook to slide along open ranks and files', () => {
+    const board = freshBoard()
+    applyMove(board, 'a1', 'd4') // teleport the rook to the open center
+    expect(canMove(board, 'd4', 'd6')).toBe(true)
+    expect(canMove(board, 'd4', 'd3')).toBe(true)
+    expect(canMove(board, 'd4', 'a4')).toBe(true)
+    expect(canMove(board, 'd4', 'h4')).toBe(true)
+  })
+
+  it('lets a rook capture the first enemy piece but not slide past it', () => {
+    const board = freshBoard()
+    applyMove(board, 'a1', 'd4')
+    expect(canMove(board, 'd4', 'd7')).toBe(true) // captures the black pawn
+    expect(canMove(board, 'd4', 'd8')).toBe(false) // blocked behind it
+  })
+
+  it('rejects a rook sliding past a friendly piece', () => {
+    const board = freshBoard()
+    applyMove(board, 'a1', 'd4')
+    expect(canMove(board, 'd4', 'd1')).toBe(false) // own pawn on d2
+  })
+
+  it('rejects a diagonal move for a rook', () => {
+    const board = freshBoard()
+    applyMove(board, 'a1', 'd4')
+    expect(canMove(board, 'd4', 'f6')).toBe(false)
+  })
+
+  it('allows a bishop to slide diagonally and capture, but not jump past', () => {
+    const board = freshBoard()
+    applyMove(board, 'c1', 'e4') // teleport the bishop to the open center
+    expect(canMove(board, 'e4', 'g6')).toBe(true)
+    expect(canMove(board, 'e4', 'h7')).toBe(true) // captures the black pawn
+    expect(canMove(board, 'e4', 'b7')).toBe(true) // captures the other one
+    expect(canMove(board, 'e4', 'a8')).toBe(false) // blocked behind b7
+  })
+
+  it('rejects a straight move for a bishop', () => {
+    const board = freshBoard()
+    applyMove(board, 'c1', 'e4')
+    expect(canMove(board, 'e4', 'e6')).toBe(false)
+  })
+
+  it('allows a queen to slide both ways, but never like a knight', () => {
+    const board = freshBoard()
+    applyMove(board, 'd1', 'e4') // teleport the queen to the open center
+    expect(canMove(board, 'e4', 'e7')).toBe(true) // straight capture
+    expect(canMove(board, 'e4', 'b4')).toBe(true) // open rank
+    expect(canMove(board, 'e4', 'g6')).toBe(true) // open diagonal
+    expect(canMove(board, 'e4', 'f6')).toBe(false) // knight-shaped move
   })
 })
 
