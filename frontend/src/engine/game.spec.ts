@@ -127,8 +127,10 @@ describe('makeMove', () => {
 
   it('uses the piece letter in a capture SAN', () => {
     const game = untimedGame()
-    makeMove(game, 'g1', 'e7', T0)
-    expect(game.moves[0]!.san).toBe('Nxe7')
+    makeMove(game, 'b1', 'c3', T0)
+    makeMove(game, 'd7', 'd5', T0)
+    makeMove(game, 'c3', 'd5', T0)
+    expect(game.moves[2]!.san).toBe('Nxd5')
   })
 
   it('records elapsed seconds per move', () => {

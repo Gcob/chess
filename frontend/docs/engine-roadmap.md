@@ -74,6 +74,8 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Pion : avance simple/double (case traversée libre, `hasMoved`), capture diagonale
 - [x] Glissantes : `linear` + `diagonal` (tour, fou, dame) via un walker commun par direction —
       capture le premier ennemi rencontré, jamais de saut
+- [x] Cavalier : `l-shape` — 8 chemins de voisins (2 pas + 1 perpendiculaire), saute par-dessus tout,
+      seule la case d'arrivée compte
 - [ ] Détection d'échec + `Player.isInCheck`
 - [ ] Clouages (`pinAbsoluteDirection`) — interdit d'exposer son roi
 - [ ] `canMove` complet : seuls les coups légaux passent

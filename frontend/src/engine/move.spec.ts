@@ -37,7 +37,7 @@ describe('canMove', () => {
   })
 
   it('stays permissive for pieces with unvalidated move types', () => {
-    expect(canMove(freshBoard(), 'g1', 'h5')).toBe(true) // knight, not even an L-shape
+    expect(canMove(freshBoard(), 'e1', 'e5')).toBe(true) // king, 'castling' not validated yet
   })
 })
 
@@ -154,6 +154,48 @@ describe('canMove — sliding pieces', () => {
     expect(canMove(board, 'e4', 'b4')).toBe(true) // open rank
     expect(canMove(board, 'e4', 'g6')).toBe(true) // open diagonal
     expect(canMove(board, 'e4', 'f6')).toBe(false) // knight-shaped move
+  })
+})
+
+describe('canMove — knight', () => {
+  it('allows the L jumps from the start position, over the pawns', () => {
+    expect(canMove(freshBoard(), 'g1', 'f3')).toBe(true)
+    expect(canMove(freshBoard(), 'g1', 'h3')).toBe(true)
+    expect(canMove(freshBoard(), 'b8', 'c6')).toBe(true)
+  })
+
+  it('rejects anything that is not an L', () => {
+    expect(canMove(freshBoard(), 'g1', 'g3')).toBe(false) // straight
+    expect(canMove(freshBoard(), 'g1', 'h5')).toBe(false) // too far
+    expect(canMove(freshBoard(), 'g1', 'e3')).toBe(false) // diagonal-ish
+  })
+
+  it('reaches all its L squares from the center, except friendly-occupied ones', () => {
+    const board = freshBoard()
+    applyMove(board, 'g1', 'e4') // teleport the knight to the open center
+    expect(canMove(board, 'e4', 'd6')).toBe(true)
+    expect(canMove(board, 'e4', 'f6')).toBe(true)
+    expect(canMove(board, 'e4', 'c5')).toBe(true)
+    expect(canMove(board, 'e4', 'g5')).toBe(true)
+    expect(canMove(board, 'e4', 'c3')).toBe(true)
+    expect(canMove(board, 'e4', 'g3')).toBe(true)
+    expect(canMove(board, 'e4', 'd2')).toBe(false) // own pawn
+    expect(canMove(board, 'e4', 'f2')).toBe(false) // own pawn
+  })
+
+  it('allows capturing an enemy piece on the landing square', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'f3') // enemy pawn within reach
+    expect(canMove(board, 'g1', 'f3')).toBe(true)
+  })
+
+  it('handles the board edge without wrapping', () => {
+    const board = freshBoard()
+    applyMove(board, 'g1', 'a4') // teleport the knight to the edge
+    expect(canMove(board, 'a4', 'b6')).toBe(true)
+    expect(canMove(board, 'a4', 'c5')).toBe(true)
+    expect(canMove(board, 'a4', 'c3')).toBe(true)
+    expect(canMove(board, 'a4', 'b2')).toBe(false) // own pawn
   })
 })
 

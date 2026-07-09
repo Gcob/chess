@@ -14,6 +14,7 @@ const VALIDATED_MOVE_TYPES: readonly MoveTypeId[] = [
   'diagonal-forward-capture',
   'linear',
   'diagonal',
+  'l-shape',
 ]
 
 export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
@@ -99,6 +100,9 @@ function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]
       case 'diagonal':
         squares.push(...getAvailableSquaresForDiagonal(from, piece))
         break
+      case 'l-shape':
+        squares.push(...getAvailableSquaresForLShape(from, piece))
+        break
     }
   }
 
@@ -143,6 +147,39 @@ function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
 
 function getAvailableSquaresForDiagonal(from: Square, piece: Piece): Square[] {
   return DIAGONAL_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
+}
+
+// The 8 knight jumps as neighbor paths: two steps in one direction, one step perpendicular.
+const L_SHAPE_PATHS: readonly (readonly Direction[])[] = [
+  ['top', 'top', 'left'],
+  ['top', 'top', 'right'],
+  ['right', 'right', 'top'],
+  ['right', 'right', 'bottom'],
+  ['bottom', 'bottom', 'right'],
+  ['bottom', 'bottom', 'left'],
+  ['left', 'left', 'bottom'],
+  ['left', 'left', 'top'],
+]
+
+// The knight jumps: squares crossed along the path don't matter, only the landing square does.
+function getAvailableSquaresForLShape(from: Square, piece: Piece): Square[] {
+  return L_SHAPE_PATHS
+    .map(path => walkPath(from, path))
+    .filter((square): square is Square => !!square && square.piece?.color !== piece.color)
+}
+
+// Follows the neighbors graph along the given directions; null once the path leaves the board.
+function walkPath(from: Square, path: readonly Direction[]): Square | null {
+  let current: Square | null = from
+
+  for (const direction of path) {
+    current = current.neighbors[direction]
+    if (!current) {
+      return null
+    }
+  }
+
+  return current
 }
 
 // Slides square by square until blocked: an enemy square is reachable (capture) and ends the
