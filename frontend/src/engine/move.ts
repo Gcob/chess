@@ -15,6 +15,7 @@ const VALIDATED_MOVE_TYPES: readonly MoveTypeId[] = [
   'linear',
   'diagonal',
   'l-shape',
+  'simple',
 ]
 
 export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
@@ -103,6 +104,9 @@ function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]
       case 'l-shape':
         squares.push(...getAvailableSquaresForLShape(from, piece))
         break
+      case 'simple':
+        squares.push(...getAvailableSquaresForSimple(from, piece))
+        break
     }
   }
 
@@ -140,6 +144,7 @@ function getAvailableSquaresForLinearForwardDouble(from: Square, piece: Piece): 
 
 const LINEAR_DIRECTIONS: readonly Direction[] = ['top', 'right', 'bottom', 'left']
 const DIAGONAL_DIRECTIONS: readonly Direction[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left']
+const ALL_DIRECTIONS: readonly Direction[] = [...LINEAR_DIRECTIONS, ...DIAGONAL_DIRECTIONS]
 
 function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
   return LINEAR_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
@@ -147,6 +152,13 @@ function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
 
 function getAvailableSquaresForDiagonal(from: Square, piece: Piece): Square[] {
   return DIAGONAL_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
+}
+
+// One step in any of the 8 directions — the landing square must exist and not hold a friendly piece.
+function getAvailableSquaresForSimple(from: Square, piece: Piece): Square[] {
+  return ALL_DIRECTIONS
+    .map(direction => from.neighbors[direction])
+    .filter((square): square is Square => !!square && square.piece?.color !== piece.color)
 }
 
 // The 8 knight jumps as neighbor paths: two steps in one direction, one step perpendicular.

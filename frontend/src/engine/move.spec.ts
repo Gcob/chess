@@ -199,6 +199,30 @@ describe('canMove — knight', () => {
   })
 })
 
+// The king still holds 'castling' (unvalidated until phase ④), so the permissive fallback keeps
+// every king move allowed: rejection tests are impossible for now. These positives go through the
+// validated 'simple' pattern and become load-bearing the day castling is validated.
+describe('canMove — king', () => {
+  it('allows a single step in all 8 directions from the open center', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4') // teleport the king to the open center
+    for (const to of ['d5', 'e5', 'f5', 'd4', 'f4', 'd3', 'e3', 'f3'] as const) {
+      expect(canMove(board, 'e4', to)).toBe(true)
+    }
+  })
+
+  it('allows capturing an adjacent enemy piece', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'd7', 'e5') // enemy pawn next to the king
+    expect(canMove(board, 'e4', 'e5')).toBe(true)
+  })
+
+  it('still rejects stepping onto a friendly piece', () => {
+    expect(canMove(freshBoard(), 'e1', 'e2')).toBe(false)
+  })
+})
+
 describe('applyMove', () => {
   it('moves the piece and empties the origin', () => {
     const board = freshBoard()
