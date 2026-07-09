@@ -3,20 +3,9 @@ import type {Board, Direction, MoveTypeId, Piece, PieceColor, PieceType, Square,
 // ─── Pure move logic ───────────────────────────────────────────────────────────
 // Vue-agnostic. Could one day live in a backend shared by both players.
 //
-// Rules are being filled in incrementally: each piece type declares its move types, and the
-// engine produces the reachable squares for the ones it validates (VALIDATED_MOVE_TYPES).
-// A piece holding a move type not yet validated keeps all its moves permitted for now.
-
-// Move types the engine can produce squares for — grows as rules get implemented.
-const VALIDATED_MOVE_TYPES: readonly MoveTypeId[] = [
-  'linear-forward',
-  'linear-forward-double',
-  'diagonal-forward-capture',
-  'linear',
-  'diagonal',
-  'l-shape',
-  'simple',
-]
+// Rules are being filled in incrementally: each piece type declares its move types, and each
+// move type has its own pattern function producing the reachable squares. Move types not yet
+// implemented (see the roadmap) are stubs returning no squares.
 
 export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
   const departureSquare = board.squares[from]
@@ -38,11 +27,7 @@ export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
   const moveTypes = getPieceMoveTypes(piece.type)
   const availableSquares = getAvailableSquares(departureSquare, piece, moveTypes)
 
-  if (availableSquares.some(square => toSquareKey(square) === to)) {
-    return true
-  }
-
-  return hasUnvalidatedMoveTypes(moveTypes)
+  return availableSquares.some(square => toSquareKey(square) === to)
 }
 
 // Applies a move in place. Overwriting the target square is how a capture happens.
@@ -77,10 +62,6 @@ function getPieceMoveTypes(pieceType: PieceType): MoveTypeId[] {
   }
 }
 
-function hasUnvalidatedMoveTypes(moveTypes: MoveTypeId[]): boolean {
-  return moveTypes.some(type => !VALIDATED_MOVE_TYPES.includes(type))
-}
-
 function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]): Square[] {
   const squares: Square[] = []
 
@@ -106,6 +87,9 @@ function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]
         break
       case 'simple':
         squares.push(...getAvailableSquaresForSimple(from, piece))
+        break
+      case 'castling':
+        squares.push(...getAvailableSquaresForCastling())
         break
     }
   }
@@ -159,6 +143,11 @@ function getAvailableSquaresForSimple(from: Square, piece: Piece): Square[] {
   return ALL_DIRECTIONS
     .map(direction => from.neighbors[direction])
     .filter((square): square is Square => !!square && square.piece?.color !== piece.color)
+}
+
+// Castling comes in phase ④ of the roadmap — no reachable squares until then.
+function getAvailableSquaresForCastling(): Square[] {
+  return []
 }
 
 // The 8 knight jumps as neighbor paths: two steps in one direction, one step perpendicular.

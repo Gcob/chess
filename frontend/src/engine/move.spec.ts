@@ -36,9 +36,6 @@ describe('canMove', () => {
     expect(canMove(freshBoard(), 'e2', 'e2')).toBe(false)
   })
 
-  it('stays permissive for pieces with unvalidated move types', () => {
-    expect(canMove(freshBoard(), 'e1', 'e5')).toBe(true) // king, 'castling' not validated yet
-  })
 })
 
 describe('canMove — pawn', () => {
@@ -199,9 +196,6 @@ describe('canMove — knight', () => {
   })
 })
 
-// The king still holds 'castling' (unvalidated until phase ④), so the permissive fallback keeps
-// every king move allowed: rejection tests are impossible for now. These positives go through the
-// validated 'simple' pattern and become load-bearing the day castling is validated.
 describe('canMove — king', () => {
   it('allows a single step in all 8 directions from the open center', () => {
     const board = freshBoard()
@@ -218,8 +212,24 @@ describe('canMove — king', () => {
     expect(canMove(board, 'e4', 'e5')).toBe(true)
   })
 
-  it('still rejects stepping onto a friendly piece', () => {
+  it('rejects stepping onto a friendly piece', () => {
     expect(canMove(freshBoard(), 'e1', 'e2')).toBe(false)
+  })
+
+  it('rejects anything farther than one step', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    expect(canMove(board, 'e4', 'e6')).toBe(false) // two steps forward
+    expect(canMove(board, 'e4', 'g6')).toBe(false) // two steps diagonally
+    expect(canMove(board, 'e4', 'f6')).toBe(false) // knight-shaped move
+  })
+
+  // Castling is a stub until phase ④ — a two-square king move must not slip through.
+  it('rejects castling for now', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
   })
 })
 
