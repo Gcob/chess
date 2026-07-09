@@ -78,7 +78,10 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       seule la case d'arrivée compte
 - [x] Roi : `simple` — un pas dans les 8 directions ; `castling` = stub vide jusqu'à la phase ④,
       donc pas de roque possible d'ici là
-- [ ] Détection d'échec + `Player.isInCheck`
+- [x] Détection d'échec + `Player.isInCheck` — `getAttackers` (super-pièce : patterns inversés depuis la
+      case, signatures d'attaque par move type — les types de pièces ne vivent que dans
+      `getPieceMoveTypes`) + `findCheckers` (0, 1 ou 2 checkers) ; `isInCheck` = snapshot d'affichage
+      mis à jour par `makeMove`, les checkers se recalculent à la demande
 - [ ] Clouages (`pinAbsoluteDirection`) — interdit d'exposer son roi
 - [ ] `canMove` complet : seuls les coups légaux passent
 - [ ] Aides locales : surbrillance des destinations légales, animations `hop` / `snap-back` réveillées

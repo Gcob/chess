@@ -1,5 +1,5 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove} from './move'
+import {canMove, applyMove, findCheckers} from './move'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -54,6 +54,10 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   const captured = game.board.squares[to].piece
   applyMove(game.board, from, to)
   game.moves.push(buildMove(piece, captured, from, to, elapsedSeconds))
+
+  // Display snapshot — the legality logic recomputes checkers on demand instead of reading this.
+  game.players.white.isInCheck = findCheckers(game.board, 'white').length > 0
+  game.players.black.isInCheck = findCheckers(game.board, 'black').length > 0
 
   if (timer) {
     timer.secondsRemaining += timer.secondsIncrement - elapsedSeconds

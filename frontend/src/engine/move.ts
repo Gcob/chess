@@ -42,6 +42,29 @@ export function applyMove(board: Board, from: SquareKey, to: SquareKey): void {
   piece.hasMoved = true
 }
 
+// ─── Attack detection ──────────────────────────────────────────────────────────
+
+// Squares holding a piece of the given color that attacks the given square. Looks outward FROM
+// the square (the "super-piece" trick): a pattern walked from here can only land on a piece
+// attacking back along that same pattern. Piece types stay out of the logic — the piece found is
+// tested against the attack signatures of its own move types, so getPieceMoveTypes remains the
+// single place knowing what a piece can do.
+export function getAttackers(square: Square, byColor: PieceColor): Square[] {
+  return [...rayAttackers(square, byColor), ...knightAttackers(square, byColor)]
+}
+
+// The enemy squares currently giving check to the given color's king. A legal position allows
+// two checkers at most (double check, born from a discovery) — with two, only a king move can
+// answer: no block or capture handles both.
+export function findCheckers(board: Board, color: PieceColor): Square[] {
+  const kingSquare = findKingSquare(board, color)
+  if (!kingSquare) {
+    return []
+  }
+
+  return getAttackers(kingSquare, color === 'white' ? 'black' : 'white')
+}
+
 // ─── Private move logic ───────────────────────────────────────────────────────────
 
 function getPieceMoveTypes(pieceType: PieceType): MoveTypeId[] {
@@ -217,6 +240,104 @@ function getAvailableSquaresForDiagonalForwardCapture(from: Square, piece: Piece
 // "Forward" is relative to the piece's color: white goes up the board, black goes down.
 function forwardNeighbor(square: Square, color: PieceColor): Square | null {
   return color === 'white' ? square.neighbors.top : square.neighbors.bottom
+}
+
+// ─── Private attack logic ──────────────────────────────────────────────────────
+
+// One scan per direction: the first piece met attacks back if one of its move types strikes
+// along this direction at this distance.
+function rayAttackers(square: Square, byColor: PieceColor): Square[] {
+  const attackers: Square[] = []
+
+  for (const direction of ALL_DIRECTIONS) {
+    const hit = firstPieceInDirection(square, direction)
+
+    if (!hit || hit.piece.color !== byColor) {
+      continue
+    }
+
+    const attacks = getPieceMoveTypes(hit.piece.type)
+      .some(type => attacksAlong(type, direction, hit.distance, byColor))
+
+    if (attacks) {
+      attackers.push(hit.square)
+    }
+  }
+
+  return attackers
+}
+
+function knightAttackers(square: Square, byColor: PieceColor): Square[] {
+  return L_SHAPE_PATHS
+    .map(path => walkPath(square, path))
+    .filter((found): found is Square => isAttackerWithMoveType(found, byColor, 'l-shape'))
+}
+
+// The attack signature of each move type — from the attacked square's point of view, `direction`
+// points toward the attacker sitting `distance` squares away.
+function attacksAlong(type: MoveTypeId, direction: Direction, distance: number, byColor: PieceColor): boolean {
+  switch (type) {
+    case 'linear':
+      return LINEAR_DIRECTIONS.includes(direction)
+    case 'diagonal':
+      return DIAGONAL_DIRECTIONS.includes(direction)
+    case 'simple':
+      return distance === 1
+    case 'diagonal-forward-capture':
+      return distance === 1 && isPawnAttackDirection(direction, byColor)
+    // Own geometry, scanned by knightAttackers instead of rays.
+    case 'l-shape':
+      return false
+    // Move types that can never capture threaten nothing. En passant adds no attacked square
+    // either — its geometry is the pawn's usual forward diagonal (phase ④).
+    case 'linear-forward':
+    case 'linear-forward-double':
+    case 'castling':
+    case 'en-passant':
+    case 'promotion':
+      return false
+  }
+}
+
+// A pawn attacks its two forward diagonals, so seen from the attacked square the pawn sits
+// diagonally BACKWARD — toward the attacking color's side.
+function isPawnAttackDirection(direction: Direction, byColor: PieceColor): boolean {
+  return byColor === 'white'
+    ? direction === 'bottom-left' || direction === 'bottom-right'
+    : direction === 'top-left' || direction === 'top-right'
+}
+
+interface RayHit {
+  square: Square
+  piece: Piece
+  distance: number
+}
+
+// Slides to the first piece met in that direction; null when only empty squares reach the edge.
+function firstPieceInDirection(from: Square, direction: Direction): RayHit | null {
+  let current = from.neighbors[direction]
+  let distance = 1
+
+  while (current) {
+    if (current.piece) {
+      return {square: current, piece: current.piece, distance}
+    }
+
+    current = current.neighbors[direction]
+    distance++
+  }
+
+  return null
+}
+
+function isAttackerWithMoveType(square: Square | null, byColor: PieceColor, type: MoveTypeId): boolean {
+  return !!square?.piece && square.piece.color === byColor && getPieceMoveTypes(square.piece.type).includes(type)
+}
+
+function findKingSquare(board: Board, color: PieceColor): Square | null {
+  return Object.values(board.squares).find(
+    square => square.piece?.type === 'king' && square.piece.color === color,
+  ) ?? null
 }
 
 function toSquareKey(square: Square): SquareKey {

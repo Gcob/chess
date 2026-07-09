@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {canMove, applyMove} from './move'
+import {canMove, applyMove, getAttackers, findCheckers} from './move'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
 
@@ -230,6 +230,82 @@ describe('canMove — king', () => {
     board.squares['f1'].piece = null
     board.squares['g1'].piece = null
     expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+})
+
+describe('getAttackers', () => {
+  it('finds no attacker on a safe square', () => {
+    const board = freshBoard()
+    expect(getAttackers(board.squares['e4'], 'black')).toEqual([])
+  })
+
+  it('sees pawn attacks forward only, never straight ahead', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e4')
+    expect(getAttackers(board.squares['d5'], 'white')).toEqual([board.squares['e4']])
+    expect(getAttackers(board.squares['f5'], 'white')).toEqual([board.squares['e4']])
+    expect(getAttackers(board.squares['e5'], 'white')).toEqual([])
+  })
+
+  it('sees an adjacent enemy king', () => {
+    const board = freshBoard()
+    applyMove(board, 'e8', 'e3') // teleport the black king next to d3
+    expect(getAttackers(board.squares['d3'], 'black')).toContain(board.squares['e3'])
+  })
+})
+
+describe('findCheckers', () => {
+  it('finds no check in the start position', () => {
+    const board = freshBoard()
+    expect(findCheckers(board, 'white')).toEqual([])
+    expect(findCheckers(board, 'black')).toEqual([])
+  })
+
+  it('detects a rook check along an open file', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'd3') // open the e-file
+    applyMove(board, 'a8', 'e5') // black rook facing the white king
+    expect(findCheckers(board, 'white')).toEqual([board.squares['e5']])
+  })
+
+  it('ignores a blocked slider', () => {
+    const board = freshBoard()
+    applyMove(board, 'a8', 'e5') // the e2 pawn still shields the king
+    expect(findCheckers(board, 'white')).toEqual([])
+  })
+
+  it('detects a queen check along an open diagonal', () => {
+    const board = freshBoard()
+    applyMove(board, 'f2', 'a3') // open the h4–e1 diagonal
+    applyMove(board, 'd8', 'h4') // black queen on it
+    expect(findCheckers(board, 'white')).toEqual([board.squares['h4']])
+  })
+
+  it('detects a knight check jumping over the pawns', () => {
+    const board = freshBoard()
+    applyMove(board, 'g8', 'f3')
+    expect(findCheckers(board, 'white')).toEqual([board.squares['f3']])
+  })
+
+  it('detects a pawn check, color-aware', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'd2') // black pawn attacks downward → checks e1
+    expect(findCheckers(board, 'white')).toEqual([board.squares['d2']])
+
+    const other = freshBoard()
+    applyMove(other, 'd2', 'd7') // white pawn attacks upward → checks e8
+    expect(findCheckers(other, 'black')).toEqual([other.squares['d7']])
+  })
+
+  it('detects a double check', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a8', 'e5') // rook check
+    applyMove(board, 'g8', 'f3') // knight check on top
+    const checkers = findCheckers(board, 'white')
+    expect(checkers).toHaveLength(2)
+    expect(checkers).toContain(board.squares['e5'])
+    expect(checkers).toContain(board.squares['f3'])
   })
 })
 

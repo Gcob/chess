@@ -133,6 +133,18 @@ describe('makeMove', () => {
     expect(game.moves[2]!.san).toBe('Nxd5')
   })
 
+  it('updates the isInCheck snapshot as checks appear and get blocked', () => {
+    const game = untimedGame()
+    makeMove(game, 'e2', 'e4', T0)
+    makeMove(game, 'd7', 'd5', T0)
+    makeMove(game, 'f1', 'b5', T0) // Bb5+ through the freed d7 square
+    expect(game.players.black.isInCheck).toBe(true)
+    expect(game.players.white.isInCheck).toBe(false)
+
+    makeMove(game, 'c7', 'c6', T0) // blocks the diagonal
+    expect(game.players.black.isInCheck).toBe(false)
+  })
+
   it('records elapsed seconds per move', () => {
     const game = untimedGame()
     makeMove(game, 'e2', 'e4', T0)

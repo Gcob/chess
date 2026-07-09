@@ -132,6 +132,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Sert de `key` Vue pour la couche d'animation des pièces — la même pièce = le même nœud DOM qui glisse.
 - `Piece.hasMoved` — initialisé à `false`, passé à `true` au premier déplacement.
   Requis pour : droits de roque (roi + tours), double avance initiale du pion.
+- `Player.isInCheck` — snapshot d'affichage mis à jour à chaque `makeMove`.
+  L'engine ne le lit jamais : les checkers se recalculent à la demande (`findCheckers`).
 - `Move.san` contient la notation **SAN** (Standard Algebraic Notation) —
   ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`. Le PGN (format de partie complète) viendra plus tard.
 
