@@ -100,7 +100,6 @@ export interface Piece {
     short: string // e.g. 'K', 'N'
     long: string  // e.g. 'King', 'Knight'
   }
-  pinAbsoluteDirection: Direction | null // null = not pinned; direction = pinned from that direction
   hasMoved: boolean              // required for castling rights and pawn double-advance eligibility
 }
 

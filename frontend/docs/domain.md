@@ -33,7 +33,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans `sr
 | `GameTime`    | Temps de partie structuré (minutes, incrément en secondes)                                                  |
 | `GameType`    | Catégorie de partie (nom, minTime, maxTime en secondes)                                                     |
 | `Timer`       | Horloge (secondsRemaining, secondsIncrement) — « qui tourne » est dérivé, jamais stocké                     |
-| `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, pinDirection, hasMoved)                               |
+| `Piece`       | Pièce (id, couleur, type, valeur, textRepresentation, hasMoved)                                             |
 | `Square`      | Case (couleur, file, rank, piece, neighbors)                                                                |
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
@@ -111,7 +111,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves`.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`
 - `Game.time` est optionnel — `undefined` = partie sans chrono
-- `Direction` est le type partagé pour les 8 directions (voisins de case ET clouage de pièce)
+- `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
+  Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8).
   La logique de déplacement traduit selon la couleur du joueur.
 - `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`,

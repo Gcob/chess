@@ -233,6 +233,79 @@ describe('canMove — king', () => {
   })
 })
 
+describe('canMove — pinned pieces', () => {
+  it('freezes a bishop pinned on a file', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'c1', 'e2') // bishop shields the king
+    applyMove(board, 'a8', 'e5') // black rook pins it
+    expect(canMove(board, 'e2', 'd3')).toBe(false)
+    expect(canMove(board, 'e2', 'f3')).toBe(false)
+    expect(canMove(board, 'e2', 'g4')).toBe(false)
+  })
+
+  it('lets a pinned rook slide along the pin ray and capture the pinner', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a1', 'e4') // rook shields the king
+    applyMove(board, 'a8', 'e6') // black rook pins it
+    expect(canMove(board, 'e4', 'e5')).toBe(true) // toward the pinner
+    expect(canMove(board, 'e4', 'e6')).toBe(true) // captures the pinner
+    expect(canMove(board, 'e4', 'e3')).toBe(true) // back toward the king
+    expect(canMove(board, 'e4', 'd4')).toBe(false) // off the ray
+    expect(canMove(board, 'e4', 'h4')).toBe(false)
+  })
+
+  it('freezes a pinned knight entirely', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3')
+    applyMove(board, 'g1', 'e4') // knight shields the king
+    applyMove(board, 'a8', 'e6')
+    expect(canMove(board, 'e4', 'd6')).toBe(false)
+    expect(canMove(board, 'e4', 'f6')).toBe(false)
+    expect(canMove(board, 'e4', 'c3')).toBe(false)
+    expect(canMove(board, 'e4', 'g5')).toBe(false)
+  })
+
+  it('keeps a file-pinned pawn advancing but never capturing sideways', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'd3') // black pawn within capture reach
+    applyMove(board, 'a8', 'e5') // black rook pins the e2 pawn
+    expect(canMove(board, 'e2', 'e3')).toBe(true) // advances stay on the ray
+    expect(canMove(board, 'e2', 'e4')).toBe(true)
+    expect(canMove(board, 'e2', 'd3')).toBe(false) // capture would expose the king
+  })
+
+  it('lets a diagonally pinned pawn capture its pinner', () => {
+    const board = freshBoard()
+    applyMove(board, 'c8', 'c3') // black bishop pins the d2 pawn against e1
+    expect(canMove(board, 'd2', 'd3')).toBe(false) // advance leaves the diagonal
+    expect(canMove(board, 'd2', 'd4')).toBe(false)
+    expect(canMove(board, 'd2', 'c3')).toBe(true) // capturing the pinner is on the ray
+  })
+
+  it('does not pin when another piece shields in between', () => {
+    const board = freshBoard()
+    applyMove(board, 'g1', 'e3') // knight between the rook and the e2 pawn
+    applyMove(board, 'a8', 'e5')
+    expect(canMove(board, 'e3', 'c4')).toBe(true) // the knight is not pinned (e2 pawn shields)
+  })
+
+  it('is not pinned by an aligned non-slider', () => {
+    const board = freshBoard()
+    applyMove(board, 'g1', 'f2') // knight aligned with its king on the e1–f2 diagonal
+    applyMove(board, 'd7', 'g3') // black pawn attacks f2 from the same diagonal
+    expect(canMove(board, 'f2', 'g4')).toBe(true) // a pawn never pins
+  })
+
+  it('never pins the king itself', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4') // king faces an enemy rook directly
+    applyMove(board, 'a8', 'e6')
+    expect(canMove(board, 'e4', 'd4')).toBe(true) // stepping into check is next step's business
+  })
+})
+
 describe('getAttackers', () => {
   it('finds no attacker on a safe square', () => {
     const board = freshBoard()

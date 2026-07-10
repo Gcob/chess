@@ -154,7 +154,6 @@ function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey):
     type,
     value,
     textRepresentation: {short, long},
-    pinAbsoluteDirection: null,
     hasMoved: false,
   }
 }

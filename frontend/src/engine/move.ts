@@ -26,8 +26,9 @@ export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
 
   const moveTypes = getPieceMoveTypes(piece.type)
   const availableSquares = getAvailableSquares(departureSquare, piece, moveTypes)
+  const legalSquares = restrictToPinRay(departureSquare, availableSquares)
 
-  return availableSquares.some(square => toSquareKey(square) === to)
+  return legalSquares.some(square => toSquareKey(square) === to)
 }
 
 // Applies a move in place. Overwriting the target square is how a capture happens.
@@ -152,6 +153,17 @@ function getAvailableSquaresForLinearForwardDouble(from: Square, piece: Piece): 
 const LINEAR_DIRECTIONS: readonly Direction[] = ['top', 'right', 'bottom', 'left']
 const DIAGONAL_DIRECTIONS: readonly Direction[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left']
 const ALL_DIRECTIONS: readonly Direction[] = [...LINEAR_DIRECTIONS, ...DIAGONAL_DIRECTIONS]
+
+const OPPOSITE_DIRECTION: Record<Direction, Direction> = {
+  'top': 'bottom',
+  'top-right': 'bottom-left',
+  'right': 'left',
+  'bottom-right': 'top-left',
+  'bottom': 'top',
+  'bottom-left': 'top-right',
+  'left': 'right',
+  'top-left': 'bottom-right',
+}
 
 function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
   return LINEAR_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
@@ -278,9 +290,8 @@ function knightAttackers(square: Square, byColor: PieceColor): Square[] {
 function attacksAlong(type: MoveTypeId, direction: Direction, distance: number, byColor: PieceColor): boolean {
   switch (type) {
     case 'linear':
-      return LINEAR_DIRECTIONS.includes(direction)
     case 'diagonal':
-      return DIAGONAL_DIRECTIONS.includes(direction)
+      return slidesAlong(type, direction)
     case 'simple':
       return distance === 1
     case 'diagonal-forward-capture':
@@ -297,6 +308,16 @@ function attacksAlong(type: MoveTypeId, direction: Direction, distance: number, 
     case 'promotion':
       return false
   }
+}
+
+// Whether the move type is a slide running along this direction. Only slides matter for pins:
+// pinning requires an attack that runs THROUGH the pinned piece to the king behind it.
+function slidesAlong(type: MoveTypeId, direction: Direction): boolean {
+  if (type === 'linear') {
+    return LINEAR_DIRECTIONS.includes(direction)
+  }
+
+  return type === 'diagonal' && DIAGONAL_DIRECTIONS.includes(direction)
 }
 
 // A pawn attacks its two forward diagonals, so seen from the attacked square the pawn sits
@@ -332,6 +353,69 @@ function firstPieceInDirection(from: Square, direction: Direction): RayHit | nul
 
 function isAttackerWithMoveType(square: Square | null, byColor: PieceColor, type: MoveTypeId): boolean {
   return !!square?.piece && square.piece.color === byColor && getPieceMoveTypes(square.piece.type).includes(type)
+}
+
+// ─── Private pin logic ─────────────────────────────────────────────────────────
+
+// A pinned piece may only move along the pin axis: toward the pinner (capturing it included)
+// or back toward its own king — never off the ray.
+function restrictToPinRay(from: Square, squares: Square[]): Square[] {
+  const pinDirection = getPinDirection(from)
+  if (!pinDirection) {
+    return squares
+  }
+
+  const ray = [
+    ...raySquares(from, pinDirection),
+    ...raySquares(from, OPPOSITE_DIRECTION[pinDirection]),
+  ]
+  return squares.filter(square => ray.includes(square))
+}
+
+// The absolute direction the pinning piece attacks from — null when not pinned. Fully local to
+// the graph: pinned means the first piece one way is an enemy slider striking along the ray,
+// and the first piece the opposite way is the own king.
+function getPinDirection(square: Square): Direction | null {
+  const piece = square.piece
+  if (!piece) {
+    return null
+  }
+
+  for (const direction of ALL_DIRECTIONS) {
+    const attacker = firstPieceInDirection(square, direction)
+    if (!attacker || attacker.piece.color === piece.color) {
+      continue
+    }
+
+    const pins = getPieceMoveTypes(attacker.piece.type).some(type => slidesAlong(type, direction))
+    if (!pins) {
+      continue
+    }
+
+    const behind = firstPieceInDirection(square, OPPOSITE_DIRECTION[direction])
+    if (behind && behind.piece.type === 'king' && behind.piece.color === piece.color) {
+      return direction
+    }
+  }
+
+  return null
+}
+
+// The squares from here up to the first piece met (inclusive) in that direction.
+function raySquares(from: Square, direction: Direction): Square[] {
+  const squares: Square[] = []
+  let current = from.neighbors[direction]
+
+  while (current) {
+    squares.push(current)
+    if (current.piece) {
+      break
+    }
+
+    current = current.neighbors[direction]
+  }
+
+  return squares
 }
 
 function findKingSquare(board: Board, color: PieceColor): Square | null {
