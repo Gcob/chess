@@ -54,7 +54,7 @@ export function useGameView(id: string) {
   })
 
   // Squares of the kings currently in check — a rule indicator, never gated by a setting.
-  // Both colors are scanned: legality is not enforced yet, so either king can be left in check.
+  // Legality guarantees at most the side to move is in check; scanning both colors stays as a net.
   const checkSquares = computed<SquareKey[]>(() => {
     const game = session.game.value
     if (!game) {

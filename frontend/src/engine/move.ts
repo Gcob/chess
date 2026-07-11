@@ -24,9 +24,13 @@ export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
     return false
   }
 
+  // Progressive restriction: raw geometry, then one legality filter per rule. Each filter
+  // guards its own relevance, so the pipeline holds for any piece.
   const moveTypes = getPieceMoveTypes(piece.type)
   const availableSquares = getAvailableSquares(departureSquare, piece, moveTypes)
-  const legalSquares = restrictToPinRay(departureSquare, availableSquares)
+  const safeSquares = restrictToSafeKingSquares(departureSquare, piece, availableSquares)
+  const unpinnedSquares = restrictToPinRay(departureSquare, safeSquares)
+  const legalSquares = restrictToCheckResponses(board, piece, unpinnedSquares)
 
   return legalSquares.some(square => toSquareKey(square) === to)
 }
@@ -51,7 +55,7 @@ export function applyMove(board: Board, from: SquareKey, to: SquareKey): void {
 // tested against the attack signatures of its own move types, so getPieceMoveTypes remains the
 // single place knowing what a piece can do.
 export function getAttackers(square: Square, byColor: PieceColor): Square[] {
-  return [...rayAttackers(square, byColor), ...knightAttackers(square, byColor)]
+  return [...directionalAttackers(square, byColor), ...knightAttackers(square, byColor)]
 }
 
 // The enemy squares currently giving check to the given color's king. A legal position allows
@@ -257,8 +261,8 @@ function forwardNeighbor(square: Square, color: PieceColor): Square | null {
 // ─── Private attack logic ──────────────────────────────────────────────────────
 
 // One scan per direction: the first piece met attacks back if one of its move types strikes
-// along this direction at this distance.
-function rayAttackers(square: Square, byColor: PieceColor): Square[] {
+// along this direction at this distance — sliders at any range, king and pawn at distance 1.
+function directionalAttackers(square: Square, byColor: PieceColor): Square[] {
   const attackers: Square[] = []
 
   for (const direction of ALL_DIRECTIONS) {
@@ -416,6 +420,77 @@ function raySquares(from: Square, direction: Direction): Square[] {
   }
 
   return squares
+}
+
+// ─── Private check legality ─────────────────────────────────────────────────────
+// Pure queries on the unmutated board — no move/undo simulation anywhere.
+
+// Only the king answers to destination safety — a no-op for every other piece.
+function restrictToSafeKingSquares(from: Square, piece: Piece, squares: Square[]): Square[] {
+  if (piece.type !== 'king') {
+    return squares
+  }
+
+  const enemyColor: PieceColor = piece.color === 'white' ? 'black' : 'white'
+  const unattackedSquares = squares.filter(to => getAttackers(to, enemyColor).length === 0)
+
+  return unattackedSquares.filter(to => !isXRayedThroughKing(from, to, enemyColor))
+}
+
+// The x-ray trap: fleeing along the ray of a checking slider. getAttackers from the destination
+// is blind to it — the king itself still blocks that ray on the unmutated board — so the slider
+// sitting behind the king (opposite the move) is detected explicitly.
+function isXRayedThroughKing(from: Square, to: Square, enemyColor: PieceColor): boolean {
+  const moveDirection = ALL_DIRECTIONS.find(direction => from.neighbors[direction] === to)
+  if (!moveDirection) {
+    return false
+  }
+
+  const away = OPPOSITE_DIRECTION[moveDirection]
+  const behind = firstPieceInDirection(from, away)
+  if (!behind || behind.piece.color !== enemyColor) {
+    return false
+  }
+
+  return getPieceMoveTypes(behind.piece.type).some(type => slidesAlong(type, away))
+}
+
+// Non-king answers to check: one checker allows capturing it or blocking its ray; two checkers
+// (double check, born from a discovery) allow nothing. The king is exempt — it answers by
+// moving to safety instead (restrictToSafeKingSquares).
+function restrictToCheckResponses(board: Board, piece: Piece, squares: Square[]): Square[] {
+  if (piece.type === 'king') {
+    return squares
+  }
+
+  const kingSquare = findKingSquare(board, piece.color)
+  if (!kingSquare) {
+    return squares
+  }
+
+  const kingAttackers = getAttackers(kingSquare, piece.color === 'white' ? 'black' : 'white')
+  if (kingAttackers.length === 0) {
+    return squares
+  }
+
+  if (kingAttackers.length > 1) {
+    return []
+  }
+
+  const responses = getCheckResponseSquares(kingSquare, kingAttackers[0]!)
+  return squares.filter(square => responses.includes(square))
+}
+
+// Capturing the checker or interposing on its ray to the king. A knight never sits on a queen
+// line from the king, so when no ray leads to the checker, capturing it is the only answer.
+function getCheckResponseSquares(kingSquare: Square, checkerSquare: Square): Square[] {
+  for (const direction of ALL_DIRECTIONS) {
+    if (firstPieceInDirection(kingSquare, direction)?.square === checkerSquare) {
+      return raySquares(kingSquare, direction)
+    }
+  }
+
+  return [checkerSquare]
 }
 
 export function findKingSquare(board: Board, color: PieceColor): Square | null {

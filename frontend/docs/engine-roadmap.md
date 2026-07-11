@@ -87,7 +87,11 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       seuls `linear`/`diagonal` clouent (`slidesAlong`)
 - [x] Highlight du roi en échec (`isInCheck` = true) dans la vue — overlay `check` (rouge translucide)
       via `useGameView.checkSquares`, toujours affiché (pas de setting)
-- [ ] `canMove` complet : seuls les coups légaux passent
+- [x] `canMove` complet : seuls les coups légaux passent — roi : destination sans attaquant
+      (`getAttackers`) + garde x-ray « à travers le roi » (fuite le long du rayon d'une glissante) ;
+      non-roi : 0 checker = géométrie + clouage, 1 = capture du checker ou interposition sur son rayon
+      (∩ clouage), 2 = seul le roi bouge. Queries pures, jamais de move/undo simulé ; l'en passant qui
+      découvre un échec arrivera avec la phase ④
 - [ ] Aides locales : surbrillance des destinations légales, animations `hop` / `snap-back` réveillées
 
 ### ③ Fins de partie automatiques

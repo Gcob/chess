@@ -302,7 +302,156 @@ describe('canMove — pinned pieces', () => {
     const board = freshBoard()
     applyMove(board, 'e1', 'e4') // king faces an enemy rook directly
     applyMove(board, 'a8', 'e6')
-    expect(canMove(board, 'e4', 'd4')).toBe(true) // stepping into check is next step's business
+    expect(canMove(board, 'e4', 'd4')).toBe(true) // a genuine escape — off the ray, unattacked
+  })
+})
+
+describe('canMove — check evasion', () => {
+  it('rejects any move that ignores the check', () => {
+    const board = freshBoard()
+    applyMove(board, 'g8', 'f3') // black knight checks e1
+    expect(canMove(board, 'a2', 'a3')).toBe(false)
+    expect(canMove(board, 'e2', 'e3')).toBe(false) // no interposing against a knight
+  })
+
+  it('allows capturing the checking knight', () => {
+    const board = freshBoard()
+    applyMove(board, 'g8', 'f3') // black knight checks e1
+    expect(canMove(board, 'g2', 'f3')).toBe(true)
+  })
+
+  it('allows interposing on a slider check ray', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a8', 'e5') // black rook checks e1
+    expect(canMove(board, 'f1', 'e2')).toBe(true)
+    expect(canMove(board, 'd1', 'e2')).toBe(true)
+    expect(canMove(board, 'g1', 'e2')).toBe(true)
+    expect(canMove(board, 'g1', 'f3')).toBe(false) // off the ray
+    expect(canMove(board, 'b1', 'c3')).toBe(false)
+  })
+
+  it('allows interposing with a pawn double advance', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'h4') // king out in the open
+    applyMove(board, 'a8', 'a4') // black rook checks along the 4th rank
+    expect(canMove(board, 'e2', 'e4')).toBe(true)
+    expect(canMove(board, 'g2', 'g4')).toBe(true)
+    expect(canMove(board, 'e2', 'e3')).toBe(false) // short of the ray
+  })
+
+  it('never lets a pinned piece capture the checker', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'c1', 'e2') // white bishop shields the king…
+    applyMove(board, 'a8', 'e6') // …and gets pinned by the black rook
+    applyMove(board, 'g8', 'd3') // black knight checks e1, in the pinned bishop's reach
+    expect(canMove(board, 'e2', 'd3')).toBe(false) // pin ∩ check response = nothing
+    expect(canMove(board, 'c2', 'd3')).toBe(true) // the unpinned pawn captures instead
+  })
+
+  it('only lets the king answer a double check', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a8', 'e5') // black rook checks e1
+    applyMove(board, 'g8', 'f3') // black knight checks e1 too
+    board.squares['f2'].piece = null
+    expect(canMove(board, 'd1', 'f3')).toBe(false) // capturing one checker is not enough
+    expect(canMove(board, 'g2', 'f3')).toBe(false)
+    expect(canMove(board, 'e1', 'e2')).toBe(false) // still on the rook's ray
+    expect(canMove(board, 'e1', 'f2')).toBe(true)
+  })
+
+  it('answers an adjacent pawn check by capture only', () => {
+    const board = freshBoard()
+    applyMove(board, 'd7', 'd2') // black pawn checks e1
+    expect(canMove(board, 'c1', 'd2')).toBe(true)
+    expect(canMove(board, 'd1', 'd2')).toBe(true)
+    expect(canMove(board, 'b1', 'd2')).toBe(true)
+    expect(canMove(board, 'a2', 'a3')).toBe(false)
+    expect(canMove(board, 'e1', 'd2')).toBe(false) // the queen defends d2 down the freed d-file
+  })
+})
+
+describe('canMove — king safety', () => {
+  it('rejects stepping onto an attacked square, check or not', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'a8', 'd5') // black rook holds the d-file and the 5th rank
+    expect(canMove(board, 'e4', 'd4')).toBe(false)
+    expect(canMove(board, 'e4', 'd3')).toBe(false)
+    expect(canMove(board, 'e4', 'e5')).toBe(false)
+    expect(canMove(board, 'e4', 'f4')).toBe(true)
+    expect(canMove(board, 'e4', 'e3')).toBe(true)
+    expect(canMove(board, 'e4', 'd5')).toBe(true) // the rook is undefended
+  })
+
+  it('rejects squares covered by an enemy pawn', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'd7', 'e5') // black pawn covers d4 and f4
+    expect(canMove(board, 'e4', 'd4')).toBe(false)
+    expect(canMove(board, 'e4', 'f4')).toBe(false)
+    expect(canMove(board, 'e4', 'e5')).toBe(true) // the pawn itself is undefended
+  })
+
+  it('captures an adjacent checker only when it is undefended', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'a8', 'e5') // black rook checks e4 from next door
+    expect(canMove(board, 'e4', 'e5')).toBe(true)
+
+    applyMove(board, 'h8', 'e6') // the other rook now defends it
+    expect(canMove(board, 'e4', 'e5')).toBe(false)
+  })
+
+  it('sees the defender standing behind the captured piece', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'b8', 'd5') // black knight in the king's reach
+    board.squares['d7'].piece = null // the black queen now sees d5 down the d-file
+    expect(canMove(board, 'e4', 'd5')).toBe(false)
+    expect(canMove(board, 'e4', 'e3')).toBe(false) // the knight covers e3
+
+    board.squares['d8'].piece = null // no defender left
+    expect(canMove(board, 'e4', 'd5')).toBe(true)
+  })
+
+  it('rejects fleeing along the checking rook ray — the x-ray trap', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'a8', 'e6') // black rook checks e4
+    expect(canMove(board, 'e4', 'e3')).toBe(false) // still on the ray once the king steps away
+    expect(canMove(board, 'e4', 'e5')).toBe(false)
+    expect(canMove(board, 'e4', 'd4')).toBe(true)
+    expect(canMove(board, 'e4', 'f3')).toBe(true)
+  })
+
+  it('rejects fleeing along the checking bishop diagonal — the x-ray trap', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'c8', 'g6') // black bishop checks e4 through f5
+    expect(canMove(board, 'e4', 'd3')).toBe(false) // still on the diagonal
+    expect(canMove(board, 'e4', 'f5')).toBe(false)
+    expect(canMove(board, 'e4', 'e3')).toBe(true)
+  })
+
+  it('handles a battery: only the lead slider matters', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'd8', 'e6') // black queen checks e4
+    applyMove(board, 'a8', 'e7') // black rook stacked behind it
+    expect(canMove(board, 'e4', 'e3')).toBe(false) // x-rayed by the lead queen
+    expect(canMove(board, 'e4', 'd4')).toBe(true)
+  })
+
+  it('never steps next to the enemy king', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4')
+    applyMove(board, 'e8', 'e6')
+    expect(canMove(board, 'e4', 'e5')).toBe(false)
+    expect(canMove(board, 'e4', 'd5')).toBe(false)
+    expect(canMove(board, 'e4', 'd4')).toBe(true)
   })
 })
 
