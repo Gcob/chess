@@ -15,8 +15,13 @@ plus tard ; cet engine servira de référence pour le bâtir.
   (spectateurs, plusieurs boards sur une même page).
 - **DTO = plain data sérialisable** — pas de classes ni de méthodes dans le DTO : il doit pouvoir voyager
   (websocket, DB). Toute la logique vit dans l'engine.
-- **Engine pur** — `src/engine/` : fonctions `(game, …) → void` qui mutent le DTO en place, zéro import Vue,
-  zéro état de module. La réactivité vient du store qui wrap le DTO ; un websocket mutera le même DTO.
+- **Engine pur, hybride objets/fonctions** — `src/engine/` : l'API publique est des fonctions
+  `(game, …) → void` qui mutent le DTO en place, zéro import Vue, zéro état de module. La réactivité vient
+  du store qui wrap le DTO ; un websocket mutera le même DTO. À l'interne, classes permises (`Board`,
+  `Piece`/`Square` wrappers, `Ray`, hiérarchie `MoveType`) si : état 100 % dérivé du board, durée de vie
+  ≤ une position, jamais dans le DTO ni un store, zéro état de module mutable (flyweights constants OK).
+  L'état vit dans le DTO, le comportement vit dans les classes — wrappers, jamais de modèle parallèle ;
+  la donnée qui voyage est plate.
 - **State pattern fonctionnel** — le statut est une donnée (`waiting → active → finished`) ; chaque commande
   de l'engine est gardée par le statut (ex. `makeMove` refuse si la partie est finie). Pas d'objets-état.
 - **Le trait vit dans `activeColor`** — jamais encodé dans le statut, jamais dérivé de `moves.length`.
@@ -87,7 +92,11 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       seuls `linear`/`diagonal` clouent (`slidesAlong`)
 - [x] Highlight du roi en échec (`isInCheck` = true) dans la vue — overlay `check` (rouge translucide)
       via `useGameView.checkSquares`, toujours affiché (pas de setting)
-- [ ] `canMove` complet : seuls les coups légaux passent
+- [x] `canMove` complet : seuls les coups légaux passent — roi : destination sans attaquant
+      (`getAttackers`) + garde x-ray « à travers le roi » (fuite le long du rayon d'une glissante) ;
+      non-roi : 0 checker = géométrie + clouage, 1 = capture du checker ou interposition sur son rayon
+      (∩ clouage), 2 = seul le roi bouge. Queries pures, jamais de move/undo simulé ; l'en passant qui
+      découvre un échec arrivera avec la phase ④
 - [ ] Aides locales : surbrillance des destinations légales, animations `hop` / `snap-back` réveillées
 
 ### ③ Fins de partie automatiques
@@ -134,4 +143,8 @@ Non bloquants, à faire si le cœur nous en dit.
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
 - **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent la phase ②.
+- **En passant découvrant un échec (phase ④)** — deux pions quittent le même rayon d'un coup ; le modèle
+  clouage (1 bloqueur) ne le couvre pas, mais `Ray.blockers` est prêt (2 bloqueurs qui partent ensemble).
+- **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
+  contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.

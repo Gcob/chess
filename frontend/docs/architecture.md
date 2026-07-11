@@ -86,6 +86,18 @@ réactifs minces** : ils appellent l'engine et exposent le résultat en `ref`/`c
 `gameFactory.ts` (construction de partie/board) est déjà de la logique pure — il migrera
 éventuellement sous `engine/`.
 
+**Frontière hybride objets/fonctions (engine).** L'état vit dans le DTO, le comportement vit dans les
+classes : la donnée qui voyage est plate ; les objets naissent et meurent dans l'engine. Classes permises
+dans `src/engine/` si : (1) état 100 % dérivé du board, (2) durée de vie ≤ une position, (3) jamais dans
+le DTO ni un store, (4) zéro état de module *mutable* — des flyweights constants sans état (registre
+`MOVE_TYPES`) sont des objets-comportement, équivalents à des fonctions exportées, donc permis.
+**Wrappers, jamais de modèle parallèle** : les classes `Piece`/`Square` enveloppent une référence vers le
+plain data du DTO (zéro copie d'état — lire/muter passe par le proxy réactif) ; le `Board` cache ses
+wrappers, donc l'égalité par référence tient dans une même position. Convention interne à l'engine :
+les types du DTO s'importent avec alias (`Piece as PieceDto`, etc.) — dehors, `Piece` = le DTO.
+L'API publique de l'engine reste des fonctions sur le DTO. Vigilance : `Board` reste strictement
+interrogatif — les règles vivent dans les fonctions, jamais dans la façade (anti God-object).
+
 ## Rendu de l'échiquier
 
 `cBoard` consomme le **DTO de vue en prop unique** (`view: GameView` — board, orientation, policies,
@@ -136,8 +148,14 @@ coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove
 > `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helper `remainingSeconds`) — voir
 > `docs/engine-roadmap.md` pour les principes et la progression. `makeMove` exige le trait, enregistre le
 > `Move` (SAN naïf) avec temps débité + incrément, et le premier coup démarre une partie `waiting` (jamais
-> sur tentative invalide). `engine/move.ts` reste la couche board : `canMove` refuse origine vide, non-coup
-> et capture alliée — les patterns de déplacement et l'échec viennent en phase ②.
+> sur tentative invalide). Couche board : `engine/move.ts` (`canMove` complet — pipeline de restrictions,
+> `applyMove`), `engine/board.ts` (classe `Board` — l'Échiquier du MDD : cache de wrappers, rayons,
+> attaques, clouages, réponses à l'échec + API fonctionnelle DTO : `getBoardPieces`, `findKingSquare`,
+> `toSquareKey`, `getAttackers`, `findCheckers`), `engine/square.ts` / `engine/piece.ts` (wrappers
+> comportementaux — `piece.availableSquares()`), `engine/ray.ts` (classe `Ray`, directions, walkers),
+> `engine/moveTypes.ts` (hiérarchie `MoveType` — strategy, une classe par move type : pattern de
+> déplacement, signature d'attaque, `slidesAlong` ; `getPieceMoveTypes` = l'unique mapping pièce → move
+> types), `engine/material.ts` (captures dérivées).
 
 ## Vue de partie (game view)
 

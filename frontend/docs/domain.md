@@ -113,6 +113,14 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
+- Légalité : `canMove` est la porte unique — pipeline de restrictions successives, chacune auto-gardée
+  (géométrie → sécurité du roi → clouage → réponse à l'échec). Queries pures sur le board non muté —
+  jamais de move/undo simulé. Les questions passent par la classe `Board` de l'engine (façade d'une
+  position, durée de vie ≤ un coup, wrappers `Piece`/`Square` cachés) et `Ray` (ligne de vue d'une
+  glissante, marchée À TRAVERS les pièces : 0 bloqueur = échec + prolongement x-ray derrière le roi,
+  1 bloqueur ami = clouage)
+- Patterns de déplacement et signatures d'attaque : dans les sous-classes de `MoveType` (une classe par
+  move type, alignée sur le MDD). `getPieceMoveTypes` reste l'unique mapping pièce → move types
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8).
   La logique de déplacement traduit selon la couleur du joueur.
 - `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`,

@@ -1,5 +1,6 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove, findCheckers} from './move'
+import {canMove, applyMove} from './move'
+import {findCheckers} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
