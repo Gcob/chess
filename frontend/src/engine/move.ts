@@ -17,19 +17,10 @@ export function canMove(boardDto: BoardDto, from: SquareKey, to: SquareKey): boo
     return false
   }
 
-  if (from === to) {
-    return false
-  }
-
-  // Can't capture your own piece.
-  const target = board.square(to).piece
-  if (target && target.color === piece.color) {
-    return false
-  }
-
   // Progressive restriction: raw geometry, then one legality filter per rule. Each filter
-  // guards its own relevance, so the pipeline holds for any piece. One Board instance
-  // answers every question about the position.
+  // guards its own relevance, so the pipeline holds for any piece — friendly captures and
+  // non-moves never survive the patterns themselves. One Board instance answers every
+  // question about the position.
   const availableSquares = piece.availableSquares()
   const safeSquares = restrictToSafeKingSquares(board, piece, availableSquares)
   const unpinnedSquares = restrictToPinRay(board, departureSquare, safeSquares)
