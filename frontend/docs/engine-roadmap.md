@@ -85,7 +85,8 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Clouages — `getPinDirection` calculé à la demande (champ `pinAbsoluteDirection` retiré du DTO,
       donnée dérivée) ; pièce clouée restreinte au rayon du clouage, capture du cloueur incluse ;
       seuls `linear`/`diagonal` clouent (`slidesAlong`)
-- [ ] Highlight du roi en échec (`isInCheck` = true) dans la vue
+- [x] Highlight du roi en échec (`isInCheck` = true) dans la vue — overlay `check` (rouge translucide)
+      via `useGameView.checkSquares`, toujours affiché (pas de setting)
 - [ ] `canMove` complet : seuls les coups légaux passent
 - [ ] Aides locales : surbrillance des destinations légales, animations `hop` / `snap-back` réveillées
 

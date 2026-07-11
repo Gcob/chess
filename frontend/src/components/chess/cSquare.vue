@@ -56,6 +56,10 @@ const squareBackground = computed(() =>
     &--selected {
       background: $square-highlight-selected;
     }
+
+    &--check {
+      background: $square-highlight-check;
+    }
   }
 }
 </style>

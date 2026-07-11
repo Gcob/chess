@@ -17,7 +17,7 @@ export type ImageFormat = 'svg' | 'png'
 // Transient visual states a square can show, as translucent overlays. Pure UI —
 // kept out of the domain Square (which stays a pure game-state node). Several can
 // apply at once and stack. New states = add a value here, a colour, and a source.
-export type SquareHighlight = 'drop-target' | 'last-move' | 'selected'
+export type SquareHighlight = 'drop-target' | 'last-move' | 'selected' | 'check'
 
 // Board display size — a per-viewer preference. 'full' fills the available height; the others
 // are fixed steps. Mapped to concrete pixels by the board area.

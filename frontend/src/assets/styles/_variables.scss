@@ -29,6 +29,7 @@ $color-slate-950: #020617;
 $square-highlight-drop-target: rgba(74, 158, 221, 0.45); // accent — drop landing cell
 $square-highlight-last-move:    rgba(234, 179, 8, 0.40);  // warning — from/to of last move
 $square-highlight-selected:     rgba(34, 197, 94, 0.40);  // success — picked-up piece
+$square-highlight-check:        rgba(239, 68, 68, 0.50);  // danger — king in check
 
 // --- Typography ---
 

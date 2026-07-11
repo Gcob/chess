@@ -3,6 +3,7 @@ import {useGameSession} from '@/composables/useGameSession'
 import {useGameClock} from '@/composables/useGameClock'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
+import {findKingSquare, toSquareKey} from '@/engine/move'
 import type {PieceColor, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
@@ -52,6 +53,25 @@ export function useGameView(id: string) {
     return last ? {from: last.from, to: last.to} : null
   })
 
+  // Squares of the kings currently in check — a rule indicator, never gated by a setting.
+  // Both colors are scanned: legality is not enforced yet, so either king can be left in check.
+  const checkSquares = computed<SquareKey[]>(() => {
+    const game = session.game.value
+    if (!game) {
+      return []
+    }
+
+    const squares: SquareKey[] = []
+    for (const color of ['white', 'black'] as const) {
+      const king = findKingSquare(game.board, color)
+      if (game.players[color].isInCheck && king) {
+        squares.push(toSquareKey(king))
+      }
+    }
+
+    return squares
+  })
+
   // Captures derived once from the move history — both player cards consume this.
   const captured = computed<CapturedByColor>(() =>
     session.game.value ? getCapturedPieces(session.game.value) : {white: [], black: []},
@@ -79,6 +99,7 @@ export function useGameView(id: string) {
     bottomColor,
     boardSize: computed(() => settingsStore.settings.boardSize),
     lastMove,
+    checkSquares,
     movableColor,
     captured,
     clocks,

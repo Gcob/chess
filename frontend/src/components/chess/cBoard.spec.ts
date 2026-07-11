@@ -1,4 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest'
+import {nextTick} from 'vue'
 import {mount} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
 import cBoard from './cBoard.vue'
@@ -45,6 +46,26 @@ describe('cBoard', () => {
     useSettingsStore().settings.highlightLastMove = false
     const wrapper = mount(cBoard, {props: {view}})
     expect(wrapper.findAll('.c-square__highlight--last-move')).toHaveLength(0)
+  })
+
+  it('shows no check highlight at the start', () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(0)
+  })
+
+  it('highlights the checked king, and clears it once the check is blocked', async () => {
+    const {view, game} = freshView()
+    makeMove(game, 'e2', 'e4')
+    makeMove(game, 'd7', 'd5')
+    makeMove(game, 'f1', 'b5') // Bb5+ through the freed d7 square
+    const wrapper = mount(cBoard, {props: {view}})
+    expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(1)
+
+    // through the view command: mutating the raw game after mount bypasses reactivity
+    view.move('c7', 'c6') // blocks the diagonal
+    await nextTick()
+    expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(0)
   })
 
   it('only lets the player to move grab pieces', () => {

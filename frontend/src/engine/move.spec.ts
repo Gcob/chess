@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {canMove, applyMove, getAttackers, findCheckers} from './move'
+import {canMove, applyMove, getAttackers, findCheckers, findKingSquare, toSquareKey} from './move'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
 
@@ -409,5 +409,25 @@ describe('applyMove', () => {
     const board = freshBoard()
     applyMove(board, 'e4', 'e5')
     expect(board.squares['e5'].piece).toBeNull()
+  })
+})
+
+describe('findKingSquare', () => {
+  it('finds each king on a fresh board', () => {
+    const board = freshBoard()
+    expect(toSquareKey(findKingSquare(board, 'white')!)).toBe('e1')
+    expect(toSquareKey(findKingSquare(board, 'black')!)).toBe('e8')
+  })
+
+  it('follows the king when it moves', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e5')
+    expect(toSquareKey(findKingSquare(board, 'white')!)).toBe('e5')
+  })
+
+  it('returns null when the king is absent', () => {
+    const board = freshBoard()
+    board.squares['e1'].piece = null
+    expect(findKingSquare(board, 'white')).toBeNull()
   })
 })

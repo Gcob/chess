@@ -31,4 +31,9 @@ describe('cSquare', () => {
     expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(true)
     expect(wrapper.find('.c-square__highlight--last-move').exists()).toBe(true)
   })
+
+  it('renders the check overlay', () => {
+    const wrapper = mount(cSquare, {props: {square, highlights: ['check']}})
+    expect(wrapper.find('.c-square__highlight--check').exists()).toBe(true)
+  })
 })

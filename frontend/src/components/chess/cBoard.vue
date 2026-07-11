@@ -213,6 +213,10 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
     result.push('selected')
   }
 
+  if (props.view.checkSquares.includes(square)) {
+    result.push('check')
+  }
+
   return result
 }
 

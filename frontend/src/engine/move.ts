@@ -418,12 +418,12 @@ function raySquares(from: Square, direction: Direction): Square[] {
   return squares
 }
 
-function findKingSquare(board: Board, color: PieceColor): Square | null {
+export function findKingSquare(board: Board, color: PieceColor): Square | null {
   return Object.values(board.squares).find(
     square => square.piece?.type === 'king' && square.piece.color === color,
   ) ?? null
 }
 
-function toSquareKey(square: Square): SquareKey {
+export function toSquareKey(square: Square): SquareKey {
   return `${square.file}${square.rank}`
 }
