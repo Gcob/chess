@@ -97,7 +97,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       non-roi : 0 checker = géométrie + clouage, 1 = capture du checker ou interposition sur son rayon
       (∩ clouage), 2 = seul le roi bouge. Queries pures, jamais de move/undo simulé ; l'en passant qui
       découvre un échec arrivera avec la phase ④
-- [ ] Aides locales : surbrillance des destinations légales, animations `hop` / `snap-back` réveillées
+- [ ] `legalDestinations(board, from)` : toutes les destinations légales d'une pièce via UN `Board`
+      partagé (~64 canMove) — l'API que consommeront les aides locales (Backlog UX/board) ; la
+      phase ③ réutilise la même query (mat/pat = aucune destination légale pour aucune pièce)
 
 ### ③ Fins de partie automatiques
 
@@ -136,8 +138,11 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 Features UI en marge des phases engine — elles ne les bloquent jamais.
 
+- [ ] **Aides locales (prioritaire)** : surbrillance des destinations légales (consomme
+      `legalDestinations`, phase ②) ; animations `hop` (cavalier) et `snap-back` (coup refusé)
+      réveillées
 - [ ] **Drag mobile (prioritaire)** : la pièce draguée glisse vers le haut (transition) pour rester
-      visible au-dessus du doigt — à prendre avec les aides locales de la phase ②
+      visible au-dessus du doigt — à prendre avec les aides locales ci-dessus
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
       (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
       ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy
@@ -191,7 +196,8 @@ Non bloquants, à faire si le cœur nous en dit.
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
-- **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent la phase ②.
+- **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent les aides
+  locales (Backlog UX/board).
 - **En passant découvrant un échec (phase ④)** — deux pions quittent le même rayon d'un coup ; le modèle
   clouage (1 bloqueur) ne le couvre pas, mais `Ray.blockers` est prêt (2 bloqueurs qui partent ensemble).
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
