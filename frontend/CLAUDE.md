@@ -12,6 +12,23 @@ Petit projet solo — développeur : Jacob.
 - Valider le typescript autant que possible et le build pour s'assurer que tout fonctionne correctement à chaque
   changement.
 
+## Réactivité — principe fondamental, non négociable
+
+La réactivité est l'essence même d'un framework frontend. Elle doit être **built-in et implicite,
+partout, tout le temps** : muter un DTO obtenu de n'importe où (store, composable, engine, test,
+futur websocket) déclenche la réactivité, sans exception.
+
+- Tout DTO est wrappé en `reactive()` **dès sa naissance**, dans le store qui l'enregistre.
+  Aucune référence brute (pré-wrap) ne doit jamais fuiter — c'est LE proxy qui circule, toujours.
+- Si une mutation ne réagit pas, c'est un **bug à corriger à la source** (une fuite de référence brute),
+  jamais à contourner : pas de trigger manuel, pas de re-wrap local, pas de détour par une commande
+  juste pour « réveiller » Vue. Un contournement qui marche cache une fuite qui frappera ailleurs.
+- Les tests mutent le DTO comme l'app le fait — s'ils exigent un chemin spécial pour que la vue
+  se mette à jour, c'est le signal d'une fuite, pas une contrainte de test à accepter.
+
+Ignorer ce principe dans une app qui grossit = debugging frustrant, mauvaises hypothèses,
+workarounds louches et code smells. Le moindre écart doit être flaggé et réglé immédiatement.
+
 ## Documentation
 
 La doc est séparée en fichiers thématiques dans `docs/`. Lis le fichier pertinent avant chaque tâche.

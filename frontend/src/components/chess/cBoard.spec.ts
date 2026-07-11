@@ -62,8 +62,8 @@ describe('cBoard', () => {
     const wrapper = mount(cBoard, {props: {view}})
     expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(1)
 
-    // through the view command: mutating the raw game after mount bypasses reactivity
-    view.move('c7', 'c6') // blocks the diagonal
+    // raw engine call on purpose: proves the session from open() is the reactive proxy
+    makeMove(game, 'c7', 'c6') // blocks the diagonal
     await nextTick()
     expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(0)
   })

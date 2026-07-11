@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import type { CreateGamePayload, GameSession } from '@/types/chess'
 import { createGameSession } from '@/composables/factories/gameFactory'
 import { generateUlid } from '@/utils/ulid'
@@ -10,7 +10,9 @@ export const useGamesStore = defineStore('games', () => {
   // Creates a session from a payload and registers it.
   // The ULID is simulated here for now — will come from the backend response eventually.
   function open(payload: CreateGamePayload): GameSession {
-    const session = createGameSession(payload, generateUlid())
+    // Wrapped in reactive() at birth so the returned reference IS the proxy the store holds —
+    // mutating the session from anywhere (engine, tests, future websocket) triggers reactivity.
+    const session = reactive(createGameSession(payload, generateUlid()))
     sessions.value.push(session)
     return session
   }

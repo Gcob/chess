@@ -186,7 +186,10 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
     - `toBackendPayload(settings: NewGameSettings): CreateGamePayload`
     - `createGameSession(payload: CreateGamePayload, id: string): GameSession`
 - `CreateGamePayload` est la source de vérité pour la création de partie — c'est lui qu'on enverra au backend
-- `useGamesStore` orchestre : `open(payload)` → ULID + factory → enregistre la session
+- `useGamesStore` orchestre : `open(payload)` → ULID + factory → `reactive()` → enregistre la session.
+  Le DTO est wrappé en `reactive()` dès sa naissance : toute référence à la session (retour de `open`,
+  `store.get`) est LE proxy réactif — muter le DTO de n'importe où (engine, tests, futur websocket)
+  déclenche la réactivité, toujours, implicitement
 
 ## Flux de création de partie
 
