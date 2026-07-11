@@ -118,6 +118,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   jamais de move/undo simulé. Les questions passent par `PositionAnalysis` (façade d'une position,
   durée de vie ≤ un coup) et `Ray` (ligne de vue d'une glissante, marchée À TRAVERS les pièces :
   0 bloqueur = échec + prolongement x-ray derrière le roi, 1 bloqueur ami = clouage)
+- Patterns de déplacement et signatures d'attaque : dans les sous-classes de `MoveType` (une classe par
+  move type, alignée sur le MDD). `getPieceMoveTypes` reste l'unique mapping pièce → move types
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8).
   La logique de déplacement traduit selon la couleur du joueur.
 - `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`,

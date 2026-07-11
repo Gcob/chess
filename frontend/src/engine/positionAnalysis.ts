@@ -1,6 +1,6 @@
 import type {Board, MoveTypeId, PieceColor, Square} from '@/types/chess'
 import {Ray, ALL_DIRECTIONS, L_SHAPE_PATHS, walkPath, firstPieceInDirection} from './ray'
-import {getPieceMoveTypes, attacksAlong, slidesAlong} from './moveTypes'
+import {getPieceMoveTypes} from './moveTypes'
 import {findKingSquare} from './board'
 
 // ─── Position analysis ──────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ function computeRays(board: Board): Ray[] {
 
     const moveTypes = getPieceMoveTypes(piece.type)
     for (const direction of ALL_DIRECTIONS) {
-      if (moveTypes.some(type => slidesAlong(type, direction))) {
+      if (moveTypes.some(type => type.slidesAlong(direction))) {
         rays.push(new Ray(square, direction))
       }
     }
@@ -175,7 +175,7 @@ function directionalAttackers(square: Square, byColor: PieceColor): Square[] {
     }
 
     const attacks = getPieceMoveTypes(hit.piece.type)
-      .some(type => attacksAlong(type, direction, hit.distance, byColor))
+      .some(type => type.attacksAlong(direction, hit.distance, byColor))
 
     if (attacks) {
       attackers.push(hit.square)
@@ -191,6 +191,8 @@ function knightAttackers(square: Square, byColor: PieceColor): Square[] {
     .filter((found): found is Square => isAttackerWithMoveType(found, byColor, 'l-shape'))
 }
 
-function isAttackerWithMoveType(square: Square | null, byColor: PieceColor, type: MoveTypeId): boolean {
-  return !!square?.piece && square.piece.color === byColor && getPieceMoveTypes(square.piece.type).includes(type)
+function isAttackerWithMoveType(square: Square | null, byColor: PieceColor, id: MoveTypeId): boolean {
+  return !!square?.piece
+    && square.piece.color === byColor
+    && getPieceMoveTypes(square.piece.type).some(type => type.id === id)
 }
