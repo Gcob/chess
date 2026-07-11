@@ -1,8 +1,10 @@
-import type {Direction, Piece, Square} from '@/types/chess'
+import type {Direction} from '@/types/chess'
+import type {Piece} from './piece'
+import type {Square} from './square'
 
 // ─── Board geometry & rays ──────────────────────────────────────────────────────
 // The directional vocabulary of the board graph, its walkers, and the Ray value object.
-// Pure derived data: everything here is computed from Square neighbors, nothing is stored.
+// Everything operates on the engine wrappers and derives from the board — nothing is stored.
 
 export const LINEAR_DIRECTIONS: readonly Direction[] = ['top', 'right', 'bottom', 'left']
 export const DIAGONAL_DIRECTIONS: readonly Direction[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left']
@@ -36,7 +38,7 @@ export function walkPath(from: Square, path: readonly Direction[]): Square | nul
   let current: Square | null = from
 
   for (const direction of path) {
-    current = current.neighbors[direction]
+    current = current.neighbor(direction)
     if (!current) {
       return null
     }
@@ -53,15 +55,16 @@ export interface RayHit {
 
 // Slides to the first piece met in that direction; null when only empty squares reach the edge.
 export function firstPieceInDirection(from: Square, direction: Direction): RayHit | null {
-  let current = from.neighbors[direction]
+  let current = from.neighbor(direction)
   let distance = 1
 
   while (current) {
-    if (current.piece) {
-      return {square: current, piece: current.piece, distance}
+    const piece = current.piece
+    if (piece) {
+      return {square: current, piece, distance}
     }
 
-    current = current.neighbors[direction]
+    current = current.neighbor(direction)
     distance++
   }
 
@@ -72,9 +75,6 @@ export function firstPieceInDirection(from: Square, direction: Direction): RayHi
 // every piece met. One structure unifies the check ray (interpositions + x-ray extension), the
 // pin (one friendly blocker before the king) and, come phase ④, the en passant discovery (two
 // blockers leaving the same ray at once).
-//
-// Value object under the engine's hybrid boundary: state 100% derived from the board, lifetime
-// bounded to one position, never stored in the DTO or a store.
 export class Ray {
   readonly attackerSquare: Square
   readonly direction: Direction
@@ -87,14 +87,14 @@ export class Ray {
     this.attackerSquare = attackerSquare
     this.direction = direction
 
-    let current = attackerSquare.neighbors[direction]
+    let current = attackerSquare.neighbor(direction)
     while (current) {
       this.squares.push(current)
-      if (current.piece) {
+      if (!current.isEmpty) {
         this.blockers.push(current)
       }
 
-      current = current.neighbors[direction]
+      current = current.neighbor(direction)
     }
   }
 

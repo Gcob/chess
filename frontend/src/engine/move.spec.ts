@@ -1,7 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import {canMove, applyMove} from './move'
-import {getAttackers, findCheckers} from './positionAnalysis'
-import {findKingSquare, toSquareKey} from './board'
+import {getAttackers, findCheckers, findKingSquare, toSquareKey} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
 
@@ -460,21 +459,21 @@ describe('canMove — king safety', () => {
 describe('getAttackers', () => {
   it('finds no attacker on a safe square', () => {
     const board = freshBoard()
-    expect(getAttackers(board.squares['e4'], 'black')).toEqual([])
+    expect(getAttackers(board, 'e4', 'black')).toEqual([])
   })
 
   it('sees pawn attacks forward only, never straight ahead', () => {
     const board = freshBoard()
     applyMove(board, 'e2', 'e4')
-    expect(getAttackers(board.squares['d5'], 'white')).toEqual([board.squares['e4']])
-    expect(getAttackers(board.squares['f5'], 'white')).toEqual([board.squares['e4']])
-    expect(getAttackers(board.squares['e5'], 'white')).toEqual([])
+    expect(getAttackers(board, 'd5', 'white')).toEqual([board.squares['e4']])
+    expect(getAttackers(board, 'f5', 'white')).toEqual([board.squares['e4']])
+    expect(getAttackers(board, 'e5', 'white')).toEqual([])
   })
 
   it('sees an adjacent enemy king', () => {
     const board = freshBoard()
     applyMove(board, 'e8', 'e3') // teleport the black king next to d3
-    expect(getAttackers(board.squares['d3'], 'black')).toContain(board.squares['e3'])
+    expect(getAttackers(board, 'd3', 'black')).toContain(board.squares['e3'])
   })
 })
 

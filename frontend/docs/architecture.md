@@ -91,8 +91,12 @@ classes : la donnée qui voyage est plate ; les objets naissent et meurent dans 
 dans `src/engine/` si : (1) état 100 % dérivé du board, (2) durée de vie ≤ une position, (3) jamais dans
 le DTO ni un store, (4) zéro état de module *mutable* — des flyweights constants sans état (registre
 `MOVE_TYPES`) sont des objets-comportement, équivalents à des fonctions exportées, donc permis.
-L'API publique de l'engine reste des fonctions sur le DTO. Vigilance : `PositionAnalysis` reste
-strictement interrogative — les règles vivent dans les fonctions, jamais dans la façade (anti God-object).
+**Wrappers, jamais de modèle parallèle** : les classes `Piece`/`Square` enveloppent une référence vers le
+plain data du DTO (zéro copie d'état — lire/muter passe par le proxy réactif) ; le `Board` cache ses
+wrappers, donc l'égalité par référence tient dans une même position. Convention interne à l'engine :
+les types du DTO s'importent avec alias (`Piece as PieceDto`, etc.) — dehors, `Piece` = le DTO.
+L'API publique de l'engine reste des fonctions sur le DTO. Vigilance : `Board` reste strictement
+interrogatif — les règles vivent dans les fonctions, jamais dans la façade (anti God-object).
 
 ## Rendu de l'échiquier
 
@@ -145,12 +149,13 @@ coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove
 > `docs/engine-roadmap.md` pour les principes et la progression. `makeMove` exige le trait, enregistre le
 > `Move` (SAN naïf) avec temps débité + incrément, et le premier coup démarre une partie `waiting` (jamais
 > sur tentative invalide). Couche board : `engine/move.ts` (`canMove` complet — pipeline de restrictions,
-> `applyMove`), `engine/positionAnalysis.ts` (façade `PositionAnalysis` +
-> `getAttackers`/`findCheckers`), `engine/ray.ts` (classe `Ray`, directions, walkers),
+> `applyMove`), `engine/board.ts` (classe `Board` — l'Échiquier du MDD : cache de wrappers, rayons,
+> attaques, clouages, réponses à l'échec + API fonctionnelle DTO : `getBoardPieces`, `findKingSquare`,
+> `toSquareKey`, `getAttackers`, `findCheckers`), `engine/square.ts` / `engine/piece.ts` (wrappers
+> comportementaux — `piece.availableSquares()`), `engine/ray.ts` (classe `Ray`, directions, walkers),
 > `engine/moveTypes.ts` (hiérarchie `MoveType` — strategy, une classe par move type : pattern de
 > déplacement, signature d'attaque, `slidesAlong` ; `getPieceMoveTypes` = l'unique mapping pièce → move
-> types), `engine/board.ts` (`getBoardPieces`, `findKingSquare`, `toSquareKey`), `engine/material.ts`
-> (captures dérivées).
+> types), `engine/material.ts` (captures dérivées).
 
 ## Vue de partie (game view)
 

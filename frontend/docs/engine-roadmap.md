@@ -17,10 +17,11 @@ plus tard ; cet engine servira de référence pour le bâtir.
   (websocket, DB). Toute la logique vit dans l'engine.
 - **Engine pur, hybride objets/fonctions** — `src/engine/` : l'API publique est des fonctions
   `(game, …) → void` qui mutent le DTO en place, zéro import Vue, zéro état de module. La réactivité vient
-  du store qui wrap le DTO ; un websocket mutera le même DTO. À l'interne, classes permises (`Ray`,
-  `PositionAnalysis`, hiérarchie `MoveType`) si : état 100 % dérivé du board, durée de vie ≤ une position,
-  jamais dans le DTO ni un store, zéro état de module mutable (flyweights constants OK). L'état vit dans
-  le DTO, le comportement vit dans les classes ; la donnée qui voyage est plate.
+  du store qui wrap le DTO ; un websocket mutera le même DTO. À l'interne, classes permises (`Board`,
+  `Piece`/`Square` wrappers, `Ray`, hiérarchie `MoveType`) si : état 100 % dérivé du board, durée de vie
+  ≤ une position, jamais dans le DTO ni un store, zéro état de module mutable (flyweights constants OK).
+  L'état vit dans le DTO, le comportement vit dans les classes — wrappers, jamais de modèle parallèle ;
+  la donnée qui voyage est plate.
 - **State pattern fonctionnel** — le statut est une donnée (`waiting → active → finished`) ; chaque commande
   de l'engine est gardée par le statut (ex. `makeMove` refuse si la partie est finie). Pas d'objets-état.
 - **Le trait vit dans `activeColor`** — jamais encodé dans le statut, jamais dérivé de `moves.length`.

@@ -1,4 +1,6 @@
-import type {Direction, MoveTypeId, Piece, PieceColor, PieceType, Square} from '@/types/chess'
+import type {Direction, MoveTypeId, PieceColor, PieceType} from '@/types/chess'
+import type {Piece} from './piece'
+import type {Square} from './square'
 import {LINEAR_DIRECTIONS, DIAGONAL_DIRECTIONS, ALL_DIRECTIONS, L_SHAPE_PATHS, walkPath} from './ray'
 
 // ─── Move types ─────────────────────────────────────────────────────────────────
@@ -32,7 +34,7 @@ class SimpleMoveType extends MoveType {
 
   availableSquares(from: Square, piece: Piece): Square[] {
     return ALL_DIRECTIONS
-      .map(direction => from.neighbors[direction])
+      .map(direction => from.neighbor(direction))
       .filter((square): square is Square => !!square && square.piece?.color !== piece.color)
   }
 
@@ -99,7 +101,7 @@ class LinearForwardMoveType extends MoveType {
 
   availableSquares(from: Square, piece: Piece): Square[] {
     const next = forwardNeighbor(from, piece.color)
-    if (!next || next.piece) {
+    if (!next || !next.isEmpty) {
       return []
     }
 
@@ -117,12 +119,12 @@ class LinearForwardDoubleMoveType extends MoveType {
 
     // Both the crossed square and the landing square must be free — no jumping over pieces.
     const crossed = forwardNeighbor(from, piece.color)
-    if (!crossed || crossed.piece) {
+    if (!crossed || !crossed.isEmpty) {
       return []
     }
 
     const landing = forwardNeighbor(crossed, piece.color)
-    if (!landing || landing.piece) {
+    if (!landing || !landing.isEmpty) {
       return []
     }
 
@@ -135,8 +137,8 @@ class DiagonalForwardCaptureMoveType extends MoveType {
 
   availableSquares(from: Square, piece: Piece): Square[] {
     const diagonals = piece.color === 'white'
-      ? [from.neighbors['top-left'], from.neighbors['top-right']]
-      : [from.neighbors['bottom-left'], from.neighbors['bottom-right']]
+      ? [from.neighbor('top-left'), from.neighbor('top-right')]
+      : [from.neighbor('bottom-left'), from.neighbor('bottom-right')]
 
     return diagonals.filter(
       (square): square is Square => !!square?.piece && square.piece.color !== piece.color,
@@ -207,7 +209,7 @@ export function getPieceMoveTypes(pieceType: PieceType): MoveType[] {
 // slide, a friendly square ends it without being reachable.
 function slideInDirection(from: Square, piece: Piece, direction: Direction): Square[] {
   const squares: Square[] = []
-  let current = from.neighbors[direction]
+  let current = from.neighbor(direction)
 
   while (current) {
     if (current.piece) {
@@ -218,7 +220,7 @@ function slideInDirection(from: Square, piece: Piece, direction: Direction): Squ
     }
 
     squares.push(current)
-    current = current.neighbors[direction]
+    current = current.neighbor(direction)
   }
 
   return squares
@@ -226,7 +228,7 @@ function slideInDirection(from: Square, piece: Piece, direction: Direction): Squ
 
 // "Forward" is relative to the piece's color: white goes up the board, black goes down.
 function forwardNeighbor(square: Square, color: PieceColor): Square | null {
-  return color === 'white' ? square.neighbors.top : square.neighbors.bottom
+  return color === 'white' ? square.neighbor('top') : square.neighbor('bottom')
 }
 
 // A pawn attacks its two forward diagonals, so seen from the attacked square the pawn sits
