@@ -106,6 +106,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Triple répétition
 - [ ] Matériel insuffisant
 - [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
+- [ ] Oracle chess.js (devDependency seulement) : spec de tests différentiels qui valide l'engine
+      contre chess.js (coups légaux, mats, pats) — nos specs restent le contrat de NOTRE design ;
+      s'étendra aux coups spéciaux en phase ④
 
 ### ④ Coups spéciaux
 
@@ -129,6 +132,50 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Spectateurs : observer une ou plusieurs parties sur une même page
 - [ ] Policies par mode finalisées (`vs-bot`, `private-remote`, `public-remote`)
 
+## Backlog UX / board
+
+Features UI en marge des phases engine — elles ne les bloquent jamais.
+
+- [ ] **Drag mobile (prioritaire)** : la pièce draguée glisse vers le haut (transition) pour rester
+      visible au-dessus du doigt — à prendre avec les aides locales de la phase ②
+- [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
+      (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
+      ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy
+      (`useGameView`) — un changement à chaud se réoriente par réactivité, aucun cas spécial
+- [ ] Parties en cours listées sur l'accueil + les rejoindre (plus tard : filtrées par compte).
+      Survivre au refresh = persister la liste de coups et la rejouer — réutilise la sérialisation
+      des positions de départ hardcodées
+- [ ] Assets de pièces inlinés dans le bundle (SVG via Vite) : élimine le flash de chargement async
+      et honore « local = 100 % hors ligne ». Préchargement + loading seulement si le bundle grossit
+- [ ] Spot discret des coordonnées de la case survolée — compléter l'illumination file/rangée de
+      `cBoardFrame`, pas la doubler
+- [ ] Dessiner des flèches (clic droit glissé, à la Lichess) — calque SVG au-dessus du board,
+      mapping via `boardCoords`
+
+## Backlog parties distantes
+
+Features propres aux modes `vs-bot` / `private-remote` / `public-remote` — rien avant la phase ⑥.
+
+- [ ] Pre-moves : préparer son coup pendant le tour adverse, exécuté dès le retour du trait.
+      Sans objet en local — une seule souris joue les deux camps
+
+## Épic pédagogie *(horizon)*
+
+Zone d'apprentissage des échecs — les idées s'accumulent ici, rien à faire pour le moment.
+
+- [ ] Textes des règles enrichis, avec analogies et exemples concrets : on ne se pose jamais sur une
+      pièce amie ; une glissante avance en « ligne de vue » — arrêtée par la première pièce rencontrée
+      ou par le bord de l'échiquier
+
+## Épic effets board *(horizon)*
+
+Effets de jeu à la chess.com — hors scope pour le moment, les idées s'accumulent ici.
+
+- [ ] Bulle éphémère du coup joué (SAN) près de la case d'arrivée, façon jeu vidéo — gated par un
+      setting, profitera du SAN complet de la phase ⑤
+- [ ] Feedback quand on tente de bouger une pièce pendant que son roi est en échec
+- [ ] Effet de « flag » au timeout
+
 ## Nice-to-haves
 
 Non bloquants, à faire si le cœur nous en dit.
@@ -136,6 +183,8 @@ Non bloquants, à faire si le cœur nous en dit.
 - [ ] Spec Playwright features (`e2e/features/game.spec.ts`) : partie locale → 2 coups + historique,
       abandon → résultat affiché, nulle offerte / refusée / acceptée
 - [ ] Revalider `e2e/ui/pages.spec.ts` contre la page game enrichie (ligne d'état, actions conditionnelles)
+- [ ] `npm run lint` est documenté dans CLAUDE.md mais le script n'existe pas dans `package.json` —
+      configurer ESLint et l'ajouter, ou retirer la mention
 
 ## Dettes connues
 
