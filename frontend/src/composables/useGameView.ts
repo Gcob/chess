@@ -3,7 +3,7 @@ import {useGameSession} from '@/composables/useGameSession'
 import {useGameClock} from '@/composables/useGameClock'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
-import {findKingSquare, toSquareKey} from '@/engine/move'
+import {findKingSquare, toSquareKey} from '@/engine/board'
 import type {PieceColor, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single

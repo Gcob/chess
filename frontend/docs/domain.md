@@ -115,8 +115,9 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
 - Légalité : `canMove` est la porte unique — pipeline de restrictions successives, chacune auto-gardée
   (géométrie → sécurité du roi → clouage → réponse à l'échec). Queries pures sur le board non muté —
-  jamais de move/undo simulé ; le piège du x-ray à travers le roi a sa garde dédiée
-  (`isXRayedThroughKing`)
+  jamais de move/undo simulé. Les questions passent par `PositionAnalysis` (façade d'une position,
+  durée de vie ≤ un coup) et `Ray` (ligne de vue d'une glissante, marchée À TRAVERS les pièces :
+  0 bloqueur = échec + prolongement x-ray derrière le roi, 1 bloqueur ami = clouage)
 - Les directions sont **absolues du point de vue des blancs** : `'top'` = rank croissant (vers rank 8).
   La logique de déplacement traduit selon la couleur du joueur.
 - `Game.activeColor` — source de vérité pour "à qui le tour". Initialisé à `'white'`,

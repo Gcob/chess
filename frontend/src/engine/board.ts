@@ -1,4 +1,4 @@
-import type {Board, BoardPiece, SquareKey} from '@/types/chess'
+import type {Board, BoardPiece, PieceColor, Square, SquareKey} from '@/types/chess'
 
 // ─── Pure board logic ──────────────────────────────────────────────────────────
 // Vue-agnostic: plain data in, plain data out. Any code (components, tests,
@@ -14,4 +14,14 @@ export function getBoardPieces(board: Board): BoardPiece[] {
     }
   }
   return pieces
+}
+
+export function findKingSquare(board: Board, color: PieceColor): Square | null {
+  return Object.values(board.squares).find(
+    square => square.piece?.type === 'king' && square.piece.color === color,
+  ) ?? null
+}
+
+export function toSquareKey(square: Square): SquareKey {
+  return `${square.file}${square.rank}`
 }

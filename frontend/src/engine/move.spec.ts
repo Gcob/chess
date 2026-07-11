@@ -1,5 +1,7 @@
 import {describe, it, expect} from 'vitest'
-import {canMove, applyMove, getAttackers, findCheckers, findKingSquare, toSquareKey} from './move'
+import {canMove, applyMove} from './move'
+import {getAttackers, findCheckers} from './positionAnalysis'
+import {findKingSquare, toSquareKey} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
 

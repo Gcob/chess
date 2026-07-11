@@ -1,4 +1,8 @@
-import type {Board, Direction, MoveTypeId, Piece, PieceColor, PieceType, Square, SquareKey} from '@/types/chess'
+import type {Board, Direction, MoveTypeId, Piece, PieceColor, Square, SquareKey} from '@/types/chess'
+import {LINEAR_DIRECTIONS, DIAGONAL_DIRECTIONS, ALL_DIRECTIONS, L_SHAPE_PATHS, walkPath} from './ray'
+import {getPieceMoveTypes} from './moveTypes'
+import {toSquareKey} from './board'
+import {PositionAnalysis} from './positionAnalysis'
 
 // ─── Pure move logic ───────────────────────────────────────────────────────────
 // Vue-agnostic. Could one day live in a backend shared by both players.
@@ -25,12 +29,14 @@ export function canMove(board: Board, from: SquareKey, to: SquareKey): boolean {
   }
 
   // Progressive restriction: raw geometry, then one legality filter per rule. Each filter
-  // guards its own relevance, so the pipeline holds for any piece.
+  // guards its own relevance, so the pipeline holds for any piece. One analysis of the
+  // position answers every question.
+  const analysis = new PositionAnalysis(board)
   const moveTypes = getPieceMoveTypes(piece.type)
   const availableSquares = getAvailableSquares(departureSquare, piece, moveTypes)
-  const safeSquares = restrictToSafeKingSquares(departureSquare, piece, availableSquares)
-  const unpinnedSquares = restrictToPinRay(departureSquare, safeSquares)
-  const legalSquares = restrictToCheckResponses(board, piece, unpinnedSquares)
+  const safeSquares = restrictToSafeKingSquares(analysis, piece, availableSquares)
+  const unpinnedSquares = restrictToPinRay(analysis, departureSquare, safeSquares)
+  const legalSquares = restrictToCheckResponses(analysis, piece, unpinnedSquares)
 
   return legalSquares.some(square => toSquareKey(square) === to)
 }
@@ -47,48 +53,52 @@ export function applyMove(board: Board, from: SquareKey, to: SquareKey): void {
   piece.hasMoved = true
 }
 
-// ─── Attack detection ──────────────────────────────────────────────────────────
+// ─── Private legality filters ───────────────────────────────────────────────────
+// Pure queries on the unmutated board — no move/undo simulation anywhere.
 
-// Squares holding a piece of the given color that attacks the given square. Looks outward FROM
-// the square (the "super-piece" trick): a pattern walked from here can only land on a piece
-// attacking back along that same pattern. Piece types stay out of the logic — the piece found is
-// tested against the attack signatures of its own move types, so getPieceMoveTypes remains the
-// single place knowing what a piece can do.
-export function getAttackers(square: Square, byColor: PieceColor): Square[] {
-  return [...directionalAttackers(square, byColor), ...knightAttackers(square, byColor)]
-}
-
-// The enemy squares currently giving check to the given color's king. A legal position allows
-// two checkers at most (double check, born from a discovery) — with two, only a king move can
-// answer: no block or capture handles both.
-export function findCheckers(board: Board, color: PieceColor): Square[] {
-  const kingSquare = findKingSquare(board, color)
-  if (!kingSquare) {
-    return []
+// Only the king answers to destination safety — a no-op for every other piece.
+// Same progressive restriction as canMove: drop the attacked squares, then the x-rayed ones
+// (the squares behind the king on a check ray, unattacked right now only because the king
+// himself still blocks the ray — see PositionAnalysis.xRayExtensionSquares).
+function restrictToSafeKingSquares(analysis: PositionAnalysis, piece: Piece, squares: Square[]): Square[] {
+  if (piece.type !== 'king') {
+    return squares
   }
 
-  return getAttackers(kingSquare, color === 'white' ? 'black' : 'white')
+  const enemyColor: PieceColor = piece.color === 'white' ? 'black' : 'white'
+  const unattackedSquares = squares.filter(to => !analysis.isAttacked(to, enemyColor))
+  const xRayedSquares = analysis.xRayExtensionSquares(piece.color)
+
+  return unattackedSquares.filter(to => !xRayedSquares.includes(to))
 }
 
-// ─── Private move logic ───────────────────────────────────────────────────────────
-
-function getPieceMoveTypes(pieceType: PieceType): MoveTypeId[] {
-  switch (pieceType) {
-    case 'king':
-      return ['simple', 'castling']
-    case 'pawn':
-      // 'en-passant' joins in phase ④; promotion is an effect of a move, not a movement pattern
-      return ['linear-forward', 'linear-forward-double', 'diagonal-forward-capture']
-    case 'queen':
-      return ['diagonal', 'linear']
-    case 'rook':
-      return ['linear']
-    case 'bishop':
-      return ['diagonal']
-    case 'knight':
-      return ['l-shape']
+// A pinned piece may only move along the pin axis: toward the pinner (capturing it included)
+// or back toward its own king — never off the ray.
+function restrictToPinRay(analysis: PositionAnalysis, from: Square, squares: Square[]): Square[] {
+  const pinRay = analysis.pinRayFor(from)
+  if (!pinRay) {
+    return squares
   }
+
+  return squares.filter(square => pinRay.includes(square))
 }
+
+// Non-king answers to check: capture the checker or block its ray; nothing answers a double
+// check. The king is exempt — it answers by moving to safety instead (restrictToSafeKingSquares).
+function restrictToCheckResponses(analysis: PositionAnalysis, piece: Piece, squares: Square[]): Square[] {
+  if (piece.type === 'king') {
+    return squares
+  }
+
+  const responses = analysis.checkResponseSquares(piece.color)
+  if (!responses) {
+    return squares
+  }
+
+  return squares.filter(square => responses.includes(square))
+}
+
+// ─── Private movement patterns ──────────────────────────────────────────────────
 
 function getAvailableSquares(from: Square, piece: Piece, moveTypes: MoveTypeId[]): Square[] {
   const squares: Square[] = []
@@ -154,21 +164,6 @@ function getAvailableSquaresForLinearForwardDouble(from: Square, piece: Piece): 
   return [landing]
 }
 
-const LINEAR_DIRECTIONS: readonly Direction[] = ['top', 'right', 'bottom', 'left']
-const DIAGONAL_DIRECTIONS: readonly Direction[] = ['top-right', 'bottom-right', 'bottom-left', 'top-left']
-const ALL_DIRECTIONS: readonly Direction[] = [...LINEAR_DIRECTIONS, ...DIAGONAL_DIRECTIONS]
-
-const OPPOSITE_DIRECTION: Record<Direction, Direction> = {
-  'top': 'bottom',
-  'top-right': 'bottom-left',
-  'right': 'left',
-  'bottom-right': 'top-left',
-  'bottom': 'top',
-  'bottom-left': 'top-right',
-  'left': 'right',
-  'top-left': 'bottom-right',
-}
-
 function getAvailableSquaresForLinear(from: Square, piece: Piece): Square[] {
   return LINEAR_DIRECTIONS.flatMap(direction => slideInDirection(from, piece, direction))
 }
@@ -189,37 +184,11 @@ function getAvailableSquaresForCastling(): Square[] {
   return []
 }
 
-// The 8 knight jumps as neighbor paths: two steps in one direction, one step perpendicular.
-const L_SHAPE_PATHS: readonly (readonly Direction[])[] = [
-  ['top', 'top', 'left'],
-  ['top', 'top', 'right'],
-  ['right', 'right', 'top'],
-  ['right', 'right', 'bottom'],
-  ['bottom', 'bottom', 'right'],
-  ['bottom', 'bottom', 'left'],
-  ['left', 'left', 'bottom'],
-  ['left', 'left', 'top'],
-]
-
 // The knight jumps: squares crossed along the path don't matter, only the landing square does.
 function getAvailableSquaresForLShape(from: Square, piece: Piece): Square[] {
   return L_SHAPE_PATHS
     .map(path => walkPath(from, path))
     .filter((square): square is Square => !!square && square.piece?.color !== piece.color)
-}
-
-// Follows the neighbors graph along the given directions; null once the path leaves the board.
-function walkPath(from: Square, path: readonly Direction[]): Square | null {
-  let current: Square | null = from
-
-  for (const direction of path) {
-    current = current.neighbors[direction]
-    if (!current) {
-      return null
-    }
-  }
-
-  return current
 }
 
 // Slides square by square until blocked: an enemy square is reachable (capture) and ends the
@@ -256,249 +225,4 @@ function getAvailableSquaresForDiagonalForwardCapture(from: Square, piece: Piece
 // "Forward" is relative to the piece's color: white goes up the board, black goes down.
 function forwardNeighbor(square: Square, color: PieceColor): Square | null {
   return color === 'white' ? square.neighbors.top : square.neighbors.bottom
-}
-
-// ─── Private attack logic ──────────────────────────────────────────────────────
-
-// One scan per direction: the first piece met attacks back if one of its move types strikes
-// along this direction at this distance — sliders at any range, king and pawn at distance 1.
-function directionalAttackers(square: Square, byColor: PieceColor): Square[] {
-  const attackers: Square[] = []
-
-  for (const direction of ALL_DIRECTIONS) {
-    const hit = firstPieceInDirection(square, direction)
-
-    if (!hit || hit.piece.color !== byColor) {
-      continue
-    }
-
-    const attacks = getPieceMoveTypes(hit.piece.type)
-      .some(type => attacksAlong(type, direction, hit.distance, byColor))
-
-    if (attacks) {
-      attackers.push(hit.square)
-    }
-  }
-
-  return attackers
-}
-
-function knightAttackers(square: Square, byColor: PieceColor): Square[] {
-  return L_SHAPE_PATHS
-    .map(path => walkPath(square, path))
-    .filter((found): found is Square => isAttackerWithMoveType(found, byColor, 'l-shape'))
-}
-
-// The attack signature of each move type — from the attacked square's point of view, `direction`
-// points toward the attacker sitting `distance` squares away.
-function attacksAlong(type: MoveTypeId, direction: Direction, distance: number, byColor: PieceColor): boolean {
-  switch (type) {
-    case 'linear':
-    case 'diagonal':
-      return slidesAlong(type, direction)
-    case 'simple':
-      return distance === 1
-    case 'diagonal-forward-capture':
-      return distance === 1 && isPawnAttackDirection(direction, byColor)
-    // Own geometry, scanned by knightAttackers instead of rays.
-    case 'l-shape':
-      return false
-    // Move types that can never capture threaten nothing. En passant adds no attacked square
-    // either — its geometry is the pawn's usual forward diagonal (phase ④).
-    case 'linear-forward':
-    case 'linear-forward-double':
-    case 'castling':
-    case 'en-passant':
-    case 'promotion':
-      return false
-  }
-}
-
-// Whether the move type is a slide running along this direction. Only slides matter for pins:
-// pinning requires an attack that runs THROUGH the pinned piece to the king behind it.
-function slidesAlong(type: MoveTypeId, direction: Direction): boolean {
-  if (type === 'linear') {
-    return LINEAR_DIRECTIONS.includes(direction)
-  }
-
-  return type === 'diagonal' && DIAGONAL_DIRECTIONS.includes(direction)
-}
-
-// A pawn attacks its two forward diagonals, so seen from the attacked square the pawn sits
-// diagonally BACKWARD — toward the attacking color's side.
-function isPawnAttackDirection(direction: Direction, byColor: PieceColor): boolean {
-  return byColor === 'white'
-    ? direction === 'bottom-left' || direction === 'bottom-right'
-    : direction === 'top-left' || direction === 'top-right'
-}
-
-interface RayHit {
-  square: Square
-  piece: Piece
-  distance: number
-}
-
-// Slides to the first piece met in that direction; null when only empty squares reach the edge.
-function firstPieceInDirection(from: Square, direction: Direction): RayHit | null {
-  let current = from.neighbors[direction]
-  let distance = 1
-
-  while (current) {
-    if (current.piece) {
-      return {square: current, piece: current.piece, distance}
-    }
-
-    current = current.neighbors[direction]
-    distance++
-  }
-
-  return null
-}
-
-function isAttackerWithMoveType(square: Square | null, byColor: PieceColor, type: MoveTypeId): boolean {
-  return !!square?.piece && square.piece.color === byColor && getPieceMoveTypes(square.piece.type).includes(type)
-}
-
-// ─── Private pin logic ─────────────────────────────────────────────────────────
-
-// A pinned piece may only move along the pin axis: toward the pinner (capturing it included)
-// or back toward its own king — never off the ray.
-function restrictToPinRay(from: Square, squares: Square[]): Square[] {
-  const pinDirection = getPinDirection(from)
-  if (!pinDirection) {
-    return squares
-  }
-
-  const ray = [
-    ...raySquares(from, pinDirection),
-    ...raySquares(from, OPPOSITE_DIRECTION[pinDirection]),
-  ]
-  return squares.filter(square => ray.includes(square))
-}
-
-// The absolute direction the pinning piece attacks from — null when not pinned. Fully local to
-// the graph: pinned means the first piece one way is an enemy slider striking along the ray,
-// and the first piece the opposite way is the own king.
-function getPinDirection(square: Square): Direction | null {
-  const piece = square.piece
-  if (!piece) {
-    return null
-  }
-
-  for (const direction of ALL_DIRECTIONS) {
-    const attacker = firstPieceInDirection(square, direction)
-    if (!attacker || attacker.piece.color === piece.color) {
-      continue
-    }
-
-    const pins = getPieceMoveTypes(attacker.piece.type).some(type => slidesAlong(type, direction))
-    if (!pins) {
-      continue
-    }
-
-    const behind = firstPieceInDirection(square, OPPOSITE_DIRECTION[direction])
-    if (behind && behind.piece.type === 'king' && behind.piece.color === piece.color) {
-      return direction
-    }
-  }
-
-  return null
-}
-
-// The squares from here up to the first piece met (inclusive) in that direction.
-function raySquares(from: Square, direction: Direction): Square[] {
-  const squares: Square[] = []
-  let current = from.neighbors[direction]
-
-  while (current) {
-    squares.push(current)
-    if (current.piece) {
-      break
-    }
-
-    current = current.neighbors[direction]
-  }
-
-  return squares
-}
-
-// ─── Private check legality ─────────────────────────────────────────────────────
-// Pure queries on the unmutated board — no move/undo simulation anywhere.
-
-// Only the king answers to destination safety — a no-op for every other piece.
-function restrictToSafeKingSquares(from: Square, piece: Piece, squares: Square[]): Square[] {
-  if (piece.type !== 'king') {
-    return squares
-  }
-
-  const enemyColor: PieceColor = piece.color === 'white' ? 'black' : 'white'
-  const unattackedSquares = squares.filter(to => getAttackers(to, enemyColor).length === 0)
-
-  return unattackedSquares.filter(to => !isXRayedThroughKing(from, to, enemyColor))
-}
-
-// The x-ray trap: fleeing along the ray of a checking slider. getAttackers from the destination
-// is blind to it — the king itself still blocks that ray on the unmutated board — so the slider
-// sitting behind the king (opposite the move) is detected explicitly.
-function isXRayedThroughKing(from: Square, to: Square, enemyColor: PieceColor): boolean {
-  const moveDirection = ALL_DIRECTIONS.find(direction => from.neighbors[direction] === to)
-  if (!moveDirection) {
-    return false
-  }
-
-  const away = OPPOSITE_DIRECTION[moveDirection]
-  const behind = firstPieceInDirection(from, away)
-  if (!behind || behind.piece.color !== enemyColor) {
-    return false
-  }
-
-  return getPieceMoveTypes(behind.piece.type).some(type => slidesAlong(type, away))
-}
-
-// Non-king answers to check: one checker allows capturing it or blocking its ray; two checkers
-// (double check, born from a discovery) allow nothing. The king is exempt — it answers by
-// moving to safety instead (restrictToSafeKingSquares).
-function restrictToCheckResponses(board: Board, piece: Piece, squares: Square[]): Square[] {
-  if (piece.type === 'king') {
-    return squares
-  }
-
-  const kingSquare = findKingSquare(board, piece.color)
-  if (!kingSquare) {
-    return squares
-  }
-
-  const kingAttackers = getAttackers(kingSquare, piece.color === 'white' ? 'black' : 'white')
-  if (kingAttackers.length === 0) {
-    return squares
-  }
-
-  if (kingAttackers.length > 1) {
-    return []
-  }
-
-  const responses = getCheckResponseSquares(kingSquare, kingAttackers[0]!)
-  return squares.filter(square => responses.includes(square))
-}
-
-// Capturing the checker or interposing on its ray to the king. A knight never sits on a queen
-// line from the king, so when no ray leads to the checker, capturing it is the only answer.
-function getCheckResponseSquares(kingSquare: Square, checkerSquare: Square): Square[] {
-  for (const direction of ALL_DIRECTIONS) {
-    if (firstPieceInDirection(kingSquare, direction)?.square === checkerSquare) {
-      return raySquares(kingSquare, direction)
-    }
-  }
-
-  return [checkerSquare]
-}
-
-export function findKingSquare(board: Board, color: PieceColor): Square | null {
-  return Object.values(board.squares).find(
-    square => square.piece?.type === 'king' && square.piece.color === color,
-  ) ?? null
-}
-
-export function toSquareKey(square: Square): SquareKey {
-  return `${square.file}${square.rank}`
 }

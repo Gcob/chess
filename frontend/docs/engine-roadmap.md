@@ -15,8 +15,11 @@ plus tard ; cet engine servira de référence pour le bâtir.
   (spectateurs, plusieurs boards sur une même page).
 - **DTO = plain data sérialisable** — pas de classes ni de méthodes dans le DTO : il doit pouvoir voyager
   (websocket, DB). Toute la logique vit dans l'engine.
-- **Engine pur** — `src/engine/` : fonctions `(game, …) → void` qui mutent le DTO en place, zéro import Vue,
-  zéro état de module. La réactivité vient du store qui wrap le DTO ; un websocket mutera le même DTO.
+- **Engine pur, hybride objets/fonctions** — `src/engine/` : l'API publique est des fonctions
+  `(game, …) → void` qui mutent le DTO en place, zéro import Vue, zéro état de module. La réactivité vient
+  du store qui wrap le DTO ; un websocket mutera le même DTO. À l'interne, classes permises (`Ray`,
+  `PositionAnalysis`) si : état 100 % dérivé du board, durée de vie ≤ une position, jamais dans le DTO
+  ni un store, zéro singleton. La donnée qui voyage est plate ; les objets naissent et meurent dans l'engine.
 - **State pattern fonctionnel** — le statut est une donnée (`waiting → active → finished`) ; chaque commande
   de l'engine est gardée par le statut (ex. `makeMove` refuse si la partie est finie). Pas d'objets-état.
 - **Le trait vit dans `activeColor`** — jamais encodé dans le statut, jamais dérivé de `moves.length`.
@@ -138,4 +141,8 @@ Non bloquants, à faire si le cœur nous en dit.
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
 - **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent la phase ②.
+- **En passant découvrant un échec (phase ④)** — deux pions quittent le même rayon d'un coup ; le modèle
+  clouage (1 bloqueur) ne le couvre pas, mais `Ray.blockers` est prêt (2 bloqueurs qui partent ensemble).
+- **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
+  contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.
