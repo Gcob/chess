@@ -24,6 +24,7 @@ interface RenderProps {
   dragging?: boolean
   dragX?: number
   dragY?: number
+  lifted?: boolean
 }
 
 function mountPiece(piece: Partial<PlacedPiece> = {}, props: RenderProps = {}) {
@@ -64,6 +65,12 @@ describe('cPiece', () => {
     expect(wrapper.attributes('style')).toContain('translate(120px, 45px)')
     expect(wrapper.classes().some(c => c.startsWith('c-piece--anim-'))).toBe(false)
     expect(wrapper.classes()).toContain('c-piece--moving')
+  })
+
+  it('lifts the sprite on demand — the touch drag offset', () => {
+    const lifted = mountPiece({}, {dragging: true, lifted: true})
+    expect(lifted.get('img').classes()).toContain('c-piece__img--lifted')
+    expect(mountPiece({}, {dragging: true}).get('img').classes()).not.toContain('c-piece__img--lifted')
   })
 
   it('goes pointer-inert when not movable', () => {

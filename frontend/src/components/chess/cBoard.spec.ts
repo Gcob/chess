@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import {nextTick} from 'vue'
 import {mount, type VueWrapper} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
@@ -34,10 +34,36 @@ function clickSquare(wrapper: VueWrapper, key: string): Promise<void> {
   return findSquare(wrapper, key).trigger('click')
 }
 
+// jsdom has no layout: gives the board a real 800×800 rect so the drag math works
+// (squares are 100px). Square centers: x = (col + 0.5) * 100, y = (row + 0.5) * 100.
+function mockBoardRect() {
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+    x: 0, y: 0, top: 0, left: 0, right: 800, bottom: 800, width: 800, height: 800,
+    toJSON: () => ({}),
+  } as DOMRect)
+}
+
+// Drives a real drag through the same window listeners the app uses. pointerType rides on
+// the event as a plain property — jsdom has no PointerEvent.
+async function drag(wrapper: VueWrapper, from: string, to: {x: number; y: number}, pointerType = 'mouse') {
+  const piece = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === from)!
+  await piece.trigger('pointerdown', {pointerType})
+  window.dispatchEvent(new MouseEvent('pointermove', {clientX: to.x, clientY: to.y, buttons: 1}))
+  // flush between move and release, as separate frames do in a real browser — otherwise the
+  // draggingId watcher never sees the intermediate dragging state
+  await nextTick()
+  window.dispatchEvent(new MouseEvent('pointerup', {clientX: to.x, clientY: to.y}))
+  await nextTick()
+}
+
 describe('cBoard', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('highlights the from and to squares of the last move', () => {
@@ -132,6 +158,53 @@ describe('cBoard', () => {
     const wrapper = mount(cBoard, {props: {view}})
     await clickSquare(wrapper, 'e2')
     expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(0)
+  })
+
+  it('plays a legal drag drop, with an instant landing', async () => {
+    mockBoardRect()
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await drag(wrapper, 'e2', {x: 450, y: 450}) // e4
+    expect(view.moves).toHaveLength(1)
+    expect(view.moves[0]).toMatchObject({from: 'e2', to: 'e4'})
+    expect(wrapper.findAll('.c-piece--anim-snap-back')).toHaveLength(0)
+  })
+
+  it('slides the piece back home after a refused drop', async () => {
+    mockBoardRect()
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await drag(wrapper, 'e2', {x: 450, y: 350}) // e5 — a triple advance, refused
+    expect(view.moves).toHaveLength(0)
+    expect(wrapper.find('.c-piece--anim-snap-back').exists()).toBe(true)
+  })
+
+  it('gives knights the hop animation for their slides', async () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await nextTick() // mount teleport frame…
+    await nextTick() // …then the slide mode arms
+    const knights = wrapper.findAllComponents(cPiece).filter(p => p.props('piece').type === 'knight')
+    expect(knights).toHaveLength(4)
+    for (const knight of knights) {
+      expect(knight.classes()).toContain('c-piece--anim-hop')
+    }
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e2')!
+    expect(pawn.classes()).toContain('c-piece--anim-slide')
+  })
+
+  it('lifts a touch-dragged piece one square above the finger', async () => {
+    mockBoardRect()
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e2')!
+    await pawn.trigger('pointerdown', {pointerType: 'touch'})
+    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 450, buttons: 1})) // over e4
+    await nextTick()
+    expect(wrapper.find('.c-piece__img--lifted').exists()).toBe(true)
+    // the drop target follows the lifted piece, not the finger
+    expect(findSquare(wrapper, 'e5').find('.c-square__highlight--drop-target').exists()).toBe(true)
+    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target').exists()).toBe(false)
   })
 
   it('only lets the player to move grab pieces', () => {

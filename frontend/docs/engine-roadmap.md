@@ -141,10 +141,11 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
 - [x] **Surbrillance des destinations légales** : point (case vide) / anneau (capture) via
       `view.legalTargets` → `legalDestinations` (phase ②), depuis la pièce saisie (dès la presse)
       ou sélectionnée ; setting `showLegalMoves` par observateur, défaut activé
-- [ ] **Animations réveillées (prioritaire)** : `hop` (cavalier) et `snap-back` (coup refusé) —
-      le drop illégal se détecte via la même query `legalTargets`
-- [ ] **Drag mobile (prioritaire)** : la pièce draguée glisse vers le haut (transition) pour rester
-      visible au-dessus du doigt — à prendre avec les animations ci-dessus
+- [x] **Animations réveillées** : `hop` (arc du sprite du cavalier pendant la glisse, gatée par
+      `--moving`) et `snap-back` (tout relâchement sans coup joué — détecté sur `moves.length`,
+      jamais via `legalTargets` qui est gaté par le setting)
+- [x] **Drag mobile** : au toucher, le sprite monte d'une case au-dessus du doigt (transition) et
+      la cible de drop suit la pièce, pas le doigt
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
       (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
       ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy
@@ -198,8 +199,6 @@ Non bloquants, à faire si le cœur nous en dit.
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
-- **Animations dormantes** — `hop` (cavalier) et `snap-back` (coup refusé) attendent les aides
-  locales (Backlog UX/board).
 - **En passant découvrant un échec (phase ④)** — deux pions quittent le même rayon d'un coup ; le modèle
   clouage (1 bloqueur) ne le couvre pas, mais `Ray.blockers` est prêt (2 bloqueurs qui partent ensemble).
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de

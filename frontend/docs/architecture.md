@@ -123,19 +123,23 @@ restauré via **double `requestAnimationFrame`** (la frame sans transition doit 
 en haut/bas, rangées à gauche/droite), ordonnées selon l'orientation. Le label du fichier/rangée survolé
 s'illumine (`cBoard` traque la case sous la souris et passe `highlightFile`/`highlightRank`).
 
-**Animations** — `PieceAnimation` (look-and-feel, jamais dans l'engine) : `slide` (couvre linéaire ET diagonale)
-et `none` câblés ; `hop` (cavalier) et `snap-back` **dormants** jusqu'au moteur de règles. `cPiece` → classe
-`c-piece--anim-{name}` ; un drag n'anime jamais.
+**Animations** — `PieceAnimation` (look-and-feel, jamais dans l'engine) : `slide` (couvre linéaire ET
+diagonale), `none`, `hop` (cavalier : arc du sprite pendant la glisse, keyframe gatée par `--moving` —
+jamais rejouée hors déplacement) et `snap-back` (retour animé d'un drop refusé, easing à léger overshoot).
+`cPiece` → classe `c-piece--anim-{name}` ; un drag n'anime jamais. Mode board-level (`cBoard.animation`),
+raffiné par pièce (`animationFor` : cavalier → `hop` en mode slide).
 
 **Interaction** — gatée par `view.movableColor` (policy : en local, le joueur au trait ; personne si la
 partie est finie). Les pièces adverses ignorent le pointeur via `pointer-events: none` (`cPiece --static`) —
 le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceDrag` distingue **tap**
 (presse sans bouger, sous un seuil) et **drag** (au-delà) :
 
-- **Drag** → la pièce suit le curseur ; drop → `cBoard` appelle `view.move` → engine. Relâchement =
-  snap instantané (anim `none`, la pièce est déjà sous le curseur). Bouton droit enfoncé pendant le drag =
-  annulation immédiate (retour à l'origine, aucun coup). Menu contextuel supprimé (`@contextmenu.prevent`).
-  Case cible par maths sur le rect (pas de hit-testing DOM).
+- **Drag** → la pièce suit le curseur ; drop → `cBoard` appelle `view.move` → engine. Drop joué = snap
+  instantané (anim `none`, la pièce est déjà sous le curseur) ; tout autre relâchement (coup refusé, même
+  case, hors board, annulation bouton droit) = `snap-back` vers l'origine. Le « joué » se détecte sur
+  `moves.length` — jamais via `legalTargets`, gaté par un setting. Menu contextuel supprimé
+  (`@contextmenu.prevent`). Case cible par maths sur le rect (pas de hit-testing DOM). Toucher : le sprite
+  monte d'une case au-dessus du doigt (`lifted`, transition) et la cible de drop suit la pièce, pas le doigt.
 - **Tap** (clic-pour-jouer) → `cBoard.activateSquare` : tap une pièce = sélection (highlight `selected`) ;
   tap une destination = coup (slide) ; re-tap = désélection ; tap une pièce alliée = re-sélection.
   Toute action « pas rapport » annule la sélection (début de drag, rotation, coup).

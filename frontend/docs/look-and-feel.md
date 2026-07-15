@@ -18,7 +18,8 @@ Contient aussi (UI pure, hors domaine — l'engine ne les connaît pas) :
   `radial-gradient` closest-side, jamais des voiles), gated par `showLegalMoves` ; apparition
   animée (fade + scale ~150 ms, `@keyframes c-square-hint-in`), rejouée quand on change de pièce
   (overlays keyés par l'origine via la prop `hintsKey`).
-- `PieceAnimation` — anim d'une pièce qui change de case : `slide`/`none` câblés, `hop`/`snap-back` dormants.
+- `PieceAnimation` — anim d'une pièce qui change de case : `slide`, `none`, `hop` (arc du sprite du
+  cavalier pendant la glisse) et `snap-back` (retour d'un drop refusé) — tous câblés.
 
 ## Deux thèmes indépendants
 

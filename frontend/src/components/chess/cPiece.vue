@@ -9,6 +9,7 @@
   >
     <img
       class="c-piece__img"
+      :class="{ 'c-piece__img--lifted': lifted }"
       :src="getPieceImage(piece.color, piece.type)"
       :alt="`${piece.color} ${piece.type}`"
       draggable="false"
@@ -34,10 +35,13 @@ const props = withDefaults(defineProps<{
   // px translate within the board (top-left origin), used while dragging.
   dragX?: number
   dragY?: number
+  // Touch drag: the sprite rides one square above the pointer so the finger never hides it.
+  lifted?: boolean
 }>(), {
   dragging: false,
   dragX: 0,
   dragY: 0,
+  lifted: false,
 })
 
 const {getPieceImage} = useChessTheme()
@@ -79,16 +83,21 @@ const style = computed(() => ({
   will-change: transform;
 
   // Straight-line translate — covers linear AND diagonal moves identically.
-  &--anim-slide {
+  // hop shares the travel and adds the sprite arc below.
+  &--anim-slide,
+  &--anim-hop {
     transition: transform 0.2s ease;
   }
 
-  // DORMANT: defined so the vocabulary is complete, not routed to yet.
-  // hop → knight arc (will need @keyframes once the engine reports move types);
-  // snap-back → return after an illegal drop. Both fall back to a plain slide for now.
-  &--anim-hop,
+  // A refused drop slides home with a hint of overshoot — reads as « refusé ».
   &--anim-snap-back {
-    transition: transform 0.2s ease;
+    transition: transform 0.22s cubic-bezier(0.2, 0.85, 0.3, 1.15);
+  }
+
+  // The knight's arc: while the piece slides (--moving), the sprite rises and falls on top of
+  // the straight travel. Gated by --moving, so the keyframe never replays on idle re-renders.
+  &--anim-hop.c-piece--moving .c-piece__img {
+    animation: c-piece-hop 0.2s ease;
   }
 
   &--moving {
@@ -109,6 +118,20 @@ const style = computed(() => ({
     height: 85%;
     object-fit: contain;
     user-select: none;
+    // the touch lift glides up on grab and settles back down on release
+    transition: transform 0.15s ease-out;
+  }
+
+  // One square above the finger — the sprite is 85% of the square, so one square is
+  // 100% / 0.85 of its own height.
+  &__img--lifted {
+    transform: translateY(calc(-100% / 0.85));
+  }
+}
+
+@keyframes c-piece-hop {
+  50% {
+    transform: translateY(-14%) scale(1.06);
   }
 }
 </style>

@@ -26,10 +26,11 @@
             v-for="p in placedPieces"
             :key="p.id"
             :piece="p"
-            :animation="animation"
+            :animation="animationFor(p)"
             :dragging="draggingId === p.id"
             :drag-x="draggingId === p.id ? dragX : 0"
             :drag-y="draggingId === p.id ? dragY : 0"
+            :lifted="draggingId === p.id && isTouch"
             @pointerdown="onPiecePointerDown($event, p)"
             @mouseenter="hoveredSquare = p.square"
           />
@@ -114,12 +115,20 @@ const placedPieces = computed<PlacedPiece[]>(() => {
 // ─── Drag and drop ─────────────────────────────────────────────────────────────
 
 const areaEl = ref<HTMLElement | null>(null)
-const {draggingId, dragX, dragY, dropTarget, dragFrom, start} = usePieceDrag({
+
+// Whether the last drag release actually played a move — decides snap vs snap-back below.
+// Detected on the game state (a played move is recorded), never via legalTargets: that query
+// is gated by the showLegalMoves setting, the legality of a drop is not.
+let dropApplied = false
+
+const {draggingId, dragX, dragY, dropTarget, dragFrom, isTouch, start} = usePieceDrag({
   boardEl: areaEl,
   orientation,
   onDrop: (from, to) => {
     selected.value = null
+    const movesBefore = props.view.moves.length
     props.view.move(from, to)
+    dropApplied = props.view.moves.length > movesBefore
   },
   onTap: activateSquare,
   onDragStart: () => {
@@ -171,11 +180,17 @@ function activateSquare(square: SquareKey) {
   selected.value = null
 }
 
-// Any drag release snaps instantly (the piece is already under the cursor) — valid drop to the
-// target, or return to origin on an off-board/same-square release. No slide either way.
+// A played drop snaps instantly — the piece is already under the cursor. Any other release
+// (refused move, same square, off-board, cancelled drag) slides the piece back home.
 watch(draggingId, (id, prev) => {
   if (prev && !id) {
-    teleportThenRestore()
+    if (dropApplied) {
+      teleportThenRestore()
+    } else {
+      snapBackThenRestore()
+    }
+
+    dropApplied = false
   }
 })
 
@@ -235,12 +250,22 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
 
 // ─── Animation gating ──────────────────────────────────────────────────────────
 
-// Board-level animation applied to every piece. A move slides; mount, rotation and drops teleport.
-// (Per-piece animations like the knight 'hop' come with the rules engine.)
+// Board-level animation mode. A move slides; mount, rotation and played drops teleport;
+// a refused drop snaps back. Refined per piece below (the knight upgrades slide to hop).
 const animation = ref<PieceAnimation>('none')
 onMounted(() => nextTick(() => {
   animation.value = 'slide'
 }))
+
+// The hop class is safe to hold statically: its arc keyframe is gated by --moving in CSS,
+// so it only plays while the knight actually slides.
+function animationFor(piece: PlacedPiece): PieceAnimation {
+  if (animation.value === 'slide' && piece.type === 'knight') {
+    return 'hop'
+  }
+
+  return animation.value
+}
 
 // Renders one instant (no-transition) frame, then restores sliding — used by rotation and drops.
 // Two rAFs are required: the no-transition frame must actually PAINT before we re-enable, otherwise
@@ -255,11 +280,26 @@ function teleportThenRestore() {
     })
   })
 }
+
+// Arms the snap-back easing for the released piece's return, then re-arms the normal slide
+// once the transition had time to play out.
+let snapBackTimer = 0
+function snapBackThenRestore() {
+  animation.value = 'snap-back'
+  window.clearTimeout(snapBackTimer)
+  snapBackTimer = window.setTimeout(() => {
+    animation.value = 'slide'
+  }, 250)
+}
+
 watch(orientation, () => {
   selected.value = null // a flip is an unrelated action — drop any selection
   teleportThenRestore()
 })
-onBeforeUnmount(() => cancelAnimationFrame(restoreRaf))
+onBeforeUnmount(() => {
+  cancelAnimationFrame(restoreRaf)
+  window.clearTimeout(snapBackTimer)
+})
 
 const areaStyle = computed(() => {
   const px = `${props.size ?? 560}px`
