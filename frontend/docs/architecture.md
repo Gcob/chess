@@ -139,7 +139,7 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
   case, hors board, annulation bouton droit) = `snap-back` vers l'origine. Le « joué » se détecte sur
   `moves.length` — jamais via `legalTargets`, gaté par un setting. Menu contextuel supprimé
   (`@contextmenu.prevent`). Case cible par maths sur le rect (pas de hit-testing DOM). Toucher : le sprite
-  monte d'une case au-dessus du doigt et double de taille (`lifted`, transition), la cible de drop suit la
+  monte d'une case et demie au-dessus du doigt et double de taille (`lifted`, transition), la cible de drop suit la
   pièce (pas le doigt), affichée en case agrandie ombrée (`drop-target-touch`) sous les pièces, avec le
   code de destination épinglé au-dessus de la case (`showCode`). Piège : le sprite n'a AUCUNE transition
   de base — elle vit sur l'état `--lifted` seulement (la montée au grab). Sortir d'un état est donc

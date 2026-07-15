@@ -8,6 +8,10 @@ const PRIMARY_BUTTON = 1
 // px the pointer must travel before a press becomes a drag rather than a tap.
 const DRAG_THRESHOLD = 4
 
+// Squares the piece rides above the finger on touch — a thumb hides a full square. Must match
+// the sprite lift in cPiece (`__img--lifted`), so the drop target stays under the piece.
+const TOUCH_LIFT_SQUARES = 1.5
+
 interface UsePieceDragOptions {
   // The grid element — its rect anchors all pointer math.
   boardEl: Ref<HTMLElement | null>
@@ -55,9 +59,9 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
     return coordsToSquare(col, row, orientation.value)
   }
 
-  // Where a drop would land: under the pointer, or one square above it on touch (the lift).
+  // Where a drop would land: under the pointer, or above it on touch (the lift).
   function targetAt(clientX: number, clientY: number): SquareKey | null {
-    return squareAt(clientX, clientY - (isTouch.value ? squareSize : 0))
+    return squareAt(clientX, clientY - (isTouch.value ? squareSize * TOUCH_LIFT_SQUARES : 0))
   }
 
   function beginDrag() {
