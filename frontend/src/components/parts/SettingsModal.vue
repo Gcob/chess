@@ -43,6 +43,11 @@
         <span>{{ $t('settings.highlightLastMove') }}</span>
         <input type="checkbox" class="c-checkbox" v-model="store.settings.highlightLastMove" />
       </label>
+
+      <label class="c-label">
+        <span>{{ $t('settings.showLegalMoves') }}</span>
+        <input type="checkbox" class="c-checkbox" v-model="store.settings.showLegalMoves" />
+      </label>
     </div>
 
     <template #footer="{ close }">

@@ -8,6 +8,7 @@ export interface Settings {
   pieceThemeId: PieceThemes
   boardSize: BoardSize
   highlightLastMove: boolean
+  showLegalMoves: boolean
 }
 
 const STORAGE_KEY = 'settings'
@@ -17,6 +18,7 @@ const DEFAULTS: Settings = {
   pieceThemeId: PieceThemes.Classic,
   boardSize: 'normal',
   highlightLastMove: true,
+  showLegalMoves: true,
 }
 
 function loadFromStorage(): Settings {
