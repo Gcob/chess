@@ -36,4 +36,10 @@ describe('cSquare', () => {
     const wrapper = mount(cSquare, {props: {square, highlights: ['check']}})
     expect(wrapper.find('.c-square__highlight--check').exists()).toBe(true)
   })
+
+  it('renders the legal destination hints', () => {
+    const wrapper = mount(cSquare, {props: {square, highlights: ['legal-move', 'legal-capture']}})
+    expect(wrapper.find('.c-square__highlight--legal-move').exists()).toBe(true)
+    expect(wrapper.find('.c-square__highlight--legal-capture').exists()).toBe(true)
+  })
 })

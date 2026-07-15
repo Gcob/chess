@@ -115,6 +115,7 @@ export default {
     sound: 'Effets sonores',
     boardTheme: 'Thème du plateau',
     highlightLastMove: 'Surligner le dernier coup',
+    showLegalMoves: 'Afficher les coups légaux',
     boardThemes: {
       wood: 'Bois',
     },

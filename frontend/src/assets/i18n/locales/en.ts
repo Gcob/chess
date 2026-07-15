@@ -103,6 +103,7 @@ export default {
     sound: 'Sound effects',
     boardTheme: 'Board theme',
     highlightLastMove: 'Highlight last move',
+    showLegalMoves: 'Show legal moves',
     boardThemes: {
       wood: 'Wood',
     },

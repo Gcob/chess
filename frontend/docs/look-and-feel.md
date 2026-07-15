@@ -9,10 +9,13 @@ Chaque valeur correspond à une clé de registre et à une clé i18n `settings.{
 
 Contient aussi (UI pure, hors domaine — l'engine ne les connaît pas) :
 
-- `SquareHighlight` — états visuels d'une case (`drop-target`, `last-move`, `selected`, `check`), overlays
-  translucides empilables sur `cSquare`. Couleurs dans `_variables.scss` (`$square-highlight-*`).
+- `SquareHighlight` — états visuels d'une case (`drop-target`, `last-move`, `selected`, `check`,
+  `legal-move`, `legal-capture`), overlays translucides empilables sur `cSquare`. Couleurs dans
+  `_variables.scss` (`$square-highlight-*`).
   `check` (case du roi en échec, dérivée dans `useGameView.checkSquares`) est un indicateur de règle :
   toujours affiché, jamais gated par un setting — contrairement à `last-move` (`highlightLastMove`).
+  `legal-move` / `legal-capture` (destinations légales) sont des formes (point / anneau,
+  `radial-gradient` closest-side, jamais des voiles), gated par `showLegalMoves`.
 - `PieceAnimation` — anim d'une pièce qui change de case : `slide`/`none` câblés, `hop`/`snap-back` dormants.
 
 ## Deux thèmes indépendants

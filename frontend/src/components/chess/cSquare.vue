@@ -60,6 +60,18 @@ const squareBackground = computed(() =>
     &--check {
       background: $square-highlight-check;
     }
+
+    // Legal destination hints are shapes, not veils, so they read over any square colour.
+    // closest-side sizing keys the gradient to half the square, whatever the board size.
+    &--legal-move {
+      background: radial-gradient(circle closest-side,
+        $square-highlight-legal 0 34%, transparent 35%);
+    }
+
+    &--legal-capture {
+      background: radial-gradient(circle closest-side,
+        transparent 0 76%, $square-highlight-legal 77% 97%, transparent 98%);
+    }
   }
 }
 </style>

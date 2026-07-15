@@ -113,7 +113,7 @@ const placedPieces = computed<PlacedPiece[]>(() => {
 // ─── Drag and drop ─────────────────────────────────────────────────────────────
 
 const areaEl = ref<HTMLElement | null>(null)
-const {draggingId, dragX, dragY, dropTarget, start} = usePieceDrag({
+const {draggingId, dragX, dragY, dropTarget, dragFrom, start} = usePieceDrag({
   boardEl: areaEl,
   orientation,
   onDrop: (from, to) => {
@@ -196,6 +196,14 @@ const hoveredRank = computed<SquareRank | null>(() =>
   coordSquare.value ? (Number(coordSquare.value[1]) as SquareRank) : null,
 )
 
+// Legal destinations of the piece the player is engaging with — grabbed (from the press,
+// before the drag threshold) or selected for click-to-move. The view gates the query behind
+// the showLegalMoves setting; empty = no hints.
+const hintFrom = computed(() => dragFrom.value ?? selected.value)
+const legalTargets = computed<SquareKey[]>(() =>
+  hintFrom.value ? props.view.legalTargets(hintFrom.value) : [],
+)
+
 // Combines the per-state sources into the highlights a given square should show.
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
@@ -215,6 +223,10 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
 
   if (props.view.checkSquares.includes(square)) {
     result.push('check')
+  }
+
+  if (legalTargets.value.includes(square)) {
+    result.push(board.value?.squares[square].piece ? 'legal-capture' : 'legal-move')
   }
 
   return result

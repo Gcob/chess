@@ -138,11 +138,13 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 Features UI en marge des phases engine — elles ne les bloquent jamais.
 
-- [ ] **Aides locales (prioritaire)** : surbrillance des destinations légales (consomme
-      `legalDestinations`, phase ②) ; animations `hop` (cavalier) et `snap-back` (coup refusé)
-      réveillées
+- [x] **Surbrillance des destinations légales** : point (case vide) / anneau (capture) via
+      `view.legalTargets` → `legalDestinations` (phase ②), depuis la pièce saisie (dès la presse)
+      ou sélectionnée ; setting `showLegalMoves` par observateur, défaut activé
+- [ ] **Animations réveillées (prioritaire)** : `hop` (cavalier) et `snap-back` (coup refusé) —
+      le drop illégal se détecte via la même query `legalTargets`
 - [ ] **Drag mobile (prioritaire)** : la pièce draguée glisse vers le haut (transition) pour rester
-      visible au-dessus du doigt — à prendre avec les aides locales ci-dessus
+      visible au-dessus du doigt — à prendre avec les animations ci-dessus
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
       (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
       ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy

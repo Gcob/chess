@@ -1,8 +1,9 @@
 import {describe, it, expect, beforeEach} from 'vitest'
 import {nextTick} from 'vue'
-import {mount} from '@vue/test-utils'
+import {mount, type VueWrapper} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
 import cBoard from './cBoard.vue'
+import cSquare from './cSquare.vue'
 import {useGamesStore} from '@/stores/useGamesStore'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useGameView} from '@/composables/useGameView'
@@ -19,6 +20,14 @@ const payload: CreateGamePayload = {
 function freshView(): { view: GameView; game: Game } {
   const session = useGamesStore().open(payload)
   return {view: useGameView(session.id), game: session.game}
+}
+
+// Clicks a square by its key — the same path as a click-to-move tap.
+function clickSquare(wrapper: VueWrapper, key: string): Promise<void> {
+  const target = wrapper.findAllComponents(cSquare).find(
+    s => `${s.props('square').file}${s.props('square').rank}` === key,
+  )!
+  return target.trigger('click')
 }
 
 describe('cBoard', () => {
@@ -66,6 +75,40 @@ describe('cBoard', () => {
     makeMove(game, 'c7', 'c6') // blocks the diagonal
     await nextTick()
     expect(wrapper.findAll('.c-square__highlight--check')).toHaveLength(0)
+  })
+
+  it('shows the legal destination hints for the selected piece', async () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'e2')
+    expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(2) // e3, e4
+    expect(wrapper.findAll('.c-square__highlight--legal-capture')).toHaveLength(0)
+  })
+
+  it('marks a capturable destination with the capture hint', async () => {
+    const {view, game} = freshView()
+    makeMove(game, 'e2', 'e4')
+    makeMove(game, 'd7', 'd5')
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'e4')
+    expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(1) // e5
+    expect(wrapper.findAll('.c-square__highlight--legal-capture')).toHaveLength(1) // d5
+  })
+
+  it('clears the hints on deselection', async () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'e2')
+    await clickSquare(wrapper, 'e2')
+    expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(0)
+  })
+
+  it('hides the hints when the setting is off', async () => {
+    const {view} = freshView()
+    useSettingsStore().settings.showLegalMoves = false
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'e2')
+    expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(0)
   })
 
   it('only lets the player to move grab pieces', () => {

@@ -4,6 +4,7 @@ import {useGameClock} from '@/composables/useGameClock'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import {findKingSquare, toSquareKey} from '@/engine/board'
+import {legalDestinations} from '@/engine/move'
 import type {PieceColor, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
@@ -28,6 +29,17 @@ export function useGameView(id: string) {
 
   function move(from: SquareKey, to: SquareKey) {
     session.makeMove(from, to)
+  }
+
+  // Legal destinations of the piece on `from` — the query behind the board's move hints.
+  // Gated by a per-viewer setting (default on) — empty hides the hints.
+  function legalTargets(from: SquareKey): SquareKey[] {
+    const game = session.game.value
+    if (!game || !settingsStore.settings.showLegalMoves) {
+      return []
+    }
+
+    return legalDestinations(game.board, from)
   }
 
   // Which color's pieces accept interaction (drag / click-to-move). Local mode: the player to
@@ -106,6 +118,7 @@ export function useGameView(id: string) {
     isGameOver: session.isGameOver,
     drawOffer,
     move,
+    legalTargets,
     resign: session.resign,
     offerDraw: session.offerDraw,
     acceptDraw: session.acceptDraw,

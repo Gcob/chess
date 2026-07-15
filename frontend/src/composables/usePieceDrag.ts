@@ -31,8 +31,10 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
   const dragY = ref(0)
   // Square under the cursor, for highlighting.
   const dropTarget = ref<SquareKey | null>(null)
+  // Origin square of the current interaction — set on press, before the drag threshold,
+  // so the move hints can show as soon as a piece is grabbed.
+  const dragFrom = ref<SquareKey | null>(null)
 
-  let from: SquareKey | null = null
   let pendingId: string | null = null
   let startX = 0
   let startY = 0
@@ -92,7 +94,7 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
   }
 
   function end(event: PointerEvent) {
-    const origin = from
+    const origin = dragFrom.value
     const wasDrag = moved
     const target = squareAt(event.clientX, event.clientY)
     detach()
@@ -118,7 +120,7 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
   function reset() {
     draggingId.value = null
     dropTarget.value = null
-    from = null
+    dragFrom.value = null
     pendingId = null
     moved = false
     rect = null
@@ -138,7 +140,7 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
 
     rect = el.getBoundingClientRect()
     squareSize = rect.width / 8
-    from = square
+    dragFrom.value = square
     pendingId = id
     startX = event.clientX
     startY = event.clientY
@@ -150,5 +152,5 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
     event.preventDefault()
   }
 
-  return {draggingId, dragX, dragY, dropTarget, start}
+  return {draggingId, dragX, dragY, dropTarget, dragFrom, start}
 }
