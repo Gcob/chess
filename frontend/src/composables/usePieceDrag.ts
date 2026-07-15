@@ -10,7 +10,7 @@ const DRAG_THRESHOLD = 4
 
 // Squares the piece rides above the finger on touch — a thumb hides a full square. Must match
 // the sprite lift in cPiece (`__img--lifted`), so the drop target stays under the piece.
-const TOUCH_LIFT_SQUARES = 1.5
+const TOUCH_LIFT_SQUARES = 1.35
 
 interface UsePieceDragOptions {
   // The grid element — its rect anchors all pointer math.

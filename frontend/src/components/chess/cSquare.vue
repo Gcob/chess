@@ -141,6 +141,8 @@ function isHintPopped(highlight: SquareHighlight): boolean {
     color: #fff;
     background: rgba(0, 0, 0, 0.75);
     border-radius: 10cqw;
+    // see-through as a whole — a piece standing on the square above stays readable under it
+    opacity: 0.7;
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
