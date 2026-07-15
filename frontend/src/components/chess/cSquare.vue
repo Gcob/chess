@@ -2,7 +2,7 @@
   <div class="c-square" :style="{ background: squareBackground }">
     <div
       v-for="highlight in highlights"
-      :key="highlight"
+      :key="overlayKey(highlight)"
       class="c-square__highlight"
       :class="`c-square__highlight--${highlight}`"
     />
@@ -21,11 +21,21 @@ import {useChessTheme} from '@/composables/useChessTheme'
 const props = withDefaults(defineProps<{
   square: Square
   highlights?: SquareHighlight[]
+  // Cache-busting key for the hint overlays — cBoard passes the engaged piece's square.
+  hintsKey?: string
 }>(), {
   highlights: () => [],
+  hintsKey: '',
 })
 
 const {boardTheme} = useChessTheme()
+
+// Hints replay their pop-in when the engaged piece changes: keying them by hintsKey recreates
+// the overlay, restarting the CSS animation even on a square that stays a legal destination.
+// The veils (last-move, check…) keep a stable key — nothing to replay.
+function overlayKey(highlight: SquareHighlight): string {
+  return highlight.startsWith('legal-') ? `${highlight}-${props.hintsKey}` : highlight
+}
 
 const squareBackground = computed(() =>
   props.square.color === 'light' ? boardTheme.value?.lightSquare : boardTheme.value?.darkSquare,
@@ -63,6 +73,13 @@ const squareBackground = computed(() =>
 
     // Legal destination hints are shapes, not veils, so they read over any square colour.
     // closest-side sizing keys the gradient to half the square, whatever the board size.
+    // They pop in with a quick fade + scale — the overlay div is born with the hint, so the
+    // animation plays on mount and never touches the other highlights.
+    &--legal-move,
+    &--legal-capture {
+      animation: c-square-hint-in 0.1s ease-out;
+    }
+
     &--legal-move {
       background: radial-gradient(circle closest-side,
         $square-highlight-legal 0 34%, transparent 35%);
@@ -72,6 +89,13 @@ const squareBackground = computed(() =>
       background: radial-gradient(circle closest-side,
         transparent 0 76%, $square-highlight-legal 77% 97%, transparent 98%);
     }
+  }
+}
+
+@keyframes c-square-hint-in {
+  from {
+    opacity: 0.5;
+    transform: scale(0.8);
   }
 }
 </style>

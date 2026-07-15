@@ -14,6 +14,7 @@
             :key="`${square.file}${square.rank}`"
             :square="square"
             :highlights="highlightsFor(`${square.file}${square.rank}`)"
+            :hints-key="hintFrom ?? ''"
             @click="activateSquare(`${square.file}${square.rank}`)"
             @mouseenter="hoveredSquare = `${square.file}${square.rank}`"
           />
@@ -196,9 +197,9 @@ const hoveredRank = computed<SquareRank | null>(() =>
   coordSquare.value ? (Number(coordSquare.value[1]) as SquareRank) : null,
 )
 
-// Legal destinations of the piece the player is engaging with — grabbed (from the press,
-// before the drag threshold) or selected for click-to-move. The view gates the query behind
-// the showLegalMoves setting; empty = no hints.
+// The piece the player is engaging with — grabbed (from the press, before the drag threshold)
+// or selected for click-to-move. Its square carries the 'selected' veil, and its legal
+// destinations get the hints (the view gates that query behind the showLegalMoves setting).
 const hintFrom = computed(() => dragFrom.value ?? selected.value)
 const legalTargets = computed<SquareKey[]>(() =>
   hintFrom.value ? props.view.legalTargets(hintFrom.value) : [],
@@ -217,7 +218,7 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
     result.push('drop-target')
   }
 
-  if (selected.value === square) {
+  if (hintFrom.value === square) {
     result.push('selected')
   }
 

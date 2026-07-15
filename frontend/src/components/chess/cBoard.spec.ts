@@ -4,6 +4,7 @@ import {mount, type VueWrapper} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
 import cBoard from './cBoard.vue'
 import cSquare from './cSquare.vue'
+import cPiece from './cPiece.vue'
 import {useGamesStore} from '@/stores/useGamesStore'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useGameView} from '@/composables/useGameView'
@@ -22,12 +23,15 @@ function freshView(): { view: GameView; game: Game } {
   return {view: useGameView(session.id), game: session.game}
 }
 
-// Clicks a square by its key — the same path as a click-to-move tap.
-function clickSquare(wrapper: VueWrapper, key: string): Promise<void> {
-  const target = wrapper.findAllComponents(cSquare).find(
+function findSquare(wrapper: VueWrapper, key: string) {
+  return wrapper.findAllComponents(cSquare).find(
     s => `${s.props('square').file}${s.props('square').rank}` === key,
   )!
-  return target.trigger('click')
+}
+
+// Clicks a square by its key — the same path as a click-to-move tap.
+function clickSquare(wrapper: VueWrapper, key: string): Promise<void> {
+  return findSquare(wrapper, key).trigger('click')
 }
 
 describe('cBoard', () => {
@@ -93,6 +97,25 @@ describe('cBoard', () => {
     await clickSquare(wrapper, 'e4')
     expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(1) // e5
     expect(wrapper.findAll('.c-square__highlight--legal-capture')).toHaveLength(1) // d5
+  })
+
+  it('marks the origin and shows the hints from the press, before any drag', async () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e2')!
+    await pawn.trigger('pointerdown') // MouseEvent's button defaults to 0 — the primary button
+    expect(wrapper.findAll('.c-square__highlight--selected')).toHaveLength(1)
+    expect(wrapper.findAll('.c-square__highlight--legal-move')).toHaveLength(2)
+  })
+
+  it('recreates a hint kept by a new selection, so its pop-in replays', async () => {
+    const {view} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'b1') // knight hints a3 + c3
+    const before = findSquare(wrapper, 'c3').find('.c-square__highlight--legal-move').element
+    await clickSquare(wrapper, 'c2') // pawn hints c3 + c4 — c3 stays, but from a new origin
+    const after = findSquare(wrapper, 'c3').find('.c-square__highlight--legal-move').element
+    expect(after).not.toBe(before)
   })
 
   it('clears the hints on deselection', async () => {

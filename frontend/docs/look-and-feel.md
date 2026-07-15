@@ -15,7 +15,9 @@ Contient aussi (UI pure, hors domaine — l'engine ne les connaît pas) :
   `check` (case du roi en échec, dérivée dans `useGameView.checkSquares`) est un indicateur de règle :
   toujours affiché, jamais gated par un setting — contrairement à `last-move` (`highlightLastMove`).
   `legal-move` / `legal-capture` (destinations légales) sont des formes (point / anneau,
-  `radial-gradient` closest-side, jamais des voiles), gated par `showLegalMoves`.
+  `radial-gradient` closest-side, jamais des voiles), gated par `showLegalMoves` ; apparition
+  animée (fade + scale ~150 ms, `@keyframes c-square-hint-in`), rejouée quand on change de pièce
+  (overlays keyés par l'origine via la prop `hintsKey`).
 - `PieceAnimation` — anim d'une pièce qui change de case : `slide`/`none` câblés, `hop`/`snap-back` dormants.
 
 ## Deux thèmes indépendants

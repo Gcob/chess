@@ -144,7 +144,9 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
 overlays translucides sur `cSquare`. Câblés : `drop-target`, `selected`, `last-move` (from/to du dernier
 coup, fourni par `useGameView.lastMove`, gaté par le setting `highlightLastMove` — défaut activé),
 `legal-move` / `legal-capture` (destinations légales de la pièce saisie — dès la presse — ou sélectionnée :
-point sur case vide, anneau sur capture ; `view.legalTargets` gaté par `showLegalMoves` — défaut activé).
+point sur case vide, anneau sur capture, apparition animée fade + scale ; `view.legalTargets` gaté par
+`showLegalMoves` — défaut activé). La case d'origine porte le voile `selected` dès la presse, pas
+seulement après un tap.
 
 > Engine : `engine/game.ts` = commandes gardées par statut (`startGame`, `makeMove`, `resign`,
 > `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helper `remainingSeconds`) — voir
