@@ -151,13 +151,13 @@ const style = computed(() => ({
     transform: scale(1.6);
   }
 
-  // 1.35 squares above the finger (the sprite is 85% of the square, so one square is
+  // 1.20 squares above the finger (the sprite is 85% of the square, so one square is
   // 100% / 0.85 of its own height) and doubled — a thumb hides a full square. Must match
   // TOUCH_LIFT_SQUARES in usePieceDrag, so the drop target stays under the piece.
   // Declared after --popped (the dragged piece always keeps its lift); only the glide UP
   // eases — see the sprite transition note above.
   &__img--lifted {
-    transform: translateY(calc(-135% / 0.85)) scale(2);
+    transform: translateY(calc(-120% / 0.85)) scale(2);
     transition: transform 0.15s ease-out;
   }
 }
