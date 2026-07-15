@@ -6,6 +6,7 @@
       'c-piece--static': !piece.movable,
       'c-piece--popped': popped,
     }]"
+    @touchstart.prevent
     :style="style"
     @transitionstart="moving = true"
     @transitionend="moving = false"
@@ -31,6 +32,8 @@ import {useChessTheme} from '@/composables/useChessTheme'
 // orientation — cPiece knows nothing about files/ranks or which way the board faces.
 // Moving it = changing col/row; a CSS transition animates the slide.
 // animation='none' makes the move instant (teleport) — used at mount and on rotation.
+// touchstart.prevent kills the native long-press recognizer (context menu + haptic) on
+// Android; the drag is pointer-based, so no touch default is ever needed.
 const props = withDefaults(defineProps<{
   piece: PlacedPiece
   animation: PieceAnimation
@@ -86,6 +89,10 @@ const style = computed(() => ({
   pointer-events: auto;
   // let the pointer drag instead of scrolling on touch
   touch-action: none;
+  // no long-press callout (iOS save-image sheet and its haptic) nor selection on touch
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   cursor: grab;
   will-change: transform;
 
