@@ -9,14 +9,22 @@ Chaque valeur correspond à une clé de registre et à une clé i18n `settings.{
 
 Contient aussi (UI pure, hors domaine — l'engine ne les connaît pas) :
 
-- `SquareHighlight` — états visuels d'une case (`drop-target`, `last-move`, `selected`, `check`,
-  `legal-move`, `legal-capture`), overlays translucides empilables sur `cSquare`. Couleurs dans
-  `_variables.scss` (`$square-highlight-*`).
+- `SquareHighlight` — états visuels d'une case (`drop-target`, `drop-target-touch`, `last-move`,
+  `selected`, `check`, `legal-move`, `legal-capture`), overlays translucides empilables sur `cSquare`.
+  Couleurs dans `_variables.scss` (`$square-highlight-*`).
+  `drop-target-touch` (cible du drag au toucher) : la case de destination « sort » du board — copie
+  agrandie (~1,6 case) dans sa propre couleur (background inline), ombrée façon key-preview de clavier
+  mobile — jamais un voile à l'échelle de la case, invisible sous le pouce. La pièce qui occupe la
+  cible et les hints (`--popped`) grossissent avec la case — instantanément, comme la case (une
+  transition traînerait derrière et lirait comme un glitch de z-index). Empilement par pièce (pas de
+  z-index sur la couche pièces) : repos < case pop (2) = hints (2) < pièce de la cible (3) < pièce
+  draguée (4). Le code de la case (`c-square__drag-label`, ex. « a3 », pastille noire 75 %) est
+  épinglé au-dessus de la case agrandie.
   `check` (case du roi en échec, dérivée dans `useGameView.checkSquares`) est un indicateur de règle :
   toujours affiché, jamais gated par un setting — contrairement à `last-move` (`highlightLastMove`).
   `legal-move` / `legal-capture` (destinations légales) sont des formes (point / anneau,
   `radial-gradient` closest-side, jamais des voiles), gated par `showLegalMoves` ; apparition
-  animée (fade + scale ~150 ms, `@keyframes c-square-hint-in`), rejouée quand on change de pièce
+  animée (fade + scale ~100 ms, `@keyframes c-square-hint-in`), rejouée quand on change de pièce
   (overlays keyés par l'origine via la prop `hintsKey`).
 - `PieceAnimation` — anim d'une pièce qui change de case : `slide`, `none`, `hop` (arc du sprite du
   cavalier pendant la glisse) et `snap-back` (retour d'un drop refusé) — tous câblés.

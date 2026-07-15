@@ -15,6 +15,7 @@
             :square="square"
             :highlights="highlightsFor(`${square.file}${square.rank}`)"
             :hints-key="hintFrom ?? ''"
+            :show-code="isTouch && dropTarget === `${square.file}${square.rank}`"
             @click="activateSquare(`${square.file}${square.rank}`)"
             @mouseenter="hoveredSquare = `${square.file}${square.rank}`"
           />
@@ -31,6 +32,7 @@
             :drag-x="draggingId === p.id ? dragX : 0"
             :drag-y="draggingId === p.id ? dragY : 0"
             :lifted="draggingId === p.id && isTouch"
+            :popped="isTouch && draggingId !== p.id && dropTarget === p.square"
             @pointerdown="onPiecePointerDown($event, p)"
             @mouseenter="hoveredSquare = p.square"
           />
@@ -230,7 +232,7 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
   }
 
   if (dropTarget.value === square) {
-    result.push('drop-target')
+    result.push(isTouch.value ? 'drop-target-touch' : 'drop-target')
   }
 
   if (hintFrom.value === square) {
@@ -332,13 +334,32 @@ const areaStyle = computed(() => {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    // rounds the board corners
-    border-radius: $border-radius-sm;
-    overflow: hidden;
+
+    // No overflow: hidden here — the popped touch tile and its code label must escape over
+    // the frame on edge squares. The rounded board corners are carried by the four corner
+    // cells instead (grid order: 1 = top-left, 8 = top-right, 57 = bottom-left, 64 = bottom-right).
+    .c-square:nth-child(1) {
+      border-radius: $border-radius-sm 0 0 0;
+    }
+
+    .c-square:nth-child(8) {
+      border-radius: 0 $border-radius-sm 0 0;
+    }
+
+    .c-square:nth-child(57) {
+      border-radius: 0 0 0 $border-radius-sm;
+    }
+
+    .c-square:nth-child(64) {
+      border-radius: 0 0 $border-radius-sm 0;
+    }
   }
 
   &__pieces {
-    // overlay covering the grid; pieces position themselves and may overflow while dragged
+    // overlay covering the grid; pieces position themselves and may overflow while dragged.
+    // No z-index here: it would make the layer an atomic stacking context, and the popped
+    // touch tile (z 2) could no longer slip between resting and elevated pieces — the
+    // stacking is per piece (see cPiece --popped / --moving).
     position: absolute;
     inset: 0;
     // squares below stay clickable; pieces re-enable it themselves

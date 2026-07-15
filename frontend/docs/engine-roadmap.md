@@ -144,8 +144,9 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
 - [x] **Animations réveillées** : `hop` (arc du sprite du cavalier pendant la glisse, gatée par
       `--moving`) et `snap-back` (tout relâchement sans coup joué — détecté sur `moves.length`,
       jamais via `legalTargets` qui est gaté par le setting)
-- [x] **Drag mobile** : au toucher, le sprite monte d'une case au-dessus du doigt (transition) et
-      la cible de drop suit la pièce, pas le doigt
+- [x] **Drag mobile** : au toucher, le sprite monte d'une case au-dessus du doigt et double de
+      taille (transition) ; la cible de drop suit la pièce, pas le doigt — case agrandie ombrée
+      (`drop-target-touch`, façon key-preview) + code de destination au-dessus du sprite
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
       (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
       ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy

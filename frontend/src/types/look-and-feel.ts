@@ -18,7 +18,9 @@ export type ImageFormat = 'svg' | 'png'
 // kept out of the domain Square (which stays a pure game-state node). Several can
 // apply at once and stack. New states = add a value here, a colour, and a source.
 // legal-move / legal-capture are shapes (dot / ring), not veils — legal destination hints.
-export type SquareHighlight = 'drop-target' | 'last-move' | 'selected' | 'check' | 'legal-move' | 'legal-capture'
+// drop-target-touch is the touch variant of drop-target: an oversized ring readable around a thumb.
+export type SquareHighlight =
+  | 'drop-target' | 'drop-target-touch' | 'last-move' | 'selected' | 'check' | 'legal-move' | 'legal-capture'
 
 // Board display size — a per-viewer preference. 'full' fills the available height; the others
 // are fixed steps. Mapped to concrete pixels by the board area.

@@ -202,9 +202,27 @@ describe('cBoard', () => {
     window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 450, buttons: 1})) // over e4
     await nextTick()
     expect(wrapper.find('.c-piece__img--lifted').exists()).toBe(true)
-    // the drop target follows the lifted piece, not the finger
-    expect(findSquare(wrapper, 'e5').find('.c-square__highlight--drop-target').exists()).toBe(true)
-    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target').exists()).toBe(false)
+    // the drop target follows the lifted piece, not the finger — as the popped-out square
+    expect(findSquare(wrapper, 'e5').find('.c-square__highlight--drop-target-touch').exists()).toBe(true)
+    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target-touch').exists()).toBe(false)
+    expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(false)
+    // the destination code is pinned above the popped target square
+    expect(findSquare(wrapper, 'e5').find('.c-square__drag-label').text()).toBe('e5')
+  })
+
+  it('grows the piece standing on the touch target with the popped square', async () => {
+    mockBoardRect()
+    const {view, game} = freshView()
+    makeMove(game, 'e2', 'e4')
+    makeMove(game, 'd7', 'd5')
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e4')!
+    await pawn.trigger('pointerdown', {pointerType: 'touch'})
+    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 350, clientY: 450, buttons: 1})) // over d4 → target d5
+    await nextTick()
+    const enemy = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'd5')!
+    expect(enemy.classes()).toContain('c-piece--popped')
+    expect(enemy.get('img').classes()).toContain('c-piece__img--popped')
   })
 
   it('only lets the player to move grab pieces', () => {

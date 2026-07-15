@@ -37,6 +37,12 @@ describe('cSquare', () => {
     expect(wrapper.find('.c-square__highlight--check').exists()).toBe(true)
   })
 
+  it('pins its own code above the popped touch target', () => {
+    const wrapper = mount(cSquare, {props: {square, showCode: true}})
+    expect(wrapper.find('.c-square__drag-label').text()).toBe('e4')
+    expect(mount(cSquare, {props: {square}}).find('.c-square__drag-label').exists()).toBe(false)
+  })
+
   it('renders the legal destination hints', () => {
     const wrapper = mount(cSquare, {props: {square, highlights: ['legal-move', 'legal-capture']}})
     expect(wrapper.find('.c-square__highlight--legal-move').exists()).toBe(true)

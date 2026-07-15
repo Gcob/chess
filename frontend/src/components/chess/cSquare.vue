@@ -4,8 +4,11 @@
       v-for="highlight in highlights"
       :key="overlayKey(highlight)"
       class="c-square__highlight"
-      :class="`c-square__highlight--${highlight}`"
+      :class="[`c-square__highlight--${highlight}`, {'c-square__highlight--popped': isHintPopped(highlight)}]"
+      :style="highlight === 'drop-target-touch' ? {background: squareBackground} : undefined"
     />
+    <!-- purely visual echo of the coordinates — never announced during a drag -->
+    <span v-if="showCode" class="c-square__drag-label" aria-hidden="true">{{ square.file }}{{ square.rank }}</span>
   </div>
 </template>
 
@@ -23,9 +26,12 @@ const props = withDefaults(defineProps<{
   highlights?: SquareHighlight[]
   // Cache-busting key for the hint overlays — cBoard passes the engaged piece's square.
   hintsKey?: string
+  // Touch drag: pins this square's code above the popped target tile.
+  showCode?: boolean
 }>(), {
   highlights: () => [],
   hintsKey: '',
+  showCode: false,
 })
 
 const {boardTheme} = useChessTheme()
@@ -40,6 +46,12 @@ function overlayKey(highlight: SquareHighlight): string {
 const squareBackground = computed(() =>
   props.square.color === 'light' ? boardTheme.value?.lightSquare : boardTheme.value?.darkSquare,
 )
+
+// A hint sitting on the popped touch target grows with the tile and rides above it —
+// otherwise the enlarged tile would hide the dot/ring it pops for.
+function isHintPopped(highlight: SquareHighlight): boolean {
+  return highlight.startsWith('legal-') && props.highlights.includes('drop-target-touch')
+}
 </script>
 
 <style lang="scss">
@@ -48,15 +60,39 @@ const squareBackground = computed(() =>
   position: relative;
   width: 100%;
   height: 100%;
+  // sizes the drag label in container units (cqw)
+  container-type: size;
 
   &__highlight {
     position: absolute;
     inset: 0;
     // never blocks clicks/drops
     pointer-events: none;
+    // veils follow the rounding of the corner cells (0 everywhere else)
+    border-radius: inherit;
 
     &--drop-target {
       background: $square-highlight-drop-target;
+    }
+
+    // Touch drag target: the destination square itself pops out of the board — an enlarged
+    // copy in the square's own colour (inline background, mobile keyboard key-preview style),
+    // floating on a shadow for a slight 3D lift. z-index 2 floats it above the RESTING pieces
+    // too (a neighbour piece over the raised tile would break the illusion); the piece on the
+    // target (z 3) and the dragged piece (z 4) re-elevate themselves — see cPiece.
+    &--drop-target-touch {
+      inset: -30%;
+      z-index: 2;
+      border-radius: 12%;
+      // elevation tuned for the textured board — the generic $shadow-* are too faint here
+      box-shadow: 0 6px 14px rgba(2, 6, 23, 0.35), 0 2px 4px rgba(2, 6, 23, 0.25);
+    }
+
+    // Hints on the popped target: same bounds and plane as the tile, painted after it in the
+    // DOM, so the dot/ring shows on top of the enlarged square.
+    &--popped {
+      inset: -30%;
+      z-index: 2;
     }
 
     &--last-move {
@@ -82,13 +118,32 @@ const squareBackground = computed(() =>
 
     &--legal-move {
       background: radial-gradient(circle closest-side,
-        $square-highlight-legal 0 34%, transparent 35%);
+        $square-highlight-legal 0 30%, transparent 30%);
     }
 
     &--legal-capture {
       background: radial-gradient(circle closest-side,
         transparent 0 76%, $square-highlight-legal 77% 97%, transparent 98%);
     }
+  }
+
+  // The destination code pinned above the popped tile during a touch drag — a discreet dark
+  // pill, clear of the lifted sprite (whose top reaches ~35% above this square).
+  &__drag-label {
+    position: absolute;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    padding: 3cqw 10cqw;
+    font-size: 34cqw;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 10cqw;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
   }
 }
 
