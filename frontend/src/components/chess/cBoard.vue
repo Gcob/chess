@@ -312,6 +312,12 @@ const areaStyle = computed(() => {
 <style lang="scss">
 .c-board {
   flex-shrink: 0;
+  // No long-press selection/callout (and their haptics) anywhere on the board — squares and
+  // frame coordinates included. NEVER touchstart.prevent on squares: click-to-move relies on
+  // the synthesized click; pieces alone get it (their logic is pointer-based, see cPiece).
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 
   &__area {
     // anchors the grid, the overlay, and the drag rect math

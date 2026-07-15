@@ -144,8 +144,10 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
   code de destination épinglé au-dessus de la case (`showCode`). Piège : le sprite n'a AUCUNE transition
   de base — elle vit sur l'état `--lifted` seulement (la montée au grab). Sortir d'un état est donc
   toujours instantané : sans ça, un drop joué ré-applique le lift à la nouvelle cellule (saut + redescente
-  = rebond) et le dé-pop traîne derrière sa case. Long-press mobile neutralisé sur les pièces
-  (`touchstart.prevent` + `-webkit-touch-callout: none`) — sinon menu contextuel natif et haptique.
+  = rebond) et le dé-pop traîne derrière sa case. Long-press mobile neutralisé : `touchstart.prevent`
+  sur les pièces (drag 100 % pointer-based) + sélection/callout coupés sur tout `.c-board`
+  (`user-select` / `-webkit-touch-callout: none`) — jamais `touchstart.prevent` sur les cases,
+  le click-to-move dépend du `click` synthétisé.
 - **Tap** (clic-pour-jouer) → `cBoard.activateSquare` : tap une pièce = sélection (highlight `selected`) ;
   tap une destination = coup (slide) ; re-tap = désélection ; tap une pièce alliée = re-sélection.
   Toute action « pas rapport » annule la sélection (début de drag, rotation, coup).
