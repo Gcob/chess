@@ -97,7 +97,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       non-roi : 0 checker = géométrie + clouage, 1 = capture du checker ou interposition sur son rayon
       (∩ clouage), 2 = seul le roi bouge. Queries pures, jamais de move/undo simulé ; l'en passant qui
       découvre un échec arrivera avec la phase ④
-- [ ] `legalDestinations(board, from)` : toutes les destinations légales d'une pièce via UN `Board`
+- [x] `legalDestinations(board, from)` : toutes les destinations légales d'une pièce via UN `Board`
       partagé (~64 canMove) — l'API que consommeront les aides locales (Backlog UX/board) ; la
       phase ③ réutilise la même query (mat/pat = aucune destination légale pour aucune pièce)
 

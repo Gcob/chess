@@ -10,23 +10,30 @@ import type {Square} from './square'
 // this module owns the LEGALITY pipeline and the board mutation.
 
 export function canMove(boardDto: BoardDto, from: SquareKey, to: SquareKey): boolean {
-  const board = new Board(boardDto)
+  return legalSquaresFrom(new Board(boardDto), from).some(square => square.key === to)
+}
+
+// Every legal destination of the piece sitting on `from` — the query the local aids consume.
+// Phase ③ will loop it over every piece of a color (mate/stalemate = no destination anywhere).
+export function legalDestinations(boardDto: BoardDto, from: SquareKey): SquareKey[] {
+  return legalSquaresFrom(new Board(boardDto), from).map(square => square.key)
+}
+
+// Progressive restriction: raw geometry, then one legality filter per rule. Each filter
+// guards its own relevance, so the pipeline holds for any piece — friendly captures and
+// non-moves never survive the patterns themselves. ONE Board instance answers every
+// question about the position, shared across the ~27 candidate squares.
+function legalSquaresFrom(board: Board, from: SquareKey): Square[] {
   const departureSquare = board.square(from)
   const piece = departureSquare.piece
   if (!piece) {
-    return false
+    return []
   }
 
-  // Progressive restriction: raw geometry, then one legality filter per rule. Each filter
-  // guards its own relevance, so the pipeline holds for any piece — friendly captures and
-  // non-moves never survive the patterns themselves. One Board instance answers every
-  // question about the position.
   const availableSquares = piece.availableSquares()
   const safeSquares = restrictToSafeKingSquares(board, piece, availableSquares)
   const unpinnedSquares = restrictToPinRay(board, departureSquare, safeSquares)
-  const legalSquares = restrictToCheckResponses(board, piece, unpinnedSquares)
-
-  return legalSquares.some(square => square.key === to)
+  return restrictToCheckResponses(board, piece, unpinnedSquares)
 }
 
 // Applies a move in place. Overwriting the target square is how a capture happens.

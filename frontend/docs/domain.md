@@ -113,8 +113,10 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
-- Légalité : `canMove` est la porte unique — pipeline de restrictions successives, chacune auto-gardée
-  (géométrie → sécurité du roi → clouage → réponse à l'échec). Queries pures sur le board non muté —
+- Légalité : un seul pipeline de restrictions successives, chacune auto-gardée (géométrie → sécurité
+  du roi → clouage → réponse à l'échec), exposé en deux queries : `canMove` (un coup) et
+  `legalDestinations` (toutes les destinations d'une pièce — aides locales, mat/pat en phase ③),
+  un seul `Board` partagé par query. Queries pures sur le board non muté —
   jamais de move/undo simulé. Les questions passent par la classe `Board` de l'engine (façade d'une
   position, durée de vie ≤ un coup, wrappers `Piece`/`Square` cachés) et `Ray` (ligne de vue d'une
   glissante, marchée À TRAVERS les pièces : 0 bloqueur = échec + prolongement x-ray derrière le roi,

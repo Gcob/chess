@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {canMove, applyMove} from './move'
+import {canMove, applyMove, legalDestinations} from './move'
 import {getAttackers, findCheckers, findKingSquare, toSquareKey} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
@@ -453,6 +453,46 @@ describe('canMove — king safety', () => {
     expect(canMove(board, 'e4', 'e5')).toBe(false)
     expect(canMove(board, 'e4', 'd5')).toBe(false)
     expect(canMove(board, 'e4', 'd4')).toBe(true)
+  })
+})
+
+// The full-set counterpart of canMove — same pipeline, so these specs assert complete
+// destination sets instead of re-proving each rule square by square.
+describe('legalDestinations', () => {
+  it('returns nothing for an empty origin', () => {
+    expect(legalDestinations(freshBoard(), 'e4')).toEqual([])
+  })
+
+  it('lists the full sets of the start position', () => {
+    expect(legalDestinations(freshBoard(), 'e2').sort()).toEqual(['e3', 'e4'])
+    expect(legalDestinations(freshBoard(), 'g1').sort()).toEqual(['f3', 'h3'])
+    expect(legalDestinations(freshBoard(), 'a1')).toEqual([]) // boxed-in rook
+  })
+
+  it('restricts a pinned rook to the pin ray, capture of the pinner included', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a1', 'e4') // rook shields the king
+    applyMove(board, 'a8', 'e6') // black rook pins it
+    expect(legalDestinations(board, 'e4').sort()).toEqual(['e2', 'e3', 'e5', 'e6'])
+  })
+
+  it('lists only the answers to a knight check', () => {
+    const board = freshBoard()
+    applyMove(board, 'g8', 'f3') // black knight checks e1
+    expect(legalDestinations(board, 'g2')).toEqual(['f3']) // capture only — no block possible
+    expect(legalDestinations(board, 'a2')).toEqual([])
+  })
+
+  it('lists only the safe king square in a double check', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a8', 'e5') // rook check
+    applyMove(board, 'g8', 'f3') // knight check on top
+    board.squares['f2'].piece = null
+    expect(legalDestinations(board, 'e1')).toEqual(['f2'])
+    expect(legalDestinations(board, 'd1')).toEqual([]) // nothing else answers
+    expect(legalDestinations(board, 'g2')).toEqual([])
   })
 })
 
