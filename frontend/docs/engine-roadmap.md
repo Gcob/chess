@@ -120,9 +120,12 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       l'adversaire peut encore mater, jugé sur son seul matériel (convention standard en ligne :
       roi seul, roi + 1 mineure, fous mono-couleur = pas de matériel de mat), sinon nulle au temps
 - [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
-- [ ] Oracle chess.js (devDependency seulement) : spec de tests différentiels qui valide l'engine
-      contre chess.js (coups légaux, mats, pats) — nos specs restent le contrat de NOTRE design ;
-      s'étendra aux coups spéciaux en phase ④
+- [x] Oracle chess.js (devDependency seulement) — `src/engine/oracle.spec.ts` : parties
+      aléatoires seedées (PRNG déterministe, rejouables) jouées par NOTRE engine et miroir
+      dans chess.js, chaque position comparée pièce par pièce (destinations légales, état
+      d'échec) + accord sur les fins automatiques. Les trous de la phase ④ sont exclus exprès
+      (flags roque/en passant filtrés, poussées de promotion jamais jouées) — les réactiver
+      fera partie de la phase ④. Nos specs restent le contrat de NOTRE design
 
 ### ④ Coups spéciaux
 
