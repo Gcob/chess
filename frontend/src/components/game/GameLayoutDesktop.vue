@@ -7,9 +7,9 @@
     <aside ref="sidebarRef" class="game-desktop__sidebar">
       <PlayersPanel :view="view" />
       <GameInfo :view="view" />
+      <DevGamePanel />
       <MoveHistory :view="view" />
       <GameActions :view="view" />
-      <DevGamePanel />
     </aside>
   </div>
 </template>

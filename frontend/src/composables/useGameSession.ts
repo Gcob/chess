@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useGamesStore } from '@/stores/useGamesStore'
 import * as engine from '@/engine/game'
-import type { Game, SquareKey } from '@/types/chess'
+import type { Game, PieceType, SquareKey } from '@/types/chess'
 
 export function useGameSession(id: string) {
   const store = useGamesStore()
@@ -33,8 +33,8 @@ export function useGameSession(id: string) {
     }
   }
 
-  function makeMove(from: SquareKey, to: SquareKey) {
-    withGame(g => engine.makeMove(g, from, to))
+  function makeMove(from: SquareKey, to: SquareKey, promotion: PieceType | null = null) {
+    withGame(g => engine.makeMove(g, from, to, Date.now(), promotion))
   }
 
   // Local mode: the resigner is the player to move.

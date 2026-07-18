@@ -158,10 +158,16 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       survit (`Pe7` reste `Pe7`) ; oracle chess.js sans plus aucun filtre (notre choix mappé sur
       le sien). UI : résolution `autoPromoteToQueen ? dame : picker` — setting global (comportement
       attendu des deux joueurs en local) ; le picker radial est un pré-requis de la phase (sans lui,
-      pas de sous-promotion) : desktop ancré sur la case de promotion — le curseur est déjà là,
-      zéro voyage ; mobile : même langage mais centré en position fixe, grosses cibles touch ;
-      `prefers-reduced-motion` respecté ; coup en attente au drop, joué seulement au choix,
-      annulation = snap-back (l'intention pré-établie reste au Backlog parties distantes)
+      pas de sous-promotion). Drag desktop = release-pick : le survol d'une case de promotion EN
+      DRAG ouvre l'anneau ancré dessus, dame sous le curseur (release immédiat = dame — un seul
+      geste), release sur un autre slot = sous-promotion, release ailleurs = drop illégal donc
+      snap-back existant (l'annulation tombe de la légalité : un pion en 7ᵉ n'a que des promotions) ;
+      sortir de l'anneau referme le picker, survoler une autre case de promotion le rouvre là.
+      L'anneau se déploie vers l'intérieur du board sur LES DEUX axes (coins a8/h8 = quadrant,
+      ordre des slots stable pour la mémoire musculaire). Click-to-move et drag touch mobile =
+      coup pending + picker (centré fixe, grosses cibles en mobile), tap sur un slot joue, à côté
+      annule + snap-back ; `prefers-reduced-motion` respecté (l'intention pré-établie reste au
+      Backlog parties distantes)
 
 ### ⑤ SAN complet & PGN
 

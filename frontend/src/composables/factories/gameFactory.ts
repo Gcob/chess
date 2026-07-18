@@ -15,6 +15,7 @@ import type {
   Timer,
 } from '@/types/chess'
 import type {NewGameSettings} from '@/stores/useNewGameStore'
+import {PIECE_DATA} from '@/engine/piece'
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -137,15 +138,6 @@ function resolveSquareColor(file: SquareFile, rank: SquareRank): SquareColor {
 }
 
 // ─── Piece construction ───────────────────────────────────────────────────────
-
-const PIECE_DATA: Record<PieceType, { value: number; short: string; long: string }> = {
-  king: {value: 0, short: 'K', long: 'King'}, // 0 = sentinel, king cannot be captured
-  queen: {value: 9, short: 'Q', long: 'Queen'},
-  rook: {value: 5, short: 'R', long: 'Rook'},
-  bishop: {value: 3, short: 'B', long: 'Bishop'},
-  knight: {value: 3, short: 'N', long: 'Knight'},
-  pawn: {value: 1, short: 'P', long: 'Pawn'},
-}
 
 // startSquare is the piece's origin — it seeds a stable id (e.g. 'Pe2') that survives moves and promotion.
 function buildPiece(color: PieceColor, type: PieceType, startSquare: SquareKey): Piece {

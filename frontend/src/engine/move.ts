@@ -3,11 +3,13 @@ import type {
   CastlingSide,
   Piece as PieceDto,
   PieceColor,
+  PieceType,
   SquareKey,
   SquareRank,
 } from '@/types/chess'
 import {Board, getBoardPieces} from './board'
 import {MoveLegality} from './moveLegality'
+import {transformPiece} from './piece'
 
 // ─── Pure move logic ───────────────────────────────────────────────────────────
 // Vue-agnostic. Could one day live in a backend shared by both players.
@@ -54,8 +56,10 @@ export function hasAnyLegalMove(
 }
 
 // Applies a move in place. A DTO-level command: it mutates the plain data (through the
-// store's reactive proxy). Castling moves two pieces — the rook goes first, then the king.
-export function applyMove(board: BoardDto, from: SquareKey, to: SquareKey): void {
+// store's reactive proxy). Castling moves two pieces — the rook goes first, then the king;
+// a promotion transforms the landed pawn. Requiring a choice is makeMove's guard, not this
+// mutation's — without one, the pawn simply lands as a pawn.
+export function applyMove(board: BoardDto, from: SquareKey, to: SquareKey, promotion: PieceType | null = null): void {
   const piece = board.squares[from].piece
   if (!piece) {
     return
@@ -71,7 +75,27 @@ export function applyMove(board: BoardDto, from: SquareKey, to: SquareKey): void
     board.squares[victimKey].piece = null
   }
 
+  const promoting = promotion !== null && isPromotionMove(piece, to)
   relocate(board, from, to)
+  if (promoting) {
+    transformPiece(piece, promotion)
+  }
+}
+
+// A pawn landing on the last rank of its march promotes — the move's shape, not its legality.
+export function isPromotionMove(piece: PieceDto, to: SquareKey): boolean {
+  if (piece.type !== 'pawn') {
+    return false
+  }
+
+  return piece.color === 'white' ? to[1] === '8' : to[1] === '1'
+}
+
+// What a pawn may become — kings and pawns are not on the menu (FIDE 3.7e).
+const PROMOTION_CHOICES: readonly PieceType[] = ['queen', 'rook', 'bishop', 'knight']
+
+export function isPromotionChoice(type: PieceType | null): type is PieceType {
+  return type !== null && PROMOTION_CHOICES.includes(type)
 }
 
 // The square an en passant capture empties beside the landing, null for any other move —

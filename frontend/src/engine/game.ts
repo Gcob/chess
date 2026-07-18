@@ -1,8 +1,17 @@
-import type {CastlingSide, Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove, enPassantVictimKey, getCastlingSide, hasAnyLegalMove} from './move'
+import type {CastlingSide, Game, GameResult, Move, Piece, PieceColor, PieceType, SquareKey} from '@/types/chess'
+import {
+  applyMove,
+  canMove,
+  enPassantVictimKey,
+  getCastlingSide,
+  hasAnyLegalMove,
+  isPromotionChoice,
+  isPromotionMove,
+} from './move'
 import {hasInsufficientMaterial, hasMatingMaterial} from './material'
 import {findCheckers, getPlacement, placementSignature} from './board'
 import {MoveHistory, doublePushTarget} from './moveHistory'
+import {PIECE_DATA} from './piece'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -107,7 +116,13 @@ export function startGame(game: Game, now: number = Date.now()): void {
 
 // The first move of a waiting game starts it — but only once the move is known to be playable,
 // so an invalid interaction never transitions the game out of 'waiting'.
-export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number = Date.now()): void {
+export function makeMove(
+  game: Game,
+  from: SquareKey,
+  to: SquareKey,
+  now: number = Date.now(),
+  promotion: PieceType | null = null,
+): void {
   if (game.status === 'finished') {
     return
   }
@@ -118,6 +133,13 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   }
 
   if (!canMove(game.board, from, to, enPassantTarget(game.moves))) {
+    return
+  }
+
+  // A promotion push without a valid choice is an incomplete command — never a silent queen:
+  // the visible default lives in the UI setting, the engine only executes explicit choices.
+  const promoting = isPromotionMove(piece, to)
+  if (promoting && !isPromotionChoice(promotion)) {
     return
   }
 
@@ -133,11 +155,21 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
     return
   }
 
-  // An en passant capture empties the square beside the landing — settled before the board mutates.
+  // The Move is built BEFORE the board mutates: a promotion transforms the piece in place,
+  // and the record must keep the pawn's identity (pieceType feeds the fifty-move clock).
   const victimKey = enPassantVictimKey(game.board, piece, from, to)
   const captured = victimKey ? game.board.squares[victimKey].piece : game.board.squares[to].piece
-  applyMove(game.board, from, to)
-  game.moves.push(buildMove(piece, captured, from, to, elapsedSeconds, victimKey !== null))
+  const move = buildMove(
+    piece,
+    captured,
+    from,
+    to,
+    elapsedSeconds,
+    victimKey !== null,
+    promoting ? promotion : null,
+  )
+  applyMove(game.board, from, to, promotion)
+  game.moves.push(move)
 
   // Display snapshot — the legality logic recomputes checkers on demand instead of reading this.
   game.players.white.isInCheck = findCheckers(game.board, 'white').length > 0
@@ -171,10 +203,14 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
 // Replays a trusted move list through makeMove — scenario seeding today, refresh/persistence
 // tomorrow. One shared `now` spends no clock time. A refused move throws: replayed data is
 // developer or persisted data, a corruption must scream, never half-apply silently.
-export function replayMoves(game: Game, moves: Array<[SquareKey, SquareKey]>, now: number = Date.now()): void {
-  for (const [from, to] of moves) {
+export function replayMoves(
+  game: Game,
+  moves: Array<[SquareKey, SquareKey, PieceType?]>,
+  now: number = Date.now(),
+): void {
+  for (const [from, to, promotion] of moves) {
     const before = game.moves.length
-    makeMove(game, from, to, now)
+    makeMove(game, from, to, now, promotion ?? null)
     if (game.moves.length === before) {
       throw new Error(`replayMoves: move ${before + 1} (${from}-${to}) was refused by the engine`)
     }
@@ -265,13 +301,21 @@ function endGame(game: Game, result: GameResult): void {
 }
 
 // Naive SAN — no disambiguation, no check/mate marks until the rules engine lands (see roadmap)
-function buildSan(piece: Piece, captured: Piece | null, from: SquareKey, to: SquareKey, castling: CastlingSide | null): string {
+function buildSan(
+  piece: Piece,
+  captured: Piece | null,
+  from: SquareKey,
+  to: SquareKey,
+  castling: CastlingSide | null,
+  promotion: PieceType | null,
+): string {
   if (castling) {
     return castling === 'king-side' ? 'O-O' : 'O-O-O'
   }
 
   if (piece.type === 'pawn') {
-    return captured ? `${from[0]}x${to}` : to
+    const base = captured ? `${from[0]}x${to}` : to
+    return promotion ? `${base}=${PIECE_DATA[promotion].short}` : base
   }
 
   return `${piece.textRepresentation.short}${captured ? 'x' : ''}${to}`
@@ -284,10 +328,11 @@ function buildMove(
   to: SquareKey,
   elapsedSeconds: number,
   enPassant: boolean,
+  promotion: PieceType | null,
 ): Move {
   const castling = getCastlingSide(piece, from, to)
   const move: Move = {
-    san: buildSan(piece, captured, from, to, castling),
+    san: buildSan(piece, captured, from, to, castling, promotion),
     color: piece.color,
     pieceType: piece.type,
     from,
@@ -305,6 +350,10 @@ function buildMove(
 
   if (enPassant) {
     move.enPassant = true
+  }
+
+  if (promotion) {
+    move.promotion = promotion
   }
 
   return move

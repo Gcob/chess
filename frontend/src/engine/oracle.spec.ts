@@ -4,7 +4,7 @@ import {enPassantTarget, makeMove} from './game'
 import {legalDestinations} from './move'
 import {getBoardPieces} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
-import type {CreateGamePayload, Game, SquareKey} from '@/types/chess'
+import type {CreateGamePayload, Game, PieceType, SquareKey} from '@/types/chess'
 
 // ─── Differential oracle ───────────────────────────────────────────────────────
 // chess.js (devDependency ONLY — never shipped) plays referee: seeded random games are
@@ -12,10 +12,8 @@ import type {CreateGamePayload, Game, SquareKey} from '@/types/chess'
 // by piece. Our specs remain the contract of OUR design; the oracle sweeps the positions
 // nobody thinks to hand-write.
 //
-// Phase ④ gap, excluded on purpose until the move exists (castling and en passant play since
-// ④.1 and ④.2):
-// - promotion: pawn pushes to the last rank are never played (the engines would diverge —
-//   we keep a pawn, chess.js requires a piece choice)
+// Every rule of the game is live — the phase ④ gaps (castling, en passant, promotion) are
+// all closed. A promotion push draws its piece from the seeded PRNG, fed to both engines.
 
 const T0 = 1_700_000_000_000
 const GAMES = 20
@@ -50,6 +48,14 @@ function ourMoves(game: Game): Array<[SquareKey, SquareKey]> {
 function isPromotionPush(game: Game, from: SquareKey, to: SquareKey): boolean {
   return game.board.squares[from].piece?.type === 'pawn' && (to[1] === '8' || to[1] === '1')
 }
+
+// chess.js speaks single letters ('q'), our engine speaks piece types ('queen').
+const PROMOTION_PIECES: Array<[PieceType, string]> = [
+  ['queen', 'q'],
+  ['rook', 'r'],
+  ['bishop', 'b'],
+  ['knight', 'n'],
+]
 
 // Piece-by-piece comparison of the side to move, plus the check state.
 function comparePosition(game: Game, oracle: Chess, context: string): void {
@@ -98,17 +104,19 @@ function playRandomGame(seed: number): void {
       return
     }
 
-    const candidates = ourMoves(game).filter(([from, to]) => !isPromotionPush(game, from, to))
-    if (candidates.length === 0) {
-      return // only promotion pushes left — phase ④ territory, stop here
-    }
-
+    const candidates = ourMoves(game)
     const [from, to] = candidates[Math.floor(rand() * candidates.length)]!
-    makeMove(game, from, to, T0)
+
+    // A promotion push carries a PRNG-drawn piece — the same one on both sides of the mirror.
+    const promoting = isPromotionPush(game, from, to)
+    const [ourPiece, theirPiece] = PROMOTION_PIECES[Math.floor(rand() * PROMOTION_PIECES.length)]!
+
+    makeMove(game, from, to, T0, promoting ? ourPiece : null)
     expect(game.moves.length, `our engine refused its own legal move ${from}-${to} — ${context}`)
       .toBe(played.length + 1)
     // Mirroring throws if chess.js disagrees the move is legal.
-    expect(() => oracle.move({from, to}), `${from}-${to} legal for us, not for chess.js — ${context}`)
+    const mirrored = promoting ? {from, to, promotion: theirPiece} : {from, to}
+    expect(() => oracle.move(mirrored), `${from}-${to} legal for us, not for chess.js — ${context}`)
       .not.toThrow()
     played.push(`${from}${to}`)
   }

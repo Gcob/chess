@@ -148,6 +148,8 @@ export interface Move {
   castling?: CastlingSide
   // the capture emptied the square beside the landing, not the landing itself
   enPassant?: true
+  // what the pawn became — the piece's id survives the transformation
+  promotion?: PieceType
 }
 
 // ─── Game ────────────────────────────────────────────────────────────────────

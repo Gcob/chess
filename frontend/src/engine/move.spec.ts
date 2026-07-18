@@ -802,6 +802,39 @@ describe('applyMove', () => {
     expect(board.squares['d4'].piece?.id).toBe('Pg7') // untouched
   })
 
+  it('promotes a pawn landing on the last rank — id and color survive, both colors', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a7') // teleport the white pawn one step from glory
+    applyMove(board, 'a7', 'a8', 'queen') // capturing the resident rook on the way
+    const promoted = board.squares['a8'].piece
+    expect(promoted?.type).toBe('queen')
+    expect(promoted?.value).toBe(9)
+    expect(promoted?.textRepresentation).toEqual({short: 'Q', long: 'Queen'})
+    expect(promoted?.id).toBe('Pe2')
+    expect(promoted?.color).toBe('white')
+
+    const other = freshBoard()
+    applyMove(other, 'e7', 'a2')
+    applyMove(other, 'a2', 'a1', 'knight')
+    expect(other.squares['a1'].piece?.type).toBe('knight')
+    expect(other.squares['a1'].piece?.textRepresentation.short).toBe('N')
+  })
+
+  it('leaves the pawn alone without a choice — the guard is makeMove business', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'a7')
+    applyMove(board, 'a7', 'a8')
+    expect(board.squares['a8'].piece?.type).toBe('pawn')
+  })
+
+  it('ignores a promotion choice on a non-promotion move', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e4', 'queen')
+    expect(board.squares['e4'].piece?.type).toBe('pawn')
+    applyMove(board, 'g1', 'f3', 'queen') // not even a pawn
+    expect(board.squares['f3'].piece?.type).toBe('knight')
+  })
+
   it('brings the rook over the castled king, king-side', () => {
     const board = freshBoard()
     board.squares['f1'].piece = null

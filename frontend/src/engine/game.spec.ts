@@ -574,6 +574,60 @@ describe('makeMove — automatic endings', () => {
     expect(game.moves).toHaveLength(2)
   })
 
+  it('refuses a promotion push without a choice — never a silent queen', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'e2'])
+    applyMove(game.board, 'e2', 'a7') // white pawn one step from glory
+    makeMove(game, 'a7', 'a8', T0)
+    expect(game.moves).toHaveLength(0)
+    expect(game.board.squares['a7'].piece?.type).toBe('pawn')
+  })
+
+  it('refuses an impossible promotion choice', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'e2'])
+    applyMove(game.board, 'e2', 'a7')
+    makeMove(game, 'a7', 'a8', T0, 'king')
+    makeMove(game, 'a7', 'a8', T0, 'pawn')
+    expect(game.moves).toHaveLength(0)
+  })
+
+  it('plays a promotion — marker, SAN and transformed piece settled', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'e2'])
+    applyMove(game.board, 'e2', 'a7')
+    makeMove(game, 'a7', 'a8', T0, 'queen')
+    expect(game.moves[0]).toMatchObject({san: 'a8=Q', promotion: 'queen', pieceType: 'pawn'})
+    expect(game.board.squares['a8'].piece?.type).toBe('queen')
+    expect(game.board.squares['a8'].piece?.id).toBe('Pe2')
+  })
+
+  it('plays a promotion capture with its SAN, and the new piece checks at once', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'e2', 'b8'])
+    applyMove(game.board, 'e2', 'a7') // white pawn beside the black b8 knight
+    makeMove(game, 'a7', 'b8', T0, 'queen')
+    expect(game.moves[0]).toMatchObject({san: 'axb8=Q', promotion: 'queen'})
+    expect(game.moves[0]!.capture?.capturedPiece.type).toBe('knight')
+    expect(game.players.black.isInCheck).toBe(true) // the fresh queen strikes down the 8th rank
+  })
+
+  it('ignores a promotion choice on an ordinary move', () => {
+    const game = untimedGame()
+    makeMove(game, 'e2', 'e4', T0, 'queen')
+    expect(game.moves[0]).toMatchObject({san: 'e4'})
+    expect(game.moves[0]!.promotion).toBeUndefined()
+    expect(game.board.squares['e4'].piece?.type).toBe('pawn')
+  })
+
+  it('replays a promotion through the move list', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'e2'])
+    applyMove(game.board, 'e2', 'a7')
+    replayMoves(game, [['a7', 'a8', 'queen']], T0)
+    expect(game.board.squares['a8'].piece?.type).toBe('queen')
+  })
+
   it('leaves the game running on a simple check', () => {
     const game = untimedGame()
     playMoves(game, [['e2', 'e4'], ['f7', 'f5'], ['d1', 'h5']]) // Qh5+, blockable
