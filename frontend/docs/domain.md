@@ -122,8 +122,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   dérivent aussi de l'historique (premier contact des cases roi/tour) ; un roque est
   irréversible et borne la marche arrière comme un coup de pion ou une capture.
 - `Move.promotion?` (`PieceType`) marque une promotion — `makeMove` exige un choix valide
-  (dame/tour/fou/cavalier, sinon no-op : jamais de dame silencieuse, le défaut visible est le
-  setting `autoPromoteToQueen` résolu par la vue). `transformPiece` mute la pièce en place :
+  (dame/tour/fou/cavalier, sinon no-op : jamais de dame silencieuse). Le choix vient toujours
+  du picker, sans réglage pour le court-circuiter. `transformPiece` mute la pièce en place :
   l'id survit (`Pe7` reste `Pe7`), le `Move` garde `pieceType: 'pawn'` (compteur des 50 coups).
   `PIECE_DATA` (valeur, textes par type) vit dans `engine/piece.ts`.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`

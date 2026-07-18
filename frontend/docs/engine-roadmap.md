@@ -154,16 +154,16 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       oracle sans filtre `e`
 - [x] Promotion — ferme la phase ④, règles FIDE complètes. Engine : `makeMove` gagne le choix
       (`promotion`, 5ᵉ param) ; poussée de promotion sans choix valide = no-op, commande
-      incomplète — jamais de dame silencieuse, le défaut visible vit dans le setting
-      (`isPromotionMove`/`isPromotionChoice`) ; `transformPiece` change type/valeur/texte, l'id
+      incomplète — jamais de dame silencieuse (`isPromotionMove`/`isPromotionChoice`) ;
+      `transformPiece` change type/valeur/texte, l'id
       survit (`Pe7` reste `Pe7`) ; le `Move` est construit avant la mutation (son `pieceType`
       reste `pawn` — les 50 coups en dépendent) ; SAN `a8=Q`/`axb8=Q` ; **oracle chess.js sans
-      plus aucun filtre** (choix tiré du PRNG, donné aux deux engines). UI : résolution
-      `autoPromoteToQueen ? dame : picker` dans `useGameView.move` — setting global (comportement
-      attendu des deux joueurs en local). Picker radial (`cPromotionPicker` + géométrie pure
+      plus aucun filtre** (choix tiré du PRNG, donné aux deux engines). UI : le choix passe par
+      le picker, toujours et sans exception — aucun réglage ne le court-circuite, puisqu'il ne
+      coûte rien pour une dame. Picker radial (`cPromotionPicker` + géométrie pure
       `promotionSlotCenters` : dame SUR la case d'ancrage, satellites en arc serré vers
       l'intérieur du board sur les deux axes — colonnes a/h = quadrant, ordre stable, léger
-      chevauchement assumé donc hit-test au plus proche). Drag desktop = release-pick : se poser
+      chevauchement assumé). Drag desktop = release-pick : se poser
       sur une case de promotion EN DRAG ouvre l'anneau après un délai d'intention
       (`RING_OPEN_DELAY` — une case seulement traversée en diagonale n'ouvre rien) ; la dame est
       pré-armée sous le curseur, et un release sur la case de promotion la joue même si l'anneau
@@ -269,13 +269,10 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
 Features propres aux modes `vs-bot` / `private-remote` / `public-remote` — rien avant la phase ⑥.
 
 - [ ] Pre-moves : préparer son coup pendant le tour adverse, exécuté dès le retour du trait.
-      Sans objet en local — une seule souris joue les deux camps
-- [ ] Intention de promotion pré-établie par pion (idée relevée chez Aman Hambleton / ChessBrah :
-      le picker coûte du temps, et sur chess.com le popup meurt quand l'adversaire joue en
-      pre-move) : choisir la pièce d'avance, pendant l'attente — chaîne de résolution
-      `intention du pion ?? autoPromoteToQueen ?? picker`. État d'observateur privé, JAMAIS dans
-      le DTO `Game` (ne voyage pas) ; remote seulement — en local, l'écran partagé fuiterait
-      l'intention à l'adversaire. S'arrime aux pre-moves
+      Sans objet en local — une seule souris joue les deux camps. Une promotion en pre-move passe
+      par le picker au moment du geste : le choix est donc déjà capturé quand le trait revient,
+      rien à préparer d'avance (l'intention pré-établie et le réglage auto-dame de chess.com
+      corrigeaient un popup qui arrive trop tard — notre picker n'a pas ce défaut)
 - [ ] Réactiver chaque mode dans le sélecteur du form quand il devient jouable : flag `available`
       dans `NewGameModeSection` + sa composante de form (pattern strategy) — les entrées, icônes
       et clés i18n sont déjà en place

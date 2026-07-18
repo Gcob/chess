@@ -36,27 +36,16 @@ export function useGameView(id: string) {
     && activeColor.value === 'black',
   )
 
-  // The auto-queen setting resolves here — the engine itself never defaults silently, so a
-  // promotion push reaching it without a choice stays a no-op (the picker's business).
   function move(from: SquareKey, to: SquareKey, promotion: PieceType | null = null) {
-    if (!promotion && settingsStore.settings.autoPromoteToQueen && isPromotionPush(from, to)) {
-      promotion = 'queen'
-    }
-
     session.makeMove(from, to, promotion)
   }
 
-  // Whether this drop must go through the promotion picker: a legal promotion push, with the
-  // auto-queen shortcut turned off.
+  // Whether this drop must go through the promotion picker — a legal promotion push, always.
+  // The picker is the ONE way a promotion piece is ever chosen: it costs nothing for a queen
+  // (pre-armed under the cursor), so no shortcut setting has to exist beside it.
   function needsPromotionChoice(from: SquareKey, to: SquareKey): boolean {
-    return !settingsStore.settings.autoPromoteToQueen
-      && isPromotionPush(from, to)
-      && dropTargets(from).includes(to)
-  }
-
-  function isPromotionPush(from: SquareKey, to: SquareKey): boolean {
     const piece = session.game.value?.board.squares[from].piece
-    return !!piece && isPromotionMove(piece, to)
+    return !!piece && isPromotionMove(piece, to) && dropTargets(from).includes(to)
   }
 
   // Legal destinations of the piece on `from`, always — the query behind the touch drop pop.

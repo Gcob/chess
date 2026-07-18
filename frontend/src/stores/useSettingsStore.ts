@@ -12,9 +12,6 @@ export interface Settings {
   // Local games on mobile (phone flat between the players): the pieces turn 180° on
   // themselves toward the player to move. Desktop never turns anything.
   autoFlipPieces: boolean
-  // Promotions become a queen without asking — the competitive shortcut, shared by both local
-  // players (a global, visible default; the engine itself never defaults silently).
-  autoPromoteToQueen: boolean
   // Unlocks the dev game mode (QA scenarios) in the new-game form — the setting IS the gate,
   // so the tooling also works against preview/prod builds.
   devMode: boolean
@@ -29,7 +26,6 @@ const DEFAULTS: Settings = {
   highlightLastMove: true,
   showLegalMoves: true,
   autoFlipPieces: true,
-  autoPromoteToQueen: false,
   devMode: false,
 }
 
