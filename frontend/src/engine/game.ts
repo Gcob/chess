@@ -4,6 +4,7 @@ import {hasInsufficientMaterial, hasMatingMaterial} from './material'
 import {findCheckers, getPlacement, placementSignature} from './board'
 import {MoveHistory, doublePushTarget} from './moveHistory'
 import {MoveRecord} from './moveRecord'
+import {checkMark} from './san'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -155,7 +156,6 @@ export function makeMove(
   const record = new MoveRecord(game.board, piece, from, to, promoting ? promotion : null, epTarget)
   const move = record.toDto(elapsedSeconds)
   applyMove(game.board, from, to, promotion)
-  game.moves.push(move)
 
   // Display snapshot — the legality logic recomputes checkers on demand instead of reading this.
   game.players.white.isInCheck = findCheckers(game.board, 'white').length > 0
@@ -170,11 +170,19 @@ export function makeMove(
   game.activeColor = oppositeColor(game.activeColor)
   game.turnStartedAt = now
 
-  // The move may have ended the game: no legal reply = checkmate (in check) or stalemate;
-  // otherwise a dead position (no possible mate for anyone) is an automatic draw. The reply
-  // may be an en passant — the just-played double push is the context.
-  if (!hasAnyLegalMove(game.board, game.activeColor, enPassantTarget(game.moves))) {
-    endGame(game, game.players[game.activeColor].isInCheck
+  // The reply's fate closes the SAN and may end the game. Settled BEFORE the move joins the
+  // history: once pushed, the record inside the reactive array is the one to mutate — amending
+  // this raw one would slip past the proxy. The reply may be an en passant, and its context is
+  // the double push just played.
+  const opponentInCheck = game.players[game.activeColor].isInCheck
+  const opponentHasReply = hasAnyLegalMove(game.board, game.activeColor, doublePushTarget(move))
+  move.san += checkMark(opponentInCheck, opponentHasReply)
+  game.moves.push(move)
+
+  // No legal reply = checkmate (in check) or stalemate; otherwise a dead position (no possible
+  // mate for anyone) is an automatic draw.
+  if (!opponentHasReply) {
+    endGame(game, opponentInCheck
       ? {winner: oppositeColor(game.activeColor), reason: 'checkmate'}
       : {winner: null, reason: 'stalemate'})
   } else if (hasInsufficientMaterial(game.board)) {

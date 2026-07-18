@@ -192,7 +192,12 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       exempts. **Légalité, pas géométrie** : un jumeau cloué ne crée aucune ambiguïté, donc le
       filtre passe par `canMove`. L'oracle compare désormais NOTRE SAN à celui de chess.js coup
       par coup (leurs `+`/`#` filtrés jusqu'à l'étape suivante)
-- [ ] `+` / `#` (`O-O`/`O-O-O` et `=Q` déjà livrés en phase ④)
+- [x] `+` / `#` (`O-O`/`O-O-O` et `=Q` déjà livrés en phase ④) — `checkMark(inCheck, hasReply)`
+      dans `san.ts`, lu sur la position d'APRÈS le coup : les deux réponses existaient déjà
+      (`isInCheck` + `hasAnyLegalMove`, ce dernier n'est donc pas appelé une fois de plus).
+      Un pat reste sans marque. La marque est apposée AVANT le `push` dans `game.moves` :
+      une fois dans le tableau réactif, muter la référence brute passerait à côté du proxy.
+      **L'oracle compare désormais le SAN complet, caractère pour caractère** — plus aucun filtre
 - [ ] Export PGN complet (en-têtes, résultat)
 
 ### ⑥ Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
@@ -319,8 +324,6 @@ Non bloquants, à faire si le cœur nous en dit.
 
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
-- **SAN sans `+`/`#`** — la désambiguïsation est livrée ; les marques d'échec et de mat demandent
-  la position d'APRÈS le coup, prochaine étape de la phase ⑤.
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
   contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.

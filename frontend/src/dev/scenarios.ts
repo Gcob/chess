@@ -56,4 +56,23 @@ export const DEV_SCENARIOS: DevScenario[] = [
       ['d1', 'd2'], ['d8', 'd7'],
     ],
   },
+  {
+    id: 'mate-in-one',
+    name: 'Mate in one',
+    description: 'Scholar\'s mate is set: play Qh5xf7 for the mate (and its # mark).',
+    moves: [
+      ['e2', 'e4'], ['e7', 'e5'],
+      ['f1', 'c4'], ['b8', 'c6'],
+      ['d1', 'h5'], ['g8', 'f6'],
+    ],
+  },
+  {
+    id: 'disambiguation',
+    name: 'SAN disambiguation',
+    description: 'Both knights reach d2 (and both black ones d7): the history writes Nbd2 or Nfd2.',
+    moves: [
+      ['g1', 'f3'], ['d7', 'd5'],
+      ['d2', 'd4'], ['g8', 'f6'],
+    ],
+  },
 ]

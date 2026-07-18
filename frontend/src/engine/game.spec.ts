@@ -597,7 +597,8 @@ describe('makeMove — automatic endings', () => {
     keepOnly(game.board, ['e1', 'e8', 'e2'])
     applyMove(game.board, 'e2', 'a7')
     makeMove(game, 'a7', 'a8', T0, 'queen')
-    expect(game.moves[0]).toMatchObject({san: 'a8=Q', promotion: 'queen', pieceType: 'pawn'})
+    // The fresh queen rakes the 8th rank, so the SAN closes on a check.
+    expect(game.moves[0]).toMatchObject({san: 'a8=Q+', promotion: 'queen', pieceType: 'pawn'})
     expect(game.board.squares['a8'].piece?.type).toBe('queen')
     expect(game.board.squares['a8'].piece?.id).toBe('Pe2')
   })
@@ -607,7 +608,7 @@ describe('makeMove — automatic endings', () => {
     keepOnly(game.board, ['e1', 'e8', 'e2', 'b8'])
     applyMove(game.board, 'e2', 'a7') // white pawn beside the black b8 knight
     makeMove(game, 'a7', 'b8', T0, 'queen')
-    expect(game.moves[0]).toMatchObject({san: 'axb8=Q', promotion: 'queen'})
+    expect(game.moves[0]).toMatchObject({san: 'axb8=Q+', promotion: 'queen'})
     expect(game.moves[0]!.capture?.capturedPiece.type).toBe('knight')
     expect(game.players.black.isInCheck).toBe(true) // the fresh queen strikes down the 8th rank
   })
@@ -626,6 +627,35 @@ describe('makeMove — automatic endings', () => {
     applyMove(game.board, 'e2', 'a7')
     replayMoves(game, [['a7', 'a8', 'queen']], T0)
     expect(game.board.squares['a8'].piece?.type).toBe('queen')
+  })
+
+  it('closes the SAN with + when the move gives check', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['f7', 'f5'], ['d1', 'h5']]) // Qh5+, blockable
+    expect(game.moves[2]!.san).toBe('Qh5+')
+  })
+
+  it('closes the SAN with # when the check is mate', () => {
+    const game = untimedGame()
+    playMoves(game, [['f2', 'f3'], ['e7', 'e5'], ['g2', 'g4'], ['d8', 'h4']]) // fool's mate
+    expect(game.moves[3]!.san).toBe('Qh4#')
+    expect(game.result).toEqual({winner: 'black', reason: 'checkmate'})
+  })
+
+  it('leaves a stalemating move unmarked — no check, no mark', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'd1'])
+    applyMove(game.board, 'e8', 'h8') // black king cornered
+    applyMove(game.board, 'd1', 'g1') // the queen takes the g-file
+    makeMove(game, 'g1', 'g6', T0) // Qg6 — h8 is boxed in without being attacked
+    expect(game.result).toEqual({winner: null, reason: 'stalemate'})
+    expect(game.moves[0]!.san).toBe('Qg6')
+  })
+
+  it('leaves a quiet move unmarked', () => {
+    const game = untimedGame()
+    makeMove(game, 'e2', 'e4', T0)
+    expect(game.moves[0]!.san).toBe('e4')
   })
 
   it('leaves the game running on a simple check', () => {

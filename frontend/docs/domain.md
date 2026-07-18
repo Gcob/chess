@@ -166,9 +166,9 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Player.isInCheck` — snapshot d'affichage mis à jour à chaque `makeMove`.
   L'engine ne le lit jamais : les checkers se recalculent à la demande (`findCheckers`).
 - `Move.san` contient la notation **SAN** (Standard Algebraic Notation) — ex. `'e4'`, `'Nf3'`,
-  `'O-O'`, `'exd5'`, `'a8=Q'`, `'Nbd2'`. Écrite par `engine/san.ts` au moment du coup, à partir de
-  la position d'AVANT : capture, roque et désambiguïsation s'en dérivent (jamais repassés en
-  paramètre). Les marques `+`/`#` et le PGN viendront plus tard.
+  `'O-O'`, `'exd5'`, `'a8=Q+'`, `'Nbd2'`, `'Qh4#'`. Écrite par `engine/san.ts` au moment du coup :
+  capture, roque et désambiguïsation se dérivent de la position d'AVANT (jamais repassés en
+  paramètre), la marque `+`/`#` de celle d'APRÈS (`checkMark`). Le PGN viendra plus tard.
 
 ## Concepts à intégrer éventuellement
 

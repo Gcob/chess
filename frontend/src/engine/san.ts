@@ -24,6 +24,17 @@ export function buildSan(record: MoveRecord): string {
   return `${PIECE_DATA[piece.type].short}${disambiguation(record)}${capturedPiece ? 'x' : ''}${to}`
 }
 
+// The mark closing a SAN, read from the position the move CREATED: '+' when the side to move
+// is in check, '#' when nothing answers it. A stalemate leaves the move unmarked — it is the
+// reply's absence that ends the game, not the move's aggression.
+export function checkMark(inCheck: boolean, hasReply: boolean): string {
+  if (!inCheck) {
+    return ''
+  }
+
+  return hasReply ? '+' : '#'
+}
+
 // When another piece of the same kind could land on the same square, the departure is spelled
 // out: its file if that alone tells them apart, else its rank, else the whole square. Pawns
 // are exempt (a pawn capture already names its file) and so is the king (there is only one).

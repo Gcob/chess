@@ -122,10 +122,10 @@ function playRandomGame(seed: number): void {
       oracleSan = oracle.move(mirrored).san
     }, `${from}-${to} legal for us, not for chess.js — ${context}`).not.toThrow()
 
-    // The referee also writes SAN: same move, same notation — disambiguation included. Their
-    // check and mate marks are stripped until we produce our own (next step of phase ⑤).
+    // The referee also writes SAN: same move, same notation, character for character —
+    // disambiguation, check and mate marks included.
     expect(game.moves[game.moves.length - 1]!.san, `SAN diverges on ${from}-${to} — ${context}`)
-      .toBe(oracleSan.replace(/[+#]/g, ''))
+      .toBe(oracleSan)
     played.push(`${from}${to}`)
   }
 }
