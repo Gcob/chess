@@ -126,8 +126,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
 - Légalité : un seul pipeline de restrictions successives, chacune auto-gardée (géométrie → sécurité
-  du roi → sécurité du roque → clouage → sécurité en passant → réponse à l'échec), exposé en trois
-  queries : `canMove` (un coup),
+  du roi → sécurité du roque → clouage → sécurité en passant → réponse à l'échec), encapsulé dans la
+  classe `MoveLegality` (`engine/moveLegality.ts`) et exposé en trois queries : `canMove` (un coup),
   `legalDestinations` (toutes les destinations d'une pièce — aides locales) et `hasAnyLegalMove`
   (une couleur a-t-elle encore un coup — la question mat/pat, court-circuite à la première
   destination trouvée), un seul `Board` partagé par query. Queries pures sur le board non muté —
