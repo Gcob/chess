@@ -140,7 +140,8 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
   `moves.length` — jamais via `legalTargets`, gaté par un setting. Menu contextuel supprimé
   (`@contextmenu.prevent`). Case cible par maths sur le rect (pas de hit-testing DOM). Toucher : drag centré —
   la cible de drop est la case sous le doigt ; le sprite double depuis son coin bas-gauche avec une légère
-  inclinaison (`lifted`, transition) et grossit vers le haut-droite, hors de l'ombre du pouce ; cible
+  inclinaison (`lifted`, transition) et grossit vers le haut-droite, hors de l'ombre du pouce, où il
+  flotte en boucle (bob + balancement, coupé par `prefers-reduced-motion`) ; cible
   affichée en case agrandie ombrée (`drop-target-touch`) sous les pièces, avec le code de destination
   épinglé au-dessus de la case (`showCode`) — seulement sur une destination légale (`view.dropTargets`,
   jamais gaté par le setting des hints : c'est du feedback de légalité, pas un hint). Piège : le sprite n'a AUCUNE transition de base — elle vit

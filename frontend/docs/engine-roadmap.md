@@ -146,7 +146,7 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
       jamais via `legalTargets` qui est gaté par le setting)
 - [x] **Drag mobile** : drag centré — la cible de drop est la case sous le doigt ; le sprite double
       depuis son coin bas-gauche avec une légère inclinaison (transition) et grossit vers le
-      haut-droite, hors de l'ombre du pouce — case agrandie ombrée (`drop-target-touch`, façon
+      haut-droite, hors de l'ombre du pouce, où il flotte en boucle — case agrandie ombrée (`drop-target-touch`, façon
       key-preview) + code de destination au-dessus de la case, seulement sur une destination
       légale (`view.dropTargets`, jamais gaté par le setting des hints)
 - [ ] Refactor du form nouvelle partie : le mode choisi (étape 1) pilote le reste du form —

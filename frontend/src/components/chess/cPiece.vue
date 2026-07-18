@@ -160,10 +160,32 @@ const style = computed(() => ({
   // The shadow renders before the transform, so its offsets are doubled on screen by the
   // scale — keep the values half of the intended look.
   &__img--lifted {
-    transform: translate(45%, -115%) scale(2) rotate(15deg);
+    transform: translate(10%, -55%) scale(2.25) rotate(10deg);
     transform-origin: bottom left;
     filter: drop-shadow(8px 12px 2px rgba(0, 0, 0, 0.35));
     transition: transform 0.15s ease-out, filter 0.15s ease-out;
+    // The float rides on the INDIVIDUAL translate/rotate properties, which compose with the
+    // pose above — the loop never interrupts the grow-in transition. Symmetric keyframes
+    // (0% = 100%, ease-in-out both ways) make the infinite loop seamless.
+    animation: c-piece-float 1.6s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+}
+
+// A gentle airborne bob with a hint of pendulum sway (the origin sits at the pose's
+// bottom-left corner). Values are pre-scale, like the pose's.
+@keyframes c-piece-float {
+  0%, 100% {
+    translate: 0 0;
+    rotate: -1.5deg;
+  }
+
+  50% {
+    translate: 0 -4%;
+    rotate: 1.5deg;
   }
 }
 
