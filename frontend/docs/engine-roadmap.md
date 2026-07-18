@@ -176,6 +176,10 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       seul écran, une seule souris)
 - [ ] Format wire du DTO (liste de coups ou FEN — le board circulaire ne voyage pas, il se reconstruit)
 - [ ] Sync du DTO par websocket — le mode `local` reste 100 % hors ligne
+- [ ] Disponibilité d'une partie = un état, pas un accident : `loading → ready | missing` exposé
+      par la vue + board skeleton (cadre 8×8 sans pièces, voile discret, `prefers-reduced-motion`)
+      pendant `loading` — refresh de page, spectateur qui rejoint, fetch de session ; la relance
+      du mode dev profitera du même visuel
 - [ ] Spectateurs : observer une ou plusieurs parties sur une même page
 - [ ] Policies par mode finalisées (`vs-bot`, `private-remote`, `public-remote`)
 
@@ -296,4 +300,8 @@ Non bloquants, à faire si le cœur nous en dit.
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
   contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.
+- **Scénarios dev = replay de coups, pas de PGN** *(semi-dette)* — le semis rejoue chaque coup dans
+  le vrai engine (délai ∝ nombre de coups : légalité + fins automatiques payées à chaque demi-coup).
+  Charger un PGN serait le vrai format de test — viendra avec l'export PGN (phase ⑤) et le format
+  wire (phase ⑥) ; d'ici là, le replay garantit au moins des positions légales par construction.
 
