@@ -110,7 +110,12 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       (remonté depuis la fin jusqu'au premier coup de pion ou capture, jamais tracké à part) ;
       100 demi-coups sans progrès = nulle automatique dans `makeMove`. `Move.pieceType` ajouté
       au DTO (le SAN complet de la phase ⑤ le lira aussi)
-- [ ] Triple répétition
+- [x] Triple répétition — l'identité d'une position vit dans `board.ts` (un board EST une
+      position : `getPlacement` + `placementSignature` — placement type+couleur par case +
+      trait, string complète, jamais un hash numérique) ; `isThreefoldRepetition(game)` remonte
+      l'historique à rebours dans une map détachée (jamais le board réactif), arrêt au premier
+      coup irréversible (pion/capture) ; 3ᵉ occurrence = nulle automatique. Les droits
+      roque/en passant rejoindront la signature en phase ④
 - [x] Matériel insuffisant — `hasInsufficientMaterial(board)` dans `makeMove` (après mat/pat) :
       position morte = nulle automatique. Aligné chess.js : roi vs roi, une mineure seule, ou
       fous seuls tous sur la même couleur de cases (la paire classique couvre les deux couleurs,
@@ -119,7 +124,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       `hasMatingMaterial(board, color)` dans `flagTimeout` : le drapeau tombé ne perd que si
       l'adversaire peut encore mater, jugé sur son seul matériel (convention standard en ligne :
       roi seul, roi + 1 mineure, fous mono-couleur = pas de matériel de mat), sinon nulle au temps
-- [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
+- [x] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
+      *(fait — les 8 raisons ont toutes leur chemin : abandon, temps — victoire ou nulle du drapeau —,
+      accord, mat, pat, 50 coups, répétition, matériel)*
 - [x] Oracle chess.js (devDependency seulement) — `src/engine/oracle.spec.ts` : parties
       aléatoires seedées (PRNG déterministe, rejouables) jouées par NOTRE engine et miroir
       dans chess.js, chaque position comparée pièce par pièce (destinations légales, état

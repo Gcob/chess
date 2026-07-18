@@ -408,12 +408,25 @@ describe('makeMove — automatic endings', () => {
     expect(game.result).toEqual({winner: null, reason: 'insufficient-material'})
   })
 
+  // Quiet non-repeating grind: each rook loops its own cycle (6 vs 10 squares — first full
+  // coincidence at lcm = ply 60), so no position ever occurs 3 times before ply 100 and the
+  // fifty-move rule is what fires. The rooks never check anybody from the a/b and g/h files.
+  const WHITE_ROOK_CYCLE: SquareKey[] = ['a1', 'a2', 'a3', 'b3', 'b2', 'b1']
+  const BLACK_ROOK_CYCLE: SquareKey[] = ['h8', 'h7', 'h6', 'h5', 'h4', 'g4', 'g5', 'g6', 'g7', 'g8']
+
+  function grindQuietPlies(game: Game, plies: number): void {
+    keepOnly(game.board, ['e1', 'a1', 'e8', 'h8'])
+    for (let i = 0; i * 2 < plies; i++) {
+      makeMove(game, WHITE_ROOK_CYCLE[i % 6]!, WHITE_ROOK_CYCLE[(i + 1) % 6]!, T0)
+      if (i * 2 + 1 < plies) {
+        makeMove(game, BLACK_ROOK_CYCLE[i % 10]!, BLACK_ROOK_CYCLE[(i + 1) % 10]!, T0)
+      }
+    }
+  }
+
   it('ends on the fifty-move rule — 100 quiet half-moves', () => {
     const game = untimedGame()
-    // Knight shuffle: 4 quiet half-moves per cycle, 25 cycles = exactly 100.
-    for (let cycle = 0; cycle < 25; cycle++) {
-      playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1'], ['c6', 'b8']])
-    }
+    grindQuietPlies(game, 100)
     expect(game.moves).toHaveLength(100)
     expect(game.status).toBe('finished')
     expect(game.result).toEqual({winner: null, reason: 'fifty-move-rule'})
@@ -421,11 +434,19 @@ describe('makeMove — automatic endings', () => {
 
   it('stays active one half-move before the fifty-move limit', () => {
     const game = untimedGame()
-    for (let cycle = 0; cycle < 24; cycle++) {
-      playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1'], ['c6', 'b8']])
-    }
-    playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1']]) // 99
+    grindQuietPlies(game, 99)
     expect(game.status).toBe('active')
+  })
+
+  it('ends on threefold repetition — the knight shuffle', () => {
+    const game = untimedGame()
+    // The starting position recurs after each 4-ply cycle: 3rd occurrence at ply 8.
+    playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1'], ['c6', 'b8']])
+    playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1']])
+    expect(game.status).toBe('active') // 7 plies: only 2 occurrences so far
+    playMoves(game, [['c6', 'b8']])
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: null, reason: 'threefold-repetition'})
   })
 
   it('leaves the game running on a simple check', () => {

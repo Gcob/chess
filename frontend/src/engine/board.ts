@@ -220,6 +220,24 @@ export function getBoardPieces(board: BoardDto): BoardPiece[] {
   return pieces
 }
 
+// A board IS a position — these two answer its identity, the repetition question's foundation.
+// The placement (what stands where) is exposed as a mutable map so the repetition walk can
+// undo history on a detached copy without rebuilding boards; the signature stamps a placement
+// plus the side to move (same placement, other trait = different position). A full string,
+// never a numeric hash: a collision would be an undetectable phantom draw. Castling and
+// en-passant rights join the signature with phase ④.
+export function getPlacement(board: BoardDto): Map<SquareKey, string> {
+  const placement = new Map<SquareKey, string>()
+  for (const {piece, square} of getBoardPieces(board)) {
+    placement.set(square, piece.color[0] + piece.type)
+  }
+  return placement
+}
+
+export function placementSignature(placement: Map<SquareKey, string>, activeColor: PieceColor): string {
+  return [...placement.entries()].map(([square, code]) => square + code).sort().join('|') + activeColor
+}
+
 export function findKingSquare(board: BoardDto, color: PieceColor): SquareDto | null {
   return Object.values(board.squares).find(
     square => square.piece?.type === 'king' && square.piece.color === color,

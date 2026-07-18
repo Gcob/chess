@@ -77,6 +77,8 @@ function compareEnding(game: Game, oracle: Chess, context: string): void {
     expect(oracle.isInsufficientMaterial(), `we call dead material, chess.js disagrees — ${context}`).toBe(true)
   } else if (reason === 'fifty-move-rule') {
     expect(oracle.isDraw(), `we call the fifty-move draw, chess.js disagrees — ${context}`).toBe(true)
+  } else if (reason === 'threefold-repetition') {
+    expect(oracle.isThreefoldRepetition(), `we call the threefold draw, chess.js disagrees — ${context}`).toBe(true)
   }
 }
 

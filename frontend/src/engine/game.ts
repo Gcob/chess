@@ -1,7 +1,7 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
 import {canMove, applyMove, hasAnyLegalMove} from './move'
 import {hasInsufficientMaterial, hasMatingMaterial} from './material'
-import {findCheckers} from './board'
+import {findCheckers, getPlacement, placementSignature} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -28,6 +28,35 @@ export function halfmovesSinceProgress(game: Game): number {
   }
 
   return count
+}
+
+// Threefold repetition: the current position (same pieces on the same squares, same side to
+// move) already occurred twice before. Derived from the history — the current placement is
+// walked BACKWARD through the quiet tail in a detached map, each undone half-move yielding an
+// earlier signature. The walk stops at the first pawn move or capture: material and structure
+// only go one way, no earlier position can recur. Castling/en-passant rights will join the
+// signature with phase ④.
+export function isThreefoldRepetition(game: Game): boolean {
+  const placement = getPlacement(game.board)
+  let color = game.activeColor
+  const current = placementSignature(placement, color)
+
+  let occurrences = 1
+  for (let i = game.moves.length - 1; i >= 0; i--) {
+    const move = game.moves[i]!
+    if (move.pieceType === 'pawn' || move.capture) {
+      break
+    }
+
+    placement.delete(move.to)
+    placement.set(move.from, move.color[0] + move.pieceType)
+    color = oppositeColor(color)
+    if (placementSignature(placement, color) === current && ++occurrences >= 3) {
+      return true
+    }
+  }
+
+  return false
 }
 
 export function oppositeColor(color: PieceColor): PieceColor {
@@ -99,6 +128,8 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
     endGame(game, {winner: null, reason: 'insufficient-material'})
   } else if (halfmovesSinceProgress(game) >= FIFTY_MOVE_LIMIT) {
     endGame(game, {winner: null, reason: 'fifty-move-rule'})
+  } else if (isThreefoldRepetition(game)) {
+    endGame(game, {winner: null, reason: 'threefold-repetition'})
   }
 }
 

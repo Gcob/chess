@@ -109,8 +109,10 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Piece.textRepresentation` : `short` (ex. `'K'`) et `long` (ex. `'King'`)
 - `Move` est du plain data sérialisable — `from`/`to` en `SquareKey`, jamais des références `Square`
   (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves`.
-  `pieceType` = la pièce déplacée — le compteur des 50 coups (`halfmovesSinceProgress`, dérivé de
-  l'historique) et le SAN complet (phase ⑤) le lisent.
+  `pieceType` = la pièce déplacée — le compteur des 50 coups (`halfmovesSinceProgress`), la
+  triple répétition (`isThreefoldRepetition`, signatures remontées à rebours de l'historique)
+  et le SAN complet (phase ⑤) le lisent ; les deux queries de nulle sont dérivées de
+  l'historique, jamais trackées à part.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
