@@ -14,7 +14,7 @@ describe('getPieceMoveTypes', () => {
   it('maps each piece type to its move types', () => {
     const expected: Record<PieceType, MoveTypeId[]> = {
       king: ['simple', 'castling'],
-      pawn: ['linear-forward', 'linear-forward-double', 'diagonal-forward-capture'],
+      pawn: ['linear-forward', 'linear-forward-double', 'diagonal-forward-capture', 'en-passant'],
       queen: ['diagonal', 'linear'],
       rook: ['linear'],
       bishop: ['diagonal'],

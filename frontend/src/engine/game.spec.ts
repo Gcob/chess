@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest'
 import {
   acceptDraw,
   declineDraw,
+  enPassantTarget,
   flagTimeout,
   halfmovesSinceProgress,
   makeMove,
@@ -333,6 +334,29 @@ function playMoves(game: Game, moves: Array<[SquareKey, SquareKey]>): void {
   }
 }
 
+describe('enPassantTarget', () => {
+  it('exposes the crossed square right after a double push, both colors', () => {
+    const game = untimedGame()
+    makeMove(game, 'e2', 'e4', T0)
+    expect(enPassantTarget(game.moves)).toBe('e3')
+    makeMove(game, 'd7', 'd5', T0)
+    expect(enPassantTarget(game.moves)).toBe('d6')
+  })
+
+  it('expires on the very next move', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['g8', 'f6']])
+    expect(enPassantTarget(game.moves)).toBeNull()
+  })
+
+  it('ignores single pushes and an empty history', () => {
+    const game = untimedGame()
+    expect(enPassantTarget(game.moves)).toBeNull()
+    makeMove(game, 'e2', 'e3', T0)
+    expect(enPassantTarget(game.moves)).toBeNull()
+  })
+})
+
 describe('halfmovesSinceProgress', () => {
   it('counts quiet moves and resets on a pawn move', () => {
     const game = untimedGame()
@@ -449,6 +473,20 @@ describe('makeMove — automatic endings', () => {
     expect(game.result).toEqual({winner: null, reason: 'threefold-repetition'})
   })
 
+  it('tells identical placements apart by a live en passant right', () => {
+    const game = untimedGame()
+    // After 3. e4 the black d4 pawn could capture en passant — that position carries the
+    // right; the knight shuffles rebuild the same placement without it.
+    playMoves(game, [['a2', 'a3'], ['d7', 'd5'], ['h2', 'h3'], ['d5', 'd4'], ['e2', 'e4']])
+    const cycle: Array<[SquareKey, SquareKey]> = [['g8', 'f6'], ['g1', 'f3'], ['f6', 'g8'], ['f3', 'g1']]
+    playMoves(game, cycle)
+    playMoves(game, cycle)
+    expect(game.status).toBe('active') // ep-less placement seen twice only — no draw
+    playMoves(game, cycle)
+    expect(game.status).toBe('finished') // third ep-less occurrence
+    expect(game.result).toEqual({winner: null, reason: 'threefold-repetition'})
+  })
+
   it('tells identical placements apart by their castling rights', () => {
     const game = untimedGame()
     playMoves(game, [['g1', 'f3'], ['g8', 'f6']]) // knights out — h-rook rights still alive
@@ -478,6 +516,36 @@ describe('makeMove — automatic endings', () => {
     expect(game.board.squares['c1'].piece?.type).toBe('king')
     expect(game.board.squares['d1'].piece?.id).toBe('Ra1')
     expect(game.moves[game.moves.length - 1]).toMatchObject({san: 'O-O-O', castling: 'queen-side'})
+  })
+
+  it('plays an en passant capture — victim recorded, marker and SAN settled', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['a7', 'a6'], ['e4', 'e5'], ['d7', 'd5']])
+    makeMove(game, 'e5', 'd6', T0) // exd6 e.p.
+    expect(game.moves[game.moves.length - 1]).toMatchObject({san: 'exd6', enPassant: true, from: 'e5', to: 'd6'})
+    expect(game.moves[game.moves.length - 1]!.capture?.capturedPiece.id).toBe('Pd7')
+    expect(game.board.squares['d5'].piece).toBeNull()
+  })
+
+  it('refuses an en passant one move too late', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['a7', 'a6'], ['e4', 'e5'], ['d7', 'd5'], ['h2', 'h3'], ['h7', 'h6']])
+    makeMove(game, 'e5', 'd6', T0) // the right expired with black's quiet move
+    expect(game.moves).toHaveLength(6)
+  })
+
+  it('sees the en passant escape — no false stalemate after a double push', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'd1', 'f7', 'f2', 'g2'])
+    applyMove(game.board, 'e8', 'a8') // black king boxed by the queen…
+    applyMove(game.board, 'd1', 'b6') // …covering a7, b7 and b8, without check
+    applyMove(game.board, 'f7', 'f4') // black pawn — blocked ahead once f3 arrives
+    applyMove(game.board, 'f2', 'f3')
+    makeMove(game, 'g2', 'g4', T0) // the double push — fxg3 e.p. is black's ONLY move
+    expect(game.status).toBe('active') // not a stalemate
+    makeMove(game, 'f4', 'g3', T0)
+    expect(game.board.squares['g4'].piece).toBeNull()
+    expect(game.moves).toHaveLength(2)
   })
 
   it('leaves the game running on a simple check', () => {

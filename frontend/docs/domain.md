@@ -109,7 +109,10 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Square.file` = colonne (a–h), `Square.rank` = rangée (1–8) — notation standard
 - `Piece.textRepresentation` : `short` (ex. `'K'`) et `long` (ex. `'King'`)
 - `Move` est du plain data sérialisable — `from`/`to` en `SquareKey`, jamais des références `Square`
-  (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves`.
+  (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves` :
+  `enPassantTarget(moves)` dérive la cible (style FEN), passée en param optionnel aux queries de
+  légalité — jamais stockée, elle expire par construction. `Move.enPassant` marque la capture
+  (la case vidée est à côté de l'arrivée, pas l'arrivée).
   `pieceType` = la pièce déplacée — le compteur des 50 coups (`halfmovesSinceProgress`), la
   triple répétition (`isThreefoldRepetition`, signatures remontées à rebours de l'historique)
   et le SAN complet (phase ⑤) le lisent ; les deux queries de nulle sont dérivées de
@@ -123,12 +126,14 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
 - Légalité : un seul pipeline de restrictions successives, chacune auto-gardée (géométrie → sécurité
-  du roi → sécurité du roque → clouage → réponse à l'échec), exposé en trois queries : `canMove` (un coup),
+  du roi → sécurité du roque → clouage → sécurité en passant → réponse à l'échec), exposé en trois
+  queries : `canMove` (un coup),
   `legalDestinations` (toutes les destinations d'une pièce — aides locales) et `hasAnyLegalMove`
   (une couleur a-t-elle encore un coup — la question mat/pat, court-circuite à la première
   destination trouvée), un seul `Board` partagé par query. Queries pures sur le board non muté —
   jamais de move/undo simulé. Les questions passent par la classe `Board` de l'engine (façade d'une
-  position, durée de vie ≤ un coup, wrappers `Piece`/`Square` cachés) et `Ray` (ligne de vue d'une
+  position, durée de vie ≤ un coup, wrappers `Piece`/`Square` cachés), `MoveHistory` (même frontière
+  pour `Game.moves` — droits et compteurs dérivés de l'historique) et `Ray` (ligne de vue d'une
   glissante, marchée À TRAVERS les pièces : 0 bloqueur = échec + prolongement x-ray derrière le roi,
   1 bloqueur ami = clouage)
 - Patterns de déplacement et signatures d'attaque : dans les sous-classes de `MoveType` (une classe par

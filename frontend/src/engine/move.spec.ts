@@ -328,6 +328,85 @@ describe('canMove — castling geometry', () => {
   })
 })
 
+describe('canMove — en passant', () => {
+  it('allows capturing en passant onto the target, both colors', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e5') // white pawn beside…
+    applyMove(board, 'd7', 'd5') // …the freshly double-pushed black pawn
+    expect(canMove(board, 'e5', 'd6', 'd6')).toBe(true)
+
+    const other = freshBoard()
+    applyMove(other, 'e7', 'e4') // black pawn beside…
+    applyMove(other, 'd2', 'd4') // …the freshly double-pushed white pawn
+    expect(canMove(other, 'e4', 'd3', 'd3')).toBe(true)
+  })
+
+  it('rejects the diagonal onto the target without the context', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e5')
+    applyMove(board, 'd7', 'd5')
+    expect(canMove(board, 'e5', 'd6')).toBe(false)
+  })
+
+  it('requires an enemy pawn behind the target', () => {
+    // A fabricated context never opens a diagonal by itself — d2 holds our own pawn.
+    expect(canMove(freshBoard(), 'e2', 'd3', 'd3')).toBe(false)
+  })
+
+  it('lists the en passant capture among the pawn destinations', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e5')
+    applyMove(board, 'd7', 'd5')
+    expect(legalDestinations(board, 'e5', 'd6').sort()).toEqual(['d6', 'e6'])
+  })
+})
+
+describe('canMove — en passant legality', () => {
+  it('answers a check given by the double-pushed pawn itself', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'e4') // white king in the double push's crosshairs
+    applyMove(board, 'e2', 'e5') // white pawn ready to capture
+    applyMove(board, 'd7', 'd5') // the double push checks e4
+    expect(canMove(board, 'e5', 'd6', 'd6')).toBe(true) // exd6 e.p. removes the checker
+  })
+
+  it('never answers an unrelated check', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e5') // white pawn beside the future victim
+    applyMove(board, 'd7', 'd5') // double push
+    applyMove(board, 'e1', 'h5') // king in the open…
+    applyMove(board, 'a8', 'h7') // …checked by the black rook down the h-file
+    expect(canMove(board, 'e5', 'd6', 'd6')).toBe(false)
+  })
+
+  it('rejects the capture when both pawns shield the king on their rank', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'h5') // king on the 5th rank
+    applyMove(board, 'e2', 'e5') // capturer on the same rank
+    applyMove(board, 'a8', 'a5') // black rook holds the rank from the far side
+    applyMove(board, 'd7', 'd5') // double push — victim and capturer are the only blockers
+    expect(canMove(board, 'e5', 'd6', 'd6')).toBe(false) // both leave the rank at once
+  })
+
+  it('rejects the capture when the victim alone shields a diagonal', () => {
+    const board = freshBoard()
+    applyMove(board, 'e1', 'h2') // king on the b8–h2 diagonal
+    applyMove(board, 'f8', 'b8') // black bishop at the far end
+    board.squares['c7'].piece = null // open the diagonal down to the victim
+    applyMove(board, 'd2', 'd5') // capturer, off the diagonal
+    applyMove(board, 'e7', 'e5') // double push — the victim blocks the bishop
+    expect(canMove(board, 'd5', 'e6', 'e6')).toBe(false) // the capture uncovers the bishop
+  })
+
+  it('allows the capture when the landing square re-blocks the line', () => {
+    const board = freshBoard()
+    applyMove(board, 'e7', 'e5') // the future victim, on the king's file
+    applyMove(board, 'h8', 'e7') // black rook above the target square
+    applyMove(board, 'e2', 'd5') // capturer — its old square leaves the e-file open
+    expect(canMove(board, 'd5', 'e6', 'e6')).toBe(true) // dxe6 lands back on the file
+  })
+})
+
 describe('canMove — pinned pieces', () => {
   it('freezes a bishop pinned on a file', () => {
     const board = freshBoard()
@@ -693,6 +772,34 @@ describe('applyMove', () => {
     const board = freshBoard()
     applyMove(board, 'e4', 'e5')
     expect(board.squares['e5'].piece).toBeNull()
+  })
+
+  it('removes the victim beside an en passant landing, both colors', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e5')
+    applyMove(board, 'd7', 'd5')
+    applyMove(board, 'e5', 'd6') // a pawn landing diagonally on empty = en passant
+    expect(board.squares['d6'].piece?.id).toBe('Pe2')
+    expect(board.squares['d5'].piece).toBeNull() // the victim vanished from beside
+
+    const other = freshBoard()
+    applyMove(other, 'e7', 'e4')
+    applyMove(other, 'd2', 'd4')
+    applyMove(other, 'e4', 'd3')
+    expect(other.squares['d3'].piece?.id).toBe('Pe7')
+    expect(other.squares['d4'].piece).toBeNull()
+  })
+
+  it('leaves the beside square alone on a plain diagonal capture', () => {
+    const board = freshBoard()
+    applyMove(board, 'e2', 'e4')
+    applyMove(board, 'd7', 'd5')
+    const bystander = board.squares['d4'].piece // nothing there — place one
+    expect(bystander).toBeNull()
+    applyMove(board, 'g7', 'd4') // black pawn beside the capture path
+    applyMove(board, 'e4', 'd5') // plain capture, target occupied
+    expect(board.squares['d5'].piece?.id).toBe('Pe2')
+    expect(board.squares['d4'].piece?.id).toBe('Pg7') // untouched
   })
 
   it('brings the rook over the castled king, king-side', () => {

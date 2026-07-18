@@ -144,12 +144,8 @@ class DiagonalForwardCaptureMoveType extends MoveType {
   readonly id = 'diagonal-forward-capture' as const
 
   availableSquares(from: Square, piece: Piece): Square[] {
-    const diagonals = piece.color === 'white'
-      ? [from.neighbor('top-left'), from.neighbor('top-right')]
-      : [from.neighbor('bottom-left'), from.neighbor('bottom-right')]
-
-    return diagonals.filter(
-      (square): square is Square => !!square?.piece && square.piece.color !== piece.color,
+    return forwardDiagonals(from, piece.color).filter(square =>
+      !!square.piece && square.piece.color !== piece.color,
     )
   }
 
@@ -158,13 +154,21 @@ class DiagonalForwardCaptureMoveType extends MoveType {
   }
 }
 
-// En passant joins in phase ④ — its geometry is the pawn's usual forward diagonal, and it adds
-// no attacked square.
+// En passant: the pawn's usual forward diagonal, onto the position's ep target (carried by the
+// Board, derived from the history upstream) — the victim is the enemy pawn directly behind the
+// target. It adds no attacked square beyond diagonal-forward-capture's.
 class EnPassantMoveType extends MoveType {
   readonly id = 'en-passant' as const
 
-  availableSquares(): Square[] {
-    return []
+  availableSquares(from: Square, piece: Piece): Square[] {
+    return forwardDiagonals(from, piece.color).filter(target => {
+      if (target !== from.board.enPassantTargetSquare() || !target.isEmpty) {
+        return false
+      }
+
+      const victim = target.neighbor(piece.color === 'white' ? 'bottom' : 'top')
+      return victim?.piece?.type === 'pawn' && victim.piece.color !== piece.color
+    })
   }
 }
 
@@ -198,8 +202,12 @@ export function getPieceMoveTypes(pieceType: PieceType): MoveType[] {
     case 'king':
       return [MOVE_TYPES['simple'], MOVE_TYPES['castling']]
     case 'pawn':
-      // 'en-passant' joins in phase ④
-      return [MOVE_TYPES['linear-forward'], MOVE_TYPES['linear-forward-double'], MOVE_TYPES['diagonal-forward-capture']]
+      return [
+        MOVE_TYPES['linear-forward'],
+        MOVE_TYPES['linear-forward-double'],
+        MOVE_TYPES['diagonal-forward-capture'],
+        MOVE_TYPES['en-passant'],
+      ]
     case 'queen':
       return [MOVE_TYPES['diagonal'], MOVE_TYPES['linear']]
     case 'rook':
@@ -250,6 +258,15 @@ function reachesUnmovedRook(from: Square, piece: Piece, direction: Direction): b
 // "Forward" is relative to the piece's color: white goes up the board, black goes down.
 function forwardNeighbor(square: Square, color: PieceColor): Square | null {
   return color === 'white' ? square.neighbor('top') : square.neighbor('bottom')
+}
+
+// The pawn's two forward diagonals — the capture squares, plain and en passant alike.
+function forwardDiagonals(square: Square, color: PieceColor): Square[] {
+  const diagonals = color === 'white'
+    ? [square.neighbor('top-left'), square.neighbor('top-right')]
+    : [square.neighbor('bottom-left'), square.neighbor('bottom-right')]
+
+  return diagonals.filter((diagonal): diagonal is Square => diagonal !== null)
 }
 
 // A pawn attacks its two forward diagonals, so seen from the attacked square the pawn sits

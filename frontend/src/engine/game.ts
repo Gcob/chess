@@ -1,7 +1,8 @@
 import type {CastlingSide, Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove, getCastlingSide, hasAnyLegalMove} from './move'
+import {canMove, applyMove, enPassantVictimKey, getCastlingSide, hasAnyLegalMove} from './move'
 import {hasInsufficientMaterial, hasMatingMaterial} from './material'
-import {findCheckers, getPlacement, placementSignature, type CastlingRights} from './board'
+import {findCheckers, getPlacement, placementSignature} from './board'
+import {MoveHistory, doublePushTarget} from './moveHistory'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -14,34 +15,28 @@ import {findCheckers, getPlacement, placementSignature, type CastlingRights} fro
 // 50 full moves by each side — the rule counts half-moves.
 const FIFTY_MOVE_LIMIT = 100
 
-// Half-moves played since the last irreversible event (pawn move or capture), walked from the
-// end of the history — the fifty-move clock is derived from the moves, never tracked apart.
+// Thin façade — the public API stays functions on plain data, MoveHistory is the organ.
 export function halfmovesSinceProgress(game: Game): number {
-  let count = 0
-  for (let i = game.moves.length - 1; i >= 0; i--) {
-    const move = game.moves[i]!
-    if (move.pieceType === 'pawn' || move.capture) {
-      break
-    }
-
-    count++
-  }
-
-  return count
+  return new MoveHistory(game.moves).halfmovesSinceProgress()
 }
 
 // Threefold repetition: the current position (same pieces on the same squares, same side to
-// move, same castling rights) already occurred twice before. Derived from the history — the
-// current placement is walked BACKWARD through the quiet tail in a detached map, each undone
-// half-move yielding an earlier signature. The walk stops at the first irreversible move:
-// pawn moves and captures (material and structure only go one way) and castling (every earlier
-// position still held the castling right, so none can match — the rook undo never happens).
-// En-passant rights join the signature with the en passant step of phase ④.
+// move, same castling and en passant rights) already occurred twice before. Derived from the
+// history — the current placement is walked BACKWARD through the quiet tail in a detached map,
+// each undone half-move yielding an earlier signature. The walk stops at the first irreversible
+// move: pawn moves and captures (material and structure only go one way) and castling (every
+// earlier position still held the castling right, so none can match — the rook undo never
+// happens).
 export function isThreefoldRepetition(game: Game): boolean {
   const placement = getPlacement(game.board)
   let color = game.activeColor
-  const lossIndexes = castlingLossIndexes(game.moves)
-  const current = placementSignature(placement, color, castlingRightsAt(lossIndexes, game.moves.length))
+  const history = new MoveHistory(game.moves)
+  const current = placementSignature(
+    placement,
+    color,
+    history.castlingRightsAt(game.moves.length),
+    enPassantSignature(placement, color, history.last)
+  )
 
   let occurrences = 1
   for (let i = game.moves.length - 1; i >= 0; i--) {
@@ -53,7 +48,13 @@ export function isThreefoldRepetition(game: Game): boolean {
     placement.delete(move.to)
     placement.set(move.from, move.color[0] + move.pieceType)
     color = oppositeColor(color)
-    if (placementSignature(placement, color, castlingRightsAt(lossIndexes, i)) === current && ++occurrences >= 3) {
+    const signature = placementSignature(
+      placement,
+      color,
+      history.castlingRightsAt(i),
+      enPassantSignature(placement, color, game.moves[i - 1])
+    )
+    if (signature === current && ++occurrences >= 3) {
       return true
     }
   }
@@ -61,38 +62,33 @@ export function isThreefoldRepetition(game: Game): boolean {
   return false
 }
 
-// FEN-style castling rights, derived from the history like every other counter here: a right
-// lives while its king and rook squares were never departed from — and never landed on, which
-// only happens once the original tenant is gone or captured on the spot.
-const CASTLING_RIGHTS = [
-  {code: 'K', kingSquare: 'e1', rookSquare: 'h1'},
-  {code: 'Q', kingSquare: 'e1', rookSquare: 'a1'},
-  {code: 'k', kingSquare: 'e8', rookSquare: 'h8'},
-  {code: 'q', kingSquare: 'e8', rookSquare: 'a8'},
-] as const
+// The ep component of a position's signature: the target square, but only when a pawn of the
+// side to move stands beside the pushed pawn — a right nobody could even pseudo-exercise never
+// distinguishes positions (aligned with chess.js; FIDE 9.2 in spirit). Placement + history mix,
+// so it lives here with the repetition rule, not in MoveHistory.
+function enPassantSignature(
+  placement: Map<SquareKey, string>,
+  activeColor: PieceColor,
+  lastMove: Move | undefined,
+): SquareKey | '-' {
+  const target = doublePushTarget(lastMove)
+  if (!target) {
+    return '-'
+  }
 
-// The move index at which each right dies — the first touch of its king or rook square.
-// Infinity = the right still stands.
-function castlingLossIndexes(moves: Move[]): number[] {
-  return CASTLING_RIGHTS.map(({kingSquare, rookSquare}) => {
-    const index = moves.findIndex(move =>
-      move.from === kingSquare || move.to === kingSquare
-      || move.from === rookSquare || move.to === rookSquare,
-    )
-    return index === -1 ? Infinity : index
+  const landing = lastMove!.to
+  const pawnCode = activeColor[0] + 'pawn'
+  const capturable = [-1, 1].some(shift => {
+    const beside = String.fromCharCode(landing.charCodeAt(0) + shift) + landing[1]
+    return placement.get(beside as SquareKey) === pawnCode
   })
+
+  return capturable ? target : '-'
 }
 
-// The rights of the position sitting `depth` half-moves into the history.
-function castlingRightsAt(lossIndexes: number[], depth: number): CastlingRights {
-  const rights = CASTLING_RIGHTS
-    .filter((_, index) => lossIndexes[index]! >= depth)
-    .map(({code}) => code)
-    .join('')
-
-  // The filter walks CASTLING_RIGHTS in KQkq declaration order, so the join is always a
-  // valid CastlingRights — the cast is the one place the string world meets the type.
-  return (rights || '-') as CastlingRights
+// Thin façade — the public API stays functions on plain data, MoveHistory is the organ.
+export function enPassantTarget(moves: Move[]): SquareKey | null {
+  return new MoveHistory(moves).enPassantTarget()
 }
 
 export function oppositeColor(color: PieceColor): PieceColor {
@@ -121,7 +117,7 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
     return
   }
 
-  if (!canMove(game.board, from, to)) {
+  if (!canMove(game.board, from, to, enPassantTarget(game.moves))) {
     return
   }
 
@@ -137,9 +133,11 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
     return
   }
 
-  const captured = game.board.squares[to].piece
+  // An en passant capture empties the square beside the landing — settled before the board mutates.
+  const victimKey = enPassantVictimKey(game.board, piece, from, to)
+  const captured = victimKey ? game.board.squares[victimKey].piece : game.board.squares[to].piece
   applyMove(game.board, from, to)
-  game.moves.push(buildMove(piece, captured, from, to, elapsedSeconds))
+  game.moves.push(buildMove(piece, captured, from, to, elapsedSeconds, victimKey !== null))
 
   // Display snapshot — the legality logic recomputes checkers on demand instead of reading this.
   game.players.white.isInCheck = findCheckers(game.board, 'white').length > 0
@@ -155,8 +153,9 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   game.turnStartedAt = now
 
   // The move may have ended the game: no legal reply = checkmate (in check) or stalemate;
-  // otherwise a dead position (no possible mate for anyone) is an automatic draw.
-  if (!hasAnyLegalMove(game.board, game.activeColor)) {
+  // otherwise a dead position (no possible mate for anyone) is an automatic draw. The reply
+  // may be an en passant — the just-played double push is the context.
+  if (!hasAnyLegalMove(game.board, game.activeColor, enPassantTarget(game.moves))) {
     endGame(game, game.players[game.activeColor].isInCheck
       ? {winner: oppositeColor(game.activeColor), reason: 'checkmate'}
       : {winner: null, reason: 'stalemate'})
@@ -271,6 +270,7 @@ function buildMove(
   from: SquareKey,
   to: SquareKey,
   elapsedSeconds: number,
+  enPassant: boolean,
 ): Move {
   const castling = getCastlingSide(piece, from, to)
   const move: Move = {
@@ -288,6 +288,10 @@ function buildMove(
 
   if (castling) {
     move.castling = castling
+  }
+
+  if (enPassant) {
+    move.enPassant = true
   }
 
   return move

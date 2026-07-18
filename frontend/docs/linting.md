@@ -31,3 +31,27 @@ if (target && target.color === piece.color) {
   return false
 }
 ```
+
+## Appels multi-paramètres
+
+- Quand un appel a trop de paramètres pour tenir confortablement sur une ligne : **un paramètre
+  par ligne**, indentés, et le `)` fermant seul sur sa propre ligne — un bloc qui se lit d'un coup d'œil.
+
+```ts
+const signature = placementSignature(
+  placement,
+  color,
+  history.castlingRightsAt(i),
+  enPassantSignature(placement, color, game.moves[i - 1])
+)
+```
+
+## Cast `as SquareKey`
+
+- Toute valeur `SquareKey` construite par concaténation (template literal, `String.fromCharCode`…)
+  se termine par **`as SquareKey`** — `tsc` infère le template mais pas PhpStorm ; le cast reste
+  vérifié par le compilateur (il refuse un type sans chevauchement), ce n'est jamais un `ts-ignore`.
+
+```ts
+return `${move.from[0]}${(fromRank + toRank) / 2}` as SquareKey
+```

@@ -135,7 +135,8 @@ export interface Capture {
 // Plain serializable data — SquareKeys instead of Square references (the board graph is circular).
 // En passant context = the previous entry in Game.moves.
 export interface Move {
-  san: string // Standard Algebraic Notation — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
+  // Standard Algebraic Notation — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
+  san: string
   color: PieceColor
   // What moved — the fifty-move clock and the full SAN (phase ⑤) both read it.
   pieceType: PieceType
@@ -143,7 +144,10 @@ export interface Move {
   to: SquareKey
   elapsedSeconds: number
   capture?: Capture
-  castling?: CastlingSide // the rook's jump is derived from the side — never stored
+  // the rook's jump is derived from the side — never stored
+  castling?: CastlingSide
+  // the capture emptied the square beside the landing, not the landing itself
+  enPassant?: true
 }
 
 // ─── Game ────────────────────────────────────────────────────────────────────

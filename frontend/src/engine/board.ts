@@ -18,7 +18,16 @@ export class Board {
   private readonly squareWrappers = new Map<SquareKey, Square>()
   private allRays?: Ray[]
 
-  constructor(readonly dto: BoardDto) {}
+  // The ep target is position context derived from the history by the caller (enPassantTarget)
+  // — it rides on the Board because it lives and dies with the position, like the wrappers.
+  constructor(
+    readonly dto: BoardDto,
+    private readonly enPassantTargetKey: SquareKey | null = null,
+  ) {}
+
+  enPassantTargetSquare(): Square | null {
+    return this.enPassantTargetKey ? this.square(this.enPassantTargetKey) : null
+  }
 
   // The same key always yields the same wrapper instance — reference equality holds.
   square(key: SquareKey): Square {
@@ -223,10 +232,10 @@ export function getBoardPieces(board: BoardDto): BoardPiece[] {
 // A board IS a position — these two answer its identity, the repetition question's foundation.
 // The placement (what stands where) is exposed as a mutable map so the repetition walk can
 // undo history on a detached copy without rebuilding boards; the signature stamps a placement
-// plus the side to move and the castling rights (same placement, other trait or other rights =
-// different position — the rights string is the caller's business, derived from its history).
-// A full string, never a numeric hash: a collision would be an undetectable phantom draw.
-// En-passant rights join the signature with the en passant step of phase ④.
+// plus the side to move, the castling rights and the en passant right (same placement, other
+// trait or other rights = different position — both rights are the caller's business, derived
+// from its history). A full string, never a numeric hash: a collision would be an undetectable
+// phantom draw.
 export function getPlacement(board: BoardDto): Map<SquareKey, string> {
   const placement = new Map<SquareKey, string>()
   for (const {piece, square} of getBoardPieces(board)) {
@@ -243,8 +252,10 @@ export function placementSignature(
   placement: Map<SquareKey, string>,
   activeColor: PieceColor,
   castlingRights: CastlingRights,
+  enPassant: SquareKey | '-',
 ): string {
-  return [...placement.entries()].map(([square, code]) => square + code).sort().join('|') + activeColor + castlingRights
+  return [...placement.entries()].map(([square, code]) => square + code).sort().join('|')
+    + activeColor + castlingRights + enPassant
 }
 
 export function findKingSquare(board: BoardDto, color: PieceColor): SquareDto | null {
@@ -254,7 +265,7 @@ export function findKingSquare(board: BoardDto, color: PieceColor): SquareDto | 
 }
 
 export function toSquareKey(square: SquareDto): SquareKey {
-  return `${square.file}${square.rank}`
+  return `${square.file}${square.rank}` as SquareKey
 }
 
 // Squares holding a piece of the given color that attacks the given square.

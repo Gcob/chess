@@ -6,6 +6,7 @@ import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import {findKingSquare, toSquareKey} from '@/engine/board'
 import {legalDestinations} from '@/engine/move'
+import {enPassantTarget} from '@/engine/game'
 import type {PieceColor, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
@@ -43,7 +44,7 @@ export function useGameView(id: string) {
   // Drop feedback is legality feedback, never gated by the hints setting.
   function dropTargets(from: SquareKey): SquareKey[] {
     const game = session.game.value
-    return game ? legalDestinations(game.board, from) : []
+    return game ? legalDestinations(game.board, from, enPassantTarget(game.moves)) : []
   }
 
   // The same query behind the board's move hints, gated by a per-viewer setting (default on) —

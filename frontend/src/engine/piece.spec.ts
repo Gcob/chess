@@ -25,7 +25,7 @@ describe('Piece', () => {
   it('exposes its move types', () => {
     const board = freshBoard()
     expect(board.square('e2').piece!.moveTypes().map(type => type.id))
-      .toEqual(['linear-forward', 'linear-forward-double', 'diagonal-forward-capture'])
+      .toEqual(['linear-forward', 'linear-forward-double', 'diagonal-forward-capture', 'en-passant'])
     expect(board.square('b1').piece!.moveTypes().map(type => type.id)).toEqual(['l-shape'])
   })
 

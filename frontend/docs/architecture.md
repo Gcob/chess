@@ -175,7 +175,10 @@ seulement après un tap.
 > comportementaux — `piece.availableSquares()`), `engine/ray.ts` (classe `Ray`, directions, walkers),
 > `engine/moveTypes.ts` (hiérarchie `MoveType` — strategy, une classe par move type : pattern de
 > déplacement, signature d'attaque, `slidesAlong` ; `getPieceMoveTypes` = l'unique mapping pièce → move
-> types), `engine/material.ts` (captures dérivées).
+> types), `engine/moveHistory.ts` (classe `MoveHistory` — miroir de `Board` pour `Game.moves` :
+> les questions d'historique seulement — `enPassantTarget`, `halfmovesSinceProgress`,
+> `castlingRightsAt` en cache paresseux ; les règles qui mélangent board et historique restent
+> dans `game.ts`), `engine/material.ts` (captures dérivées).
 
 ## Vue de partie (game view)
 

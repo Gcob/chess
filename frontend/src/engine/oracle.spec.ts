@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import {Chess} from 'chess.js'
-import {makeMove} from './game'
+import {enPassantTarget, makeMove} from './game'
 import {legalDestinations} from './move'
 import {getBoardPieces} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
@@ -12,8 +12,8 @@ import type {CreateGamePayload, Game, SquareKey} from '@/types/chess'
 // by piece. Our specs remain the contract of OUR design; the oracle sweeps the positions
 // nobody thinks to hand-write.
 //
-// Phase ④ gaps, excluded on purpose until those moves exist (castling plays since ④.1):
-// - en passant: chess.js moves carrying the e flag are filtered out
+// Phase ④ gap, excluded on purpose until the move exists (castling and en passant play since
+// ④.1 and ④.2):
 // - promotion: pawn pushes to the last rank are never played (the engines would diverge —
 //   we keep a pawn, chess.js requires a piece choice)
 
@@ -40,9 +40,11 @@ function mulberry32(seed: number): () => number {
 
 // Every [from, to] our engine allows for the side to move.
 function ourMoves(game: Game): Array<[SquareKey, SquareKey]> {
+  const epTarget = enPassantTarget(game.moves)
   return getBoardPieces(game.board)
     .filter(({piece}) => piece.color === game.activeColor)
-    .flatMap(({square}) => legalDestinations(game.board, square).map(to => [square, to] as [SquareKey, SquareKey]))
+    .flatMap(({square}) =>
+      legalDestinations(game.board, square, epTarget).map(to => [square, to] as [SquareKey, SquareKey]))
 }
 
 function isPromotionPush(game: Game, from: SquareKey, to: SquareKey): boolean {
@@ -51,13 +53,13 @@ function isPromotionPush(game: Game, from: SquareKey, to: SquareKey): boolean {
 
 // Piece-by-piece comparison of the side to move, plus the check state.
 function comparePosition(game: Game, oracle: Chess, context: string): void {
-  const oracleMoves = oracle.moves({verbose: true}).filter(m => !m.flags.includes('e'))
+  const oracleMoves = oracle.moves({verbose: true})
   for (const {piece, square} of getBoardPieces(game.board)) {
     if (piece.color !== game.activeColor) {
       continue
     }
 
-    const ours = [...new Set(legalDestinations(game.board, square))].sort()
+    const ours = [...new Set(legalDestinations(game.board, square, enPassantTarget(game.moves)))].sort()
     const theirs = [...new Set(oracleMoves.filter(m => m.from === square).map(m => m.to))].sort()
     expect(ours, `legal destinations of ${square} diverge — ${context}`).toEqual(theirs)
   }

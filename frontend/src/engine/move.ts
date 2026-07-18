@@ -16,21 +16,36 @@ import type {Square} from './square'
 // The movement patterns live in the MoveType hierarchy, the position questions in Board;
 // this module owns the LEGALITY pipeline and the board mutation.
 
-export function canMove(boardDto: BoardDto, from: SquareKey, to: SquareKey): boolean {
-  return legalSquaresFrom(new Board(boardDto), from).some(square => square.key === to)
+// The queries all accept the position's en passant target (derived upstream from the history
+// by enPassantTarget) — omitted, the position simply has no en passant to offer.
+export function canMove(
+  boardDto: BoardDto,
+  from: SquareKey,
+  to: SquareKey,
+  enPassantTarget: SquareKey | null = null,
+): boolean {
+  return legalSquaresFrom(new Board(boardDto, enPassantTarget), from).some(square => square.key === to)
 }
 
 // Every legal destination of the piece sitting on `from` — the query the local aids consume.
-export function legalDestinations(boardDto: BoardDto, from: SquareKey): SquareKey[] {
-  return legalSquaresFrom(new Board(boardDto), from).map(square => square.key)
+export function legalDestinations(
+  boardDto: BoardDto,
+  from: SquareKey,
+  enPassantTarget: SquareKey | null = null,
+): SquareKey[] {
+  return legalSquaresFrom(new Board(boardDto, enPassantTarget), from).map(square => square.key)
 }
 
 // Whether `color` still has a legal move anywhere — THE mate/stalemate question.
 // One shared Board answers every piece, and the scan stops at the first piece with a
 // destination: a living position exits almost immediately, the full sweep only happens
 // in real endings.
-export function hasAnyLegalMove(boardDto: BoardDto, color: PieceColor): boolean {
-  const board = new Board(boardDto)
+export function hasAnyLegalMove(
+  boardDto: BoardDto,
+  color: PieceColor,
+  enPassantTarget: SquareKey | null = null,
+): boolean {
+  const board = new Board(boardDto, enPassantTarget)
   return getBoardPieces(boardDto).some(({piece, square}) =>
     piece.color === color && legalSquaresFrom(board, square).length > 0,
   )
@@ -51,7 +66,8 @@ function legalSquaresFrom(board: Board, from: SquareKey): Square[] {
   const safeSquares = restrictToSafeKingSquares(board, piece, availableSquares)
   const castlingSafeSquares = restrictToSafeCastling(board, piece, departureSquare, safeSquares)
   const unpinnedSquares = restrictToPinRay(board, departureSquare, castlingSafeSquares)
-  return restrictToCheckResponses(board, piece, unpinnedSquares)
+  const epSafeSquares = restrictToSafeEnPassant(board, piece, departureSquare, unpinnedSquares)
+  return restrictToCheckResponses(board, piece, epSafeSquares)
 }
 
 // Applies a move in place. A DTO-level command: it mutates the plain data (through the
@@ -67,7 +83,31 @@ export function applyMove(board: BoardDto, from: SquareKey, to: SquareKey): void
     relocateCastlingRook(board, castlingSide, Number(from[1]) as SquareRank)
   }
 
+  const victimKey = enPassantVictimKey(board, piece, from, to)
+  if (victimKey) {
+    board.squares[victimKey].piece = null
+  }
+
   relocate(board, from, to)
+}
+
+// The square an en passant capture empties beside the landing, null for any other move —
+// a pawn stepping one forward diagonal onto an EMPTY square with an enemy pawn beside is the
+// only shape a legal en passant ever takes.
+export function enPassantVictimKey(board: BoardDto, piece: PieceDto, from: SquareKey, to: SquareKey): SquareKey | null {
+  if (piece.type !== 'pawn' || board.squares[to].piece) {
+    return null
+  }
+
+  const fileShift = Math.abs(to.charCodeAt(0) - from.charCodeAt(0))
+  const forward = piece.color === 'white' ? 1 : -1
+  if (fileShift !== 1 || Number(to[1]) - Number(from[1]) !== forward) {
+    return null
+  }
+
+  const victimKey = `${to[0]}${from[1]}` as SquareKey
+  const victim = board.squares[victimKey].piece
+  return victim?.type === 'pawn' && victim.color !== piece.color ? victimKey : null
 }
 
 // The elementary relocation: overwriting the target square is how a capture happens, and the
@@ -171,8 +211,36 @@ function restrictToPinRay(board: Board, from: Square, squares: Square[]): Square
   return squares.filter(square => pinRay.includes(square))
 }
 
+// En passant is the one capture clearing TWO squares at once — the capturer's and the
+// victim's. The pin model (a single blocker) cannot see it, so the ep destination gets its own
+// exposure check: refused when an enemy ray to the king would lose its every blocker, unless
+// the landing square re-blocks the line. Pure ray queries, no move/undo.
+function restrictToSafeEnPassant(board: Board, piece: Piece, from: Square, squares: Square[]): Square[] {
+  const target = board.enPassantTargetSquare()
+  if (piece.type !== 'pawn' || !target || !squares.includes(target)) {
+    return squares
+  }
+
+  const kingSquare = board.kingSquare(piece.color)
+  if (!kingSquare) {
+    return squares
+  }
+
+  const victim = enPassantVictim(board, piece)
+  const exposed = board.rays().some(ray =>
+    ray.attackerSquare.piece?.color !== piece.color
+    && ray.seesThrough(kingSquare)
+    && !ray.squaresBefore(kingSquare).includes(target)
+    && ray.blockersBefore(kingSquare).every(blocker => blocker === from || blocker === victim),
+  )
+
+  return exposed ? squares.filter(square => square !== target) : squares
+}
+
 // Non-king answers to check: capture the checker or block its ray; nothing answers a double
 // check. The king is exempt — it answers by moving to safety instead (restrictToSafeKingSquares).
+// One answer the square-based model misses: when the checker IS the en passant victim, the
+// capture lands beside it, on the target square.
 function restrictToCheckResponses(board: Board, piece: Piece, squares: Square[]): Square[] {
   if (piece.type === 'king') {
     return squares
@@ -183,5 +251,27 @@ function restrictToCheckResponses(board: Board, piece: Piece, squares: Square[])
     return squares
   }
 
-  return squares.filter(square => responses.includes(square))
+  const epAnswer = enPassantVictimCapture(board, piece)
+  return squares.filter(square => responses.includes(square) || square === epAnswer)
+}
+
+// The ep target when capturing there removes the single checker — null in any other situation.
+function enPassantVictimCapture(board: Board, piece: Piece): Square | null {
+  const target = board.enPassantTargetSquare()
+  if (!target || piece.type !== 'pawn') {
+    return null
+  }
+
+  const checkers = board.checkers(piece.color)
+  return checkers.length === 1 && checkers[0] === enPassantVictim(board, piece) ? target : null
+}
+
+// The enemy pawn an en passant capture removes: directly behind the target, beside the capturer.
+function enPassantVictim(board: Board, piece: Piece): Square | null {
+  const target = board.enPassantTargetSquare()
+  if (!target) {
+    return null
+  }
+
+  return target.neighbor(piece.color === 'white' ? 'bottom' : 'top')
 }

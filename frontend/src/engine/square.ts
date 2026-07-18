@@ -11,11 +11,11 @@ export class Square {
 
   constructor(
     readonly dto: SquareDto,
-    private readonly board: Board,
+    readonly board: Board,
   ) {}
 
   get key(): SquareKey {
-    return `${this.dto.file}${this.dto.rank}`
+    return `${this.dto.file}${this.dto.rank}` as SquareKey
   }
 
   get file(): SquareDto['file'] {

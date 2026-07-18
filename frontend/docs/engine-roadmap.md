@@ -142,7 +142,16 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       b1/b8 peut être attaquée), tour déplacée par `applyMove` (saut dérivé de `Move.castling`),
       SAN `O-O`/`O-O-O` immédiat, droits de roque dans la signature de répétition (dérivés de
       l'historique, roque = borne irréversible de la marche), flags `k`/`q` réactivés dans l'oracle
-- [ ] En passant (contexte = coup précédent de l'historique)
+- [x] En passant (contexte = coup précédent de l'historique) — `enPassantTarget(moves)` dérivé,
+      jamais stocké ; la cible voyage en param optionnel des queries (`canMove`,
+      `legalDestinations`, `hasAnyLegalMove` — l'ep peut être la seule parade au mat/pat) et
+      roule sur le `Board` engine ; géométrie dans `EnPassantMoveType` (victime = pion ennemi
+      derrière la cible) ; échecs découverts couverts par `restrictToSafeEnPassant` (les 2
+      cases vidées d'un coup, rayon re-bloqué par l'atterrissage permis — la dette « 2
+      bloqueurs » est réglée) ; capture du checker par ep dans `restrictToCheckResponses` ;
+      victime retirée par `applyMove` ; `Move.enPassant` + SAN `exd6` ; droit ep dans la
+      signature de répétition (seulement si pseudo-capturable, aligné chess.js/FIDE 9.2) ;
+      oracle sans filtre `e`
 - [ ] Promotion (choix de pièce dans l'UI ; l'id de la pièce survit — `Pe7` reste `Pe7`)
 
 ### ⑤ SAN complet & PGN
@@ -252,8 +261,6 @@ Non bloquants, à faire si le cœur nous en dit.
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
 - **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
-- **En passant découvrant un échec (phase ④)** — deux pions quittent le même rayon d'un coup ; le modèle
-  clouage (1 bloqueur) ne le couvre pas, mais `Ray.blockers` est prêt (2 bloqueurs qui partent ensemble).
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
   contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.
