@@ -11,6 +11,8 @@ Petit projet solo — développeur : Jacob.
 - Je parle français canadien — nos échanges sont en français.
 - Valider le typescript autant que possible et le build pour s'assurer que tout fonctionne correctement à chaque
   changement.
+- Le QA manuel, c'est toujours moi qui le fais, sauf indication contraire — pas de vérifications
+  Playwright/e2e de ta propre initiative ; tests unitaires + build suffisent avant de me repasser la main.
 
 ## Réactivité — principe fondamental, non négociable
 

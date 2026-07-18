@@ -172,6 +172,20 @@ describe('cBoard', () => {
     expect(wrapper.findAll('.c-piece--anim-snap-back')).toHaveLength(0)
   })
 
+  it('slides the castling rook while the dropped king lands instantly', async () => {
+    mockBoardRect()
+    const {view, game} = freshView()
+    game.board.squares['f1'].piece = null
+    game.board.squares['g1'].piece = null
+    const wrapper = mount(cBoard, {props: {view}})
+    await drag(wrapper, 'e1', {x: 650, y: 750}) // g1 — castles king-side
+    expect(view.moves[0]).toMatchObject({castling: 'king-side'})
+    const king = wrapper.findAllComponents(cPiece).find(p => p.props('piece').id === 'Ke1')!
+    const rook = wrapper.findAllComponents(cPiece).find(p => p.props('piece').id === 'Rh1')!
+    expect(king.props('animation')).toBe('none') // already under the cursor
+    expect(rook.props('animation')).toBe('slide') // rides along visibly
+  })
+
   it('slides the piece back home after a refused drop', async () => {
     mockBoardRect()
     const {view} = freshView()

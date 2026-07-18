@@ -182,12 +182,13 @@ function activateSquare(square: SquareKey) {
   selected.value = null
 }
 
-// A played drop snaps instantly — the piece is already under the cursor. Any other release
+// A played drop snaps only the released piece instantly — it is already under the cursor,
+// while anything riding along (the castling rook) keeps its slide. Any other release
 // (refused move, same square, off-board, cancelled drag) slides the piece back home.
 watch(draggingId, (id, prev) => {
   if (prev && !id) {
     if (dropApplied) {
-      teleportThenRestore()
+      snapPieceThenRestore(prev)
     } else {
       snapBackThenRestore()
     }
@@ -267,8 +268,9 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
 
 // ─── Animation gating ──────────────────────────────────────────────────────────
 
-// Board-level animation mode. A move slides; mount, rotation and played drops teleport;
-// a refused drop snaps back. Refined per piece below (the knight upgrades slide to hop).
+// Board-level animation mode. A move slides; mount and rotation teleport; a refused drop
+// snaps back. Refined per piece below (the knight upgrades slide to hop, the dropped piece
+// lands instantly on its own).
 const animation = ref<PieceAnimation>('none')
 onMounted(() => nextTick(() => {
   animation.value = 'slide'
@@ -277,6 +279,10 @@ onMounted(() => nextTick(() => {
 // The hop class is safe to hold statically: its arc keyframe is gated by --moving in CSS,
 // so it only plays while the knight actually slides.
 function animationFor(piece: PlacedPiece): PieceAnimation {
+  if (piece.id === snappedPieceId.value) {
+    return 'none'
+  }
+
   if (animation.value === 'slide' && piece.type === 'knight') {
     return 'hop'
   }
@@ -298,6 +304,20 @@ function teleportThenRestore() {
   })
 }
 
+// Per-piece counterpart of teleportThenRestore: one instant painted frame for the dropped
+// piece only — the rest of the board keeps its slide (a castling rook animates its jump).
+const snappedPieceId = ref<string | null>(null)
+let snapRaf = 0
+function snapPieceThenRestore(pieceId: string) {
+  snappedPieceId.value = pieceId
+  cancelAnimationFrame(snapRaf)
+  snapRaf = requestAnimationFrame(() => {
+    snapRaf = requestAnimationFrame(() => {
+      snappedPieceId.value = null
+    })
+  })
+}
+
 // Arms the snap-back easing for the released piece's return, then re-arms the normal slide
 // once the transition had time to play out.
 let snapBackTimer = 0
@@ -315,6 +335,7 @@ watch(orientation, () => {
 })
 onBeforeUnmount(() => {
   cancelAnimationFrame(restoreRaf)
+  cancelAnimationFrame(snapRaf)
   window.clearTimeout(snapBackTimer)
 })
 

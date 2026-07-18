@@ -1,7 +1,7 @@
-import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove, hasAnyLegalMove} from './move'
+import type {CastlingSide, Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
+import {canMove, applyMove, getCastlingSide, hasAnyLegalMove} from './move'
 import {hasInsufficientMaterial, hasMatingMaterial} from './material'
-import {findCheckers, getPlacement, placementSignature} from './board'
+import {findCheckers, getPlacement, placementSignature, type CastlingRights} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -31,32 +31,68 @@ export function halfmovesSinceProgress(game: Game): number {
 }
 
 // Threefold repetition: the current position (same pieces on the same squares, same side to
-// move) already occurred twice before. Derived from the history — the current placement is
-// walked BACKWARD through the quiet tail in a detached map, each undone half-move yielding an
-// earlier signature. The walk stops at the first pawn move or capture: material and structure
-// only go one way, no earlier position can recur. Castling/en-passant rights will join the
-// signature with phase ④.
+// move, same castling rights) already occurred twice before. Derived from the history — the
+// current placement is walked BACKWARD through the quiet tail in a detached map, each undone
+// half-move yielding an earlier signature. The walk stops at the first irreversible move:
+// pawn moves and captures (material and structure only go one way) and castling (every earlier
+// position still held the castling right, so none can match — the rook undo never happens).
+// En-passant rights join the signature with the en passant step of phase ④.
 export function isThreefoldRepetition(game: Game): boolean {
   const placement = getPlacement(game.board)
   let color = game.activeColor
-  const current = placementSignature(placement, color)
+  const lossIndexes = castlingLossIndexes(game.moves)
+  const current = placementSignature(placement, color, castlingRightsAt(lossIndexes, game.moves.length))
 
   let occurrences = 1
   for (let i = game.moves.length - 1; i >= 0; i--) {
     const move = game.moves[i]!
-    if (move.pieceType === 'pawn' || move.capture) {
+    if (move.pieceType === 'pawn' || move.capture || move.castling) {
       break
     }
 
     placement.delete(move.to)
     placement.set(move.from, move.color[0] + move.pieceType)
     color = oppositeColor(color)
-    if (placementSignature(placement, color) === current && ++occurrences >= 3) {
+    if (placementSignature(placement, color, castlingRightsAt(lossIndexes, i)) === current && ++occurrences >= 3) {
       return true
     }
   }
 
   return false
+}
+
+// FEN-style castling rights, derived from the history like every other counter here: a right
+// lives while its king and rook squares were never departed from — and never landed on, which
+// only happens once the original tenant is gone or captured on the spot.
+const CASTLING_RIGHTS = [
+  {code: 'K', kingSquare: 'e1', rookSquare: 'h1'},
+  {code: 'Q', kingSquare: 'e1', rookSquare: 'a1'},
+  {code: 'k', kingSquare: 'e8', rookSquare: 'h8'},
+  {code: 'q', kingSquare: 'e8', rookSquare: 'a8'},
+] as const
+
+// The move index at which each right dies — the first touch of its king or rook square.
+// Infinity = the right still stands.
+function castlingLossIndexes(moves: Move[]): number[] {
+  return CASTLING_RIGHTS.map(({kingSquare, rookSquare}) => {
+    const index = moves.findIndex(move =>
+      move.from === kingSquare || move.to === kingSquare
+      || move.from === rookSquare || move.to === rookSquare,
+    )
+    return index === -1 ? Infinity : index
+  })
+}
+
+// The rights of the position sitting `depth` half-moves into the history.
+function castlingRightsAt(lossIndexes: number[], depth: number): CastlingRights {
+  const rights = CASTLING_RIGHTS
+    .filter((_, index) => lossIndexes[index]! >= depth)
+    .map(({code}) => code)
+    .join('')
+
+  // The filter walks CASTLING_RIGHTS in KQkq declaration order, so the join is always a
+  // valid CastlingRights — the cast is the one place the string world meets the type.
+  return (rights || '-') as CastlingRights
 }
 
 export function oppositeColor(color: PieceColor): PieceColor {
@@ -217,7 +253,11 @@ function endGame(game: Game, result: GameResult): void {
 }
 
 // Naive SAN — no disambiguation, no check/mate marks until the rules engine lands (see roadmap)
-function buildSan(piece: Piece, captured: Piece | null, from: SquareKey, to: SquareKey): string {
+function buildSan(piece: Piece, captured: Piece | null, from: SquareKey, to: SquareKey, castling: CastlingSide | null): string {
+  if (castling) {
+    return castling === 'king-side' ? 'O-O' : 'O-O-O'
+  }
+
   if (piece.type === 'pawn') {
     return captured ? `${from[0]}x${to}` : to
   }
@@ -232,8 +272,9 @@ function buildMove(
   to: SquareKey,
   elapsedSeconds: number,
 ): Move {
+  const castling = getCastlingSide(piece, from, to)
   const move: Move = {
-    san: buildSan(piece, captured, from, to),
+    san: buildSan(piece, captured, from, to, castling),
     color: piece.color,
     pieceType: piece.type,
     from,
@@ -243,6 +284,10 @@ function buildMove(
 
   if (captured) {
     move.capture = {capturedPiece: captured}
+  }
+
+  if (castling) {
+    move.castling = castling
   }
 
   return move

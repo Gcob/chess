@@ -28,6 +28,7 @@ export type Direction =
   | 'bottom-left'
   | 'left'
   | 'top-left'
+export type CastlingSide = 'king-side' | 'queen-side'
 export type MoveTypeId =
   | 'simple'
   | 'castling'
@@ -142,6 +143,7 @@ export interface Move {
   to: SquareKey
   elapsedSeconds: number
   capture?: Capture
+  castling?: CastlingSide // the rook's jump is derived from the side — never stored
 }
 
 // ─── Game ────────────────────────────────────────────────────────────────────

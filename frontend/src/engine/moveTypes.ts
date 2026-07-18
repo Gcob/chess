@@ -43,12 +43,20 @@ class SimpleMoveType extends MoveType {
   }
 }
 
-// Castling comes in phase ④ of the roadmap — no reachable squares until then.
+// Raw castling geometry: an unmoved king, an unmoved friendly rook first met toward the board
+// edge, nothing in between — the destination is two steps toward the rook. Check-related
+// restrictions are canMove's pipeline business, like every other move type.
 class CastlingMoveType extends MoveType {
   readonly id = 'castling' as const
 
-  availableSquares(): Square[] {
-    return []
+  availableSquares(from: Square, piece: Piece): Square[] {
+    if (piece.hasMoved) {
+      return []
+    }
+
+    return (['left', 'right'] as const)
+      .filter(direction => reachesUnmovedRook(from, piece, direction))
+      .map(direction => from.neighbor(direction)!.neighbor(direction)!)
   }
 }
 
@@ -224,6 +232,19 @@ function slideInDirection(from: Square, piece: Piece, direction: Direction): Squ
   }
 
   return squares
+}
+
+// Slides from the king toward the board edge: every square in between must be empty and the
+// first piece met must be a friendly rook that never moved — an unmoved rook is by definition
+// still on its corner, so the corner never needs naming.
+function reachesUnmovedRook(from: Square, piece: Piece, direction: Direction): boolean {
+  let current = from.neighbor(direction)
+  while (current && current.isEmpty) {
+    current = current.neighbor(direction)
+  }
+
+  const rook = current?.piece
+  return !!rook && rook.type === 'rook' && rook.color === piece.color && !rook.hasMoved
 }
 
 // "Forward" is relative to the piece's color: white goes up the board, black goes down.

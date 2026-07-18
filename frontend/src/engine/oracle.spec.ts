@@ -12,8 +12,8 @@ import type {CreateGamePayload, Game, SquareKey} from '@/types/chess'
 // by piece. Our specs remain the contract of OUR design; the oracle sweeps the positions
 // nobody thinks to hand-write.
 //
-// Phase ④ gaps, excluded on purpose until those moves exist:
-// - castling / en passant: chess.js moves carrying the k/q/e flags are filtered out
+// Phase ④ gaps, excluded on purpose until those moves exist (castling plays since ④.1):
+// - en passant: chess.js moves carrying the e flag are filtered out
 // - promotion: pawn pushes to the last rank are never played (the engines would diverge —
 //   we keep a pawn, chess.js requires a piece choice)
 
@@ -51,7 +51,7 @@ function isPromotionPush(game: Game, from: SquareKey, to: SquareKey): boolean {
 
 // Piece-by-piece comparison of the side to move, plus the check state.
 function comparePosition(game: Game, oracle: Chess, context: string): void {
-  const oracleMoves = oracle.moves({verbose: true}).filter(m => !/[kqe]/.test(m.flags))
+  const oracleMoves = oracle.moves({verbose: true}).filter(m => !m.flags.includes('e'))
   for (const {piece, square} of getBoardPieces(game.board)) {
     if (piece.color !== game.activeColor) {
       continue

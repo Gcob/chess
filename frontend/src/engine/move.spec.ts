@@ -225,12 +225,106 @@ describe('canMove — king', () => {
     expect(canMove(board, 'e4', 'f6')).toBe(false) // knight-shaped move
   })
 
-  // Castling is a stub until phase ④ — a two-square king move must not slip through.
-  it('rejects castling for now', () => {
+})
+
+describe('canMove — castling geometry', () => {
+  it('allows castling king-side once the path is clear, both colors', () => {
     const board = freshBoard()
     board.squares['f1'].piece = null
     board.squares['g1'].piece = null
+    board.squares['f8'].piece = null
+    board.squares['g8'].piece = null
+    expect(canMove(board, 'e1', 'g1')).toBe(true)
+    expect(canMove(board, 'e8', 'g8')).toBe(true)
+  })
+
+  it('allows castling queen-side once the path is clear, both colors', () => {
+    const board = freshBoard()
+    for (const key of ['b1', 'c1', 'd1', 'b8', 'c8', 'd8'] as const) {
+      board.squares[key].piece = null
+    }
+    expect(canMove(board, 'e1', 'c1')).toBe(true)
+    expect(canMove(board, 'e8', 'c8')).toBe(true)
+  })
+
+  it('rejects castling while any square between king and rook is occupied', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null // g1 knight still home
     expect(canMove(board, 'e1', 'g1')).toBe(false)
+
+    board.squares['c1'].piece = null
+    board.squares['d1'].piece = null // b1 knight still home
+    expect(canMove(board, 'e1', 'c1')).toBe(false)
+  })
+
+  it('rejects castling once the king has moved, even back home', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    applyMove(board, 'e1', 'f1')
+    applyMove(board, 'f1', 'e1')
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('rejects castling once the rook has moved, even back home', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    applyMove(board, 'h1', 'g1')
+    applyMove(board, 'g1', 'h1')
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('rejects castling when the rook is gone', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    board.squares['h1'].piece = null
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('rejects castling while the king is in check', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    applyMove(board, 'e2', 'a3') // open the e-file
+    applyMove(board, 'a8', 'e5') // black rook checks e1
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('rejects castling across an attacked square', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    applyMove(board, 'f2', 'b3') // open the f-file
+    applyMove(board, 'a8', 'f5') // black rook eyes f1 — the square the king crosses
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('rejects castling onto an attacked square', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    applyMove(board, 'g2', 'b3') // open the g-file
+    applyMove(board, 'a8', 'g5') // black rook eyes g1 — the landing square
+    expect(canMove(board, 'e1', 'g1')).toBe(false)
+  })
+
+  it('allows queen-side castling when only the rook path (b1) is attacked', () => {
+    const board = freshBoard()
+    board.squares['b1'].piece = null
+    board.squares['c1'].piece = null
+    board.squares['d1'].piece = null
+    applyMove(board, 'b2', 'h3') // open the b-file
+    applyMove(board, 'a8', 'b5') // black rook eyes b1 — a square the KING never crosses
+    expect(canMove(board, 'e1', 'c1')).toBe(true)
+  })
+
+  it('lists castling destinations alongside the king steps', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    expect(legalDestinations(board, 'e1').sort()).toEqual(['f1', 'g1'])
   })
 })
 
@@ -599,6 +693,32 @@ describe('applyMove', () => {
     const board = freshBoard()
     applyMove(board, 'e4', 'e5')
     expect(board.squares['e5'].piece).toBeNull()
+  })
+
+  it('brings the rook over the castled king, king-side', () => {
+    const board = freshBoard()
+    board.squares['f1'].piece = null
+    board.squares['g1'].piece = null
+    const king = board.squares['e1'].piece
+    const rook = board.squares['h1'].piece
+    applyMove(board, 'e1', 'g1')
+    expect(board.squares['g1'].piece).toBe(king)
+    expect(board.squares['f1'].piece).toBe(rook)
+    expect(board.squares['h1'].piece).toBeNull()
+    expect(rook?.hasMoved).toBe(true)
+  })
+
+  it('brings the rook over the castled king, queen-side, black too', () => {
+    const board = freshBoard()
+    for (const key of ['b8', 'c8', 'd8'] as const) {
+      board.squares[key].piece = null
+    }
+    const king = board.squares['e8'].piece
+    const rook = board.squares['a8'].piece
+    applyMove(board, 'e8', 'c8')
+    expect(board.squares['c8'].piece).toBe(king)
+    expect(board.squares['d8'].piece).toBe(rook)
+    expect(board.squares['a8'].piece).toBeNull()
   })
 })
 

@@ -223,9 +223,10 @@ export function getBoardPieces(board: BoardDto): BoardPiece[] {
 // A board IS a position — these two answer its identity, the repetition question's foundation.
 // The placement (what stands where) is exposed as a mutable map so the repetition walk can
 // undo history on a detached copy without rebuilding boards; the signature stamps a placement
-// plus the side to move (same placement, other trait = different position). A full string,
-// never a numeric hash: a collision would be an undetectable phantom draw. Castling and
-// en-passant rights join the signature with phase ④.
+// plus the side to move and the castling rights (same placement, other trait or other rights =
+// different position — the rights string is the caller's business, derived from its history).
+// A full string, never a numeric hash: a collision would be an undetectable phantom draw.
+// En-passant rights join the signature with the en passant step of phase ④.
 export function getPlacement(board: BoardDto): Map<SquareKey, string> {
   const placement = new Map<SquareKey, string>()
   for (const {piece, square} of getBoardPieces(board)) {
@@ -234,8 +235,16 @@ export function getPlacement(board: BoardDto): Map<SquareKey, string> {
   return placement
 }
 
-export function placementSignature(placement: Map<SquareKey, string>, activeColor: PieceColor): string {
-  return [...placement.entries()].map(([square, code]) => square + code).sort().join('|') + activeColor
+// The FEN-style castling-rights fragment of a signature: the standing rights in KQkq order,
+// '-' when none survive. The template union rejects any stray string at compile time.
+export type CastlingRights = Exclude<`${'K' | ''}${'Q' | ''}${'k' | ''}${'q' | ''}`, ''> | '-'
+
+export function placementSignature(
+  placement: Map<SquareKey, string>,
+  activeColor: PieceColor,
+  castlingRights: CastlingRights,
+): string {
+  return [...placement.entries()].map(([square, code]) => square + code).sort().join('|') + activeColor + castlingRights
 }
 
 export function findKingSquare(board: BoardDto, color: PieceColor): SquareDto | null {

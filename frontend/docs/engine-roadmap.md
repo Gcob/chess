@@ -136,7 +136,12 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 ### ④ Coups spéciaux
 
-- [ ] Roque (petit/grand, droits via `hasMoved`, cases traversées non attaquées)
+- [x] Roque (petit/grand, droits via `hasMoved`, cases traversées non attaquées) — géométrie dans
+      `CastlingMoveType` (marche vers une tour jamais bougée, cases libres), sécurité dans le
+      pipeline (`restrictToSafeCastling` : jamais depuis un échec ni à travers une case attaquée ;
+      b1/b8 peut être attaquée), tour déplacée par `applyMove` (saut dérivé de `Move.castling`),
+      SAN `O-O`/`O-O-O` immédiat, droits de roque dans la signature de répétition (dérivés de
+      l'historique, roque = borne irréversible de la marche), flags `k`/`q` réactivés dans l'oracle
 - [ ] En passant (contexte = coup précédent de l'historique)
 - [ ] Promotion (choix de pièce dans l'UI ; l'id de la pièce survit — `Pe7` reste `Pe7`)
 

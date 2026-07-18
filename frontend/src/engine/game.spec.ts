@@ -449,6 +449,37 @@ describe('makeMove — automatic endings', () => {
     expect(game.result).toEqual({winner: null, reason: 'threefold-repetition'})
   })
 
+  it('tells identical placements apart by their castling rights', () => {
+    const game = untimedGame()
+    playMoves(game, [['g1', 'f3'], ['g8', 'f6']]) // knights out — h-rook rights still alive
+    // Each h-rook round trip rebuilds the same placement, but the FIRST occurrence (right
+    // after the knights came out) still carried castling rights: it does not count.
+    playMoves(game, [['h1', 'g1'], ['h8', 'g8'], ['g1', 'h1'], ['g8', 'h8']])
+    playMoves(game, [['h1', 'g1'], ['h8', 'g8'], ['g1', 'h1'], ['g8', 'h8']])
+    expect(game.status).toBe('active') // rights-less placement seen twice only — no draw
+    playMoves(game, [['h1', 'g1'], ['h8', 'g8']])
+    expect(game.status).toBe('finished') // rooks-on-g placement: 3rd rights-identical occurrence
+    expect(game.result).toEqual({winner: null, reason: 'threefold-repetition'})
+  })
+
+  it('records a castling move — rook brought over, side and SAN settled', () => {
+    const game = untimedGame()
+    playMoves(game, [['g1', 'f3'], ['g8', 'f6'], ['e2', 'e3'], ['e7', 'e6'], ['f1', 'e2'], ['f8', 'e7']])
+    makeMove(game, 'e1', 'g1', T0) // white castles king-side
+    expect(game.board.squares['g1'].piece?.type).toBe('king')
+    expect(game.board.squares['f1'].piece?.id).toBe('Rh1')
+    expect(game.moves[game.moves.length - 1]).toMatchObject({san: 'O-O', castling: 'king-side', from: 'e1', to: 'g1'})
+  })
+
+  it('records a queen-side castling as O-O-O', () => {
+    const game = untimedGame()
+    playMoves(game, [['d2', 'd4'], ['d7', 'd5'], ['c1', 'f4'], ['c8', 'f5'], ['b1', 'c3'], ['b8', 'c6'], ['d1', 'd2'], ['d8', 'd7']])
+    makeMove(game, 'e1', 'c1', T0) // white castles queen-side
+    expect(game.board.squares['c1'].piece?.type).toBe('king')
+    expect(game.board.squares['d1'].piece?.id).toBe('Ra1')
+    expect(game.moves[game.moves.length - 1]).toMatchObject({san: 'O-O-O', castling: 'queen-side'})
+  })
+
   it('leaves the game running on a simple check', () => {
     const game = untimedGame()
     playMoves(game, [['e2', 'e4'], ['f7', 'f5'], ['d1', 'h5']]) // Qh5+, blockable

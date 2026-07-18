@@ -38,7 +38,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans `sr
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
 | `Capture`     | Capture (pièce capturée)                                                                                    |
-| `Move`        | Déplacement plain data (san, color, pieceType, from/to en SquareKey, elapsedSeconds, capture?)              |
+| `Move`        | Déplacement plain data (san, color, pieceType, from/to en SquareKey, elapsedSeconds, capture?, castling?)   |
 | `GameResult`  | Fin de partie (winner — `null` = nulle —, reason)                                                           |
 | `Game`        | Partie (createdAt, startedAt, status, result, mode, activeColor, drawOffer, turnStartedAt, time?, type,     |
 |               | players{white,black}, board, moves)                                                                         |
@@ -56,6 +56,7 @@ type GameEndReason = 'resignation' | 'timeout' | 'draw-agreement' | 'checkmate' 
 type GameMode = 'local' | 'private-remote' | 'public-remote' | 'vs-bot'
 type Direction = 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left' | 'top-left'
 type SquareKey = `${SquareFile}${SquareRank}` // 'a1' … 'h8' — 64 clés exactes
+type CastlingSide = 'king-side' | 'queen-side'
 type MoveTypeId = 'simple' | 'castling' | 'linear-forward' | 'linear-forward-double'
     | 'diagonal-forward-capture' | 'en-passant' | 'promotion'
     | 'diagonal' | 'linear' | 'l-shape'
@@ -113,12 +114,16 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   triple répétition (`isThreefoldRepetition`, signatures remontées à rebours de l'historique)
   et le SAN complet (phase ⑤) le lisent ; les deux queries de nulle sont dérivées de
   l'historique, jamais trackées à part.
+- `Move.castling?` (`CastlingSide`) marque un roque — le saut de la tour se dérive du côté
+  dans `applyMove`, jamais stocké. Les droits de roque de la signature de répétition se
+  dérivent aussi de l'historique (premier contact des cases roi/tour) ; un roque est
+  irréversible et borne la marche arrière comme un coup de pion ou une capture.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).
   Le clouage n'est jamais stocké sur la pièce — l'engine le calcule à la demande (`getPinDirection`)
 - Légalité : un seul pipeline de restrictions successives, chacune auto-gardée (géométrie → sécurité
-  du roi → clouage → réponse à l'échec), exposé en trois queries : `canMove` (un coup),
+  du roi → sécurité du roque → clouage → réponse à l'échec), exposé en trois queries : `canMove` (un coup),
   `legalDestinations` (toutes les destinations d'une pièce — aides locales) et `hasAnyLegalMove`
   (une couleur a-t-elle encore un coup — la question mat/pat, court-circuite à la première
   destination trouvée), un seul `Board` partagé par query. Queries pures sur le board non muté —
