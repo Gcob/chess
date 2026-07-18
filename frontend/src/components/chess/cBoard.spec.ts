@@ -258,6 +258,8 @@ describe('cBoard', () => {
     expect(wrapper.find('.c-promotion-picker').exists()).toBe(true)
     expect(wrapper.find('.c-promotion-picker__backdrop').exists()).toBe(false) // drag mode: no backdrop
     expect(wrapper.find('.c-promotion-picker__halo').exists()).toBe(true) // the ring's presence shows
+    // Display only: the halo is the shared plate, and the release picks by geometry.
+    expect(wrapper.find('.c-promotion-picker__slot').attributes('disabled')).toBeDefined()
     // The board beneath goes quiet: no drop veil chasing the cursor through the zone.
     expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(false)
     await movePointer(50, 170) // knight slot
@@ -400,6 +402,8 @@ describe('cBoard', () => {
     expect(wrapper.find('.c-promotion-picker__halo').exists()).toBe(false) // the backdrop is the boundary
     const rookSlot = wrapper.findAll('.c-promotion-picker__slot')
       .find(slot => slot.find('img').attributes('alt') === 'white rook')!
+    // Real buttons here — the enabled state is what dresses each choice with its own plate.
+    expect(rookSlot.attributes('disabled')).toBeUndefined()
     await rookSlot.trigger('click')
     expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'rook'})
     expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)

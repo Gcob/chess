@@ -132,16 +132,24 @@ const haloStyle = computed(() => {
       animation: none;
     }
 
+    // Pending mode (click-to-move, touch) has no halo behind the ring, so every choice carries
+    // its own plate and reads against the dimmed board — touch has no hover to reveal it.
+    // Drag mode leaves them bare (its slots are disabled): there, the halo is the shared plate.
+    &:not(:disabled) {
+      background: var(--bg-elevated);
+      border-color: var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+
     &:hover,
     &--hovered {
       background: var(--bg-elevated);
-      border: $border-width-base solid var(--border-color);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       // The accent is a translucent tint — layered OVER the elevated base, which stays opaque
       // so the board never shows through the slot.
       background-image: linear-gradient(var(--accent-subtle), var(--accent-subtle));
-      // The swollen slot rides over its overlapping neighbours (the ring is deliberately tight)
+      // The hovered slot rides over its overlapping neighbours (the ring is deliberately tight)
       // and, in interactive mode, is the only one still catching the pointer — never the one
       // underneath, which would make a click land on the wrong piece.
       z-index: 1;
