@@ -8,10 +8,6 @@ const PRIMARY_BUTTON = 1
 // px the pointer must travel before a press becomes a drag rather than a tap.
 const DRAG_THRESHOLD = 4
 
-// Squares the piece rides above the finger on touch — a thumb hides a full square. Must match
-// the sprite lift in cPiece (`__img--lifted`), so the drop target stays under the piece.
-const TOUCH_LIFT_SQUARES = 1.20
-
 interface UsePieceDragOptions {
   // The grid element — its rect anchors all pointer math.
   boardEl: Ref<HTMLElement | null>
@@ -38,8 +34,8 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
   // Origin square of the current interaction — set on press, before the drag threshold,
   // so the move hints can show as soon as a piece is grabbed.
   const dragFrom = ref<SquareKey | null>(null)
-  // Touch drags ride one square above the finger (which would hide the piece) — the render
-  // layer lifts the sprite, and the drop target follows the piece, not the finger.
+  // Touch drags grow the sprite out of the thumb's shadow (CSS `--lifted`) and pop the
+  // target square — this flag drives those styles; the drop math stays identical.
   const isTouch = ref(false)
 
   let pendingId: string | null = null
@@ -57,11 +53,6 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
     const col = Math.floor((clientX - rect.left) / squareSize)
     const row = Math.floor((clientY - rect.top) / squareSize)
     return coordsToSquare(col, row, orientation.value)
-  }
-
-  // Where a drop would land: under the pointer, or above it on touch (the lift).
-  function targetAt(clientX: number, clientY: number): SquareKey | null {
-    return squareAt(clientX, clientY - (isTouch.value ? squareSize * TOUCH_LIFT_SQUARES : 0))
   }
 
   function beginDrag() {
@@ -94,10 +85,9 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
     }
 
     // Center the piece under the cursor; translate is from the board's top-left.
-    // On touch the sprite rides above this anchor (CSS lift) and the target follows it.
     dragX.value = event.clientX - rect.left - squareSize / 2
     dragY.value = event.clientY - rect.top - squareSize / 2
-    dropTarget.value = targetAt(event.clientX, event.clientY)
+    dropTarget.value = squareAt(event.clientX, event.clientY)
   }
 
   function detach() {
@@ -109,7 +99,7 @@ export function usePieceDrag({boardEl, orientation, onDrop, onTap, onDragStart}:
   function end(event: PointerEvent) {
     const origin = dragFrom.value
     const wasDrag = moved
-    const target = targetAt(event.clientX, event.clientY)
+    const target = squareAt(event.clientX, event.clientY)
     detach()
     reset()
     if (!origin) {

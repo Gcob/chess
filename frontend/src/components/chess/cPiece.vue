@@ -42,7 +42,7 @@ const props = withDefaults(defineProps<{
   // px translate within the board (top-left origin), used while dragging.
   dragX?: number
   dragY?: number
-  // Touch drag: the sprite rides one square above the pointer so the finger never hides it.
+  // Touch drag: the sprite grows from its bottom-left corner, up-right out of the thumb's shadow.
   lifted?: boolean
   // Touch drag: this piece stands on the popped target square and grows with it.
   popped?: boolean
@@ -151,14 +151,19 @@ const style = computed(() => ({
     transform: scale(1.6);
   }
 
-  // 1.20 squares above the finger (the sprite is 85% of the square, so one square is
-  // 100% / 0.85 of its own height) and doubled — a thumb hides a full square. Must match
-  // TOUCH_LIFT_SQUARES in usePieceDrag, so the drop target stays under the piece.
-  // Declared after --popped (the dragged piece always keeps its lift); only the glide UP
-  // eases — see the sprite transition note above.
+  // Touch grab: the drag stays centered — the finger aims the square under it (the popped
+  // drop target) — and the sprite doubles from its bottom-left corner, nudged further
+  // up-right out of the thumb's shadow, with a slight playful tilt (« dans les airs »).
+  // The translate is in the sprite's own (unscaled) size. Declared after --popped (the
+  // dragged piece always keeps its growth); only the grow-in eases — see the sprite
+  // transition note above.
+  // The shadow renders before the transform, so its offsets are doubled on screen by the
+  // scale — keep the values half of the intended look.
   &__img--lifted {
-    transform: translateY(calc(-120% / 0.85)) scale(2);
-    transition: transform 0.15s ease-out;
+    transform: translate(45%, -115%) scale(2) rotate(15deg);
+    transform-origin: bottom left;
+    filter: drop-shadow(8px 12px 2px rgba(0, 0, 0, 0.35));
+    transition: transform 0.15s ease-out, filter 0.15s ease-out;
   }
 }
 

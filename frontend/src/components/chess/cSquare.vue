@@ -128,7 +128,7 @@ function isHintPopped(highlight: SquareHighlight): boolean {
   }
 
   // The destination code pinned above the popped tile during a touch drag — a discreet dark
-  // pill, clear of the lifted sprite (whose top reaches ~35% above this square).
+  // pill; the grown sprite spans up-right from the finger, its glyph mostly clears the pill.
   &__drag-label {
     position: absolute;
     bottom: 140%;

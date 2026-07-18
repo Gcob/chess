@@ -138,13 +138,15 @@ le tap traverse jusqu'au `cSquare`, ce qui garde la capture par clic. `usePieceD
   instantané (anim `none`, la pièce est déjà sous le curseur) ; tout autre relâchement (coup refusé, même
   case, hors board, annulation bouton droit) = `snap-back` vers l'origine. Le « joué » se détecte sur
   `moves.length` — jamais via `legalTargets`, gaté par un setting. Menu contextuel supprimé
-  (`@contextmenu.prevent`). Case cible par maths sur le rect (pas de hit-testing DOM). Toucher : le sprite
-  monte de ~1,35 case au-dessus du doigt et double de taille (`lifted`, transition), la cible de drop suit la
-  pièce (pas le doigt), affichée en case agrandie ombrée (`drop-target-touch`) sous les pièces, avec le
-  code de destination épinglé au-dessus de la case (`showCode`). Piège : le sprite n'a AUCUNE transition
-  de base — elle vit sur l'état `--lifted` seulement (la montée au grab). Sortir d'un état est donc
-  toujours instantané : sans ça, un drop joué ré-applique le lift à la nouvelle cellule (saut + redescente
-  = rebond) et le dé-pop traîne derrière sa case. Long-press mobile neutralisé : `touchstart.prevent`
+  (`@contextmenu.prevent`). Case cible par maths sur le rect (pas de hit-testing DOM). Toucher : drag centré —
+  la cible de drop est la case sous le doigt ; le sprite double depuis son coin bas-gauche avec une légère
+  inclinaison (`lifted`, transition) et grossit vers le haut-droite, hors de l'ombre du pouce ; cible
+  affichée en case agrandie ombrée (`drop-target-touch`) sous les pièces, avec le code de destination
+  épinglé au-dessus de la case (`showCode`) — seulement sur une destination légale (`view.dropTargets`,
+  jamais gaté par le setting des hints : c'est du feedback de légalité, pas un hint). Piège : le sprite n'a AUCUNE transition de base — elle vit
+  sur l'état `--lifted` seulement (la croissance au grab). Sortir d'un état est donc toujours instantané :
+  sans ça, un drop joué ré-applique la croissance à la nouvelle cellule (flash) et le dé-pop traîne
+  derrière sa case. Long-press mobile neutralisé : `touchstart.prevent`
   sur les pièces (drag 100 % pointer-based) + sélection/callout coupés sur tout `.c-board`
   (`user-select` / `-webkit-touch-callout: none`) — jamais `touchstart.prevent` sur les cases,
   le click-to-move dépend du `click` synthétisé.

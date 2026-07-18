@@ -15,7 +15,7 @@
             :square="square"
             :highlights="highlightsFor(`${square.file}${square.rank}`)"
             :hints-key="hintFrom ?? ''"
-            :show-code="isTouch && dropTarget === `${square.file}${square.rank}`"
+            :show-code="touchDropSquare === `${square.file}${square.rank}`"
             @click="activateSquare(`${square.file}${square.rank}`)"
             @mouseenter="hoveredSquare = `${square.file}${square.rank}`"
           />
@@ -32,7 +32,7 @@
             :drag-x="draggingId === p.id ? dragX : 0"
             :drag-y="draggingId === p.id ? dragY : 0"
             :lifted="draggingId === p.id && isTouch"
-            :popped="isTouch && draggingId !== p.id && dropTarget === p.square"
+            :popped="draggingId !== p.id && touchDropSquare === p.square"
             @pointerdown="onPiecePointerDown($event, p)"
             @mouseenter="hoveredSquare = p.square"
           />
@@ -222,6 +222,20 @@ const legalTargets = computed<SquareKey[]>(() =>
   hintFrom.value ? props.view.legalTargets(hintFrom.value) : [],
 )
 
+// Legal destinations of the grabbed piece, ungated by the hints setting — the touch pop is
+// legality feedback, not a hint: sliding a bishop must not grow every crossed square, even
+// for a viewer who plays with the hints off.
+const dragTargets = computed<SquareKey[]>(() =>
+  dragFrom.value ? props.view.dropTargets(dragFrom.value) : [],
+)
+
+// The popped touch square: the live drop target, only when a drop would actually land there.
+const touchDropSquare = computed<SquareKey | null>(() =>
+  isTouch.value && dropTarget.value && dragTargets.value.includes(dropTarget.value)
+    ? dropTarget.value
+    : null,
+)
+
 // Combines the per-state sources into the highlights a given square should show.
 // Add a new visual state = add its source here (drop-target, last-move, selected…).
 function highlightsFor(square: SquareKey): SquareHighlight[] {
@@ -231,7 +245,8 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
     result.push('last-move')
   }
 
-  if (dropTarget.value === square) {
+  // Touch only acknowledges squares a drop could land on; the mouse veil follows the cursor.
+  if (isTouch.value ? touchDropSquare.value === square : dropTarget.value === square) {
     result.push(isTouch.value ? 'drop-target-touch' : 'drop-target')
   }
 

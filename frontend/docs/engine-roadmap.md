@@ -144,9 +144,11 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
 - [x] **Animations réveillées** : `hop` (arc du sprite du cavalier pendant la glisse, gatée par
       `--moving`) et `snap-back` (tout relâchement sans coup joué — détecté sur `moves.length`,
       jamais via `legalTargets` qui est gaté par le setting)
-- [x] **Drag mobile** : au toucher, le sprite monte de ~1,35 case au-dessus du doigt et double de
-      taille (transition) ; la cible de drop suit la pièce, pas le doigt — case agrandie ombrée
-      (`drop-target-touch`, façon key-preview) + code de destination au-dessus du sprite
+- [x] **Drag mobile** : drag centré — la cible de drop est la case sous le doigt ; le sprite double
+      depuis son coin bas-gauche avec une légère inclinaison (transition) et grossit vers le
+      haut-droite, hors de l'ombre du pouce — case agrandie ombrée (`drop-target-touch`, façon
+      key-preview) + code de destination au-dessus de la case, seulement sur une destination
+      légale (`view.dropTargets`, jamais gaté par le setting des hints)
 - [ ] Refactor du form nouvelle partie : le mode choisi (étape 1) pilote le reste du form —
       une composante de form par mode, pattern strategy (seul `local` existe, la structure doit
       être prête pour les autres) ; sélection de mode compacte sur mobile — les cartes actuelles

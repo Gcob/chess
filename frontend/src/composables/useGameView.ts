@@ -31,15 +31,17 @@ export function useGameView(id: string) {
     session.makeMove(from, to)
   }
 
-  // Legal destinations of the piece on `from` — the query behind the board's move hints.
-  // Gated by a per-viewer setting (default on) — empty hides the hints.
-  function legalTargets(from: SquareKey): SquareKey[] {
+  // Legal destinations of the piece on `from`, always — the query behind the touch drop pop.
+  // Drop feedback is legality feedback, never gated by the hints setting.
+  function dropTargets(from: SquareKey): SquareKey[] {
     const game = session.game.value
-    if (!game || !settingsStore.settings.showLegalMoves) {
-      return []
-    }
+    return game ? legalDestinations(game.board, from) : []
+  }
 
-    return legalDestinations(game.board, from)
+  // The same query behind the board's move hints, gated by a per-viewer setting (default on) —
+  // empty hides the hints.
+  function legalTargets(from: SquareKey): SquareKey[] {
+    return settingsStore.settings.showLegalMoves ? dropTargets(from) : []
   }
 
   // Which color's pieces accept interaction (drag / click-to-move). Local mode: the player to
@@ -118,6 +120,7 @@ export function useGameView(id: string) {
     isGameOver: session.isGameOver,
     drawOffer,
     move,
+    dropTargets,
     legalTargets,
     resign: session.resign,
     offerDraw: session.offerDraw,

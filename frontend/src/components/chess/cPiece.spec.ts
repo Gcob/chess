@@ -67,7 +67,7 @@ describe('cPiece', () => {
     expect(wrapper.classes()).toContain('c-piece--moving')
   })
 
-  it('lifts the sprite on demand — the touch drag offset', () => {
+  it('grows the sprite on demand — the touch grab', () => {
     const lifted = mountPiece({}, {dragging: true, lifted: true})
     expect(lifted.get('img').classes()).toContain('c-piece__img--lifted')
     expect(mountPiece({}, {dragging: true}).get('img').classes()).not.toContain('c-piece__img--lifted')

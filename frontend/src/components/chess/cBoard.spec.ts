@@ -193,7 +193,7 @@ describe('cBoard', () => {
     expect(pawn.classes()).toContain('c-piece--anim-slide')
   })
 
-  it('lifts a touch-dragged piece one square above the finger', async () => {
+  it('grows a touch-dragged piece and targets the square under the finger', async () => {
     mockBoardRect()
     const {view} = freshView()
     const wrapper = mount(cBoard, {props: {view}})
@@ -202,12 +202,29 @@ describe('cBoard', () => {
     window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 450, buttons: 1})) // over e4
     await nextTick()
     expect(wrapper.find('.c-piece__img--lifted').exists()).toBe(true)
-    // the drop target follows the lifted piece, not the finger — as the popped-out square
-    expect(findSquare(wrapper, 'e5').find('.c-square__highlight--drop-target-touch').exists()).toBe(true)
-    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target-touch').exists()).toBe(false)
+    // the drop target is the square under the finger — shown as the popped-out square
+    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target-touch').exists()).toBe(true)
     expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(false)
     // the destination code is pinned above the popped target square
-    expect(findSquare(wrapper, 'e5').find('.c-square__drag-label').text()).toBe('e5')
+    expect(findSquare(wrapper, 'e4').find('.c-square__drag-label').text()).toBe('e4')
+  })
+
+  it('only pops legal touch targets — even with the hints setting off', async () => {
+    mockBoardRect()
+    const {view} = freshView()
+    useSettingsStore().settings.showLegalMoves = false
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e2')!
+    await pawn.trigger('pointerdown', {pointerType: 'touch'})
+    // e6 — three squares ahead, not a pawn move: the crossed square stays quiet
+    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 250, buttons: 1}))
+    await nextTick()
+    expect(wrapper.find('.c-square__highlight--drop-target-touch').exists()).toBe(false)
+    expect(wrapper.find('.c-square__drag-label').exists()).toBe(false)
+    // e4 — legal: pops despite the hints being off (drop feedback is not a hint)
+    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 450, buttons: 1}))
+    await nextTick()
+    expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target-touch').exists()).toBe(true)
   })
 
   it('grows the piece standing on the touch target with the popped square', async () => {
@@ -218,7 +235,7 @@ describe('cBoard', () => {
     const wrapper = mount(cBoard, {props: {view}})
     const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e4')!
     await pawn.trigger('pointerdown', {pointerType: 'touch'})
-    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 350, clientY: 450, buttons: 1})) // over d4 → target d5
+    window.dispatchEvent(new MouseEvent('pointermove', {clientX: 350, clientY: 350, buttons: 1})) // over d5, the target
     await nextTick()
     const enemy = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'd5')!
     expect(enemy.classes()).toContain('c-piece--popped')
