@@ -21,6 +21,7 @@ import {useRoute} from 'vue-router'
 import {useGameView} from '@/composables/useGameView'
 import {useIsMobile} from '@/composables/useMediaQuery'
 import {usePreventLeave} from '@/composables/usePreventLeave'
+import {useSettingsStore} from '@/stores/useSettingsStore'
 import GameLayoutDesktop from '@/components/game/GameLayoutDesktop.vue'
 import GameLayoutMobile from '@/components/game/GameLayoutMobile.vue'
 
@@ -32,8 +33,10 @@ const rawId = route.params.id
 const view = useGameView(Array.isArray(rawId) ? (rawId[0] ?? '') : (rawId ?? ''))
 const isMobile = useIsMobile()
 
-// warn only while a live game could be lost — a finished game has nothing to protect
-usePreventLeave(() => !!view.game && !view.isGameOver)
+// Warn only while a live game could be lost — a finished game has nothing to protect, and the
+// dev tooling (devMode setting) iterates too fast to pay a confirm on every hop.
+const settingsStore = useSettingsStore()
+usePreventLeave(() => !!view.game && !view.isGameOver && !settingsStore.settings.devMode)
 </script>
 
 <style lang="scss" scoped>

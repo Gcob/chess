@@ -9,6 +9,7 @@ import {
   offerDraw,
   oppositeColor,
   remainingSeconds,
+  replayMoves,
   resign,
   startGame,
 } from './game'
@@ -333,6 +334,31 @@ function playMoves(game: Game, moves: Array<[SquareKey, SquareKey]>): void {
     makeMove(game, from, to, T0)
   }
 }
+
+describe('replayMoves', () => {
+  it('replays a move list through the real engine', () => {
+    const game = untimedGame()
+    replayMoves(game, [['e2', 'e4'], ['d7', 'd5'], ['e4', 'd5']], T0)
+    expect(game.moves.map(m => m.san)).toEqual(['e4', 'd5', 'exd5'])
+    expect(game.activeColor).toBe('black')
+    expect(game.status).toBe('active')
+  })
+
+  it('debits no clock time — every move replays on the same instant', () => {
+    const game = timedGame()
+    replayMoves(game, [['e2', 'e4'], ['e7', 'e5']], T0)
+    // 600 base − 0 elapsed + the 5s per-move increment, exactly like an instant real move.
+    expect(game.players.white.timer?.secondsRemaining).toBe(605)
+    expect(game.players.black.timer?.secondsRemaining).toBe(605)
+  })
+
+  it('throws loudly on a refused move — a broken scenario must scream', () => {
+    const game = untimedGame()
+    expect(() => replayMoves(game, [['e2', 'e4'], ['e4', 'e5']], T0))
+      .toThrowError(/e4-e5/)
+    expect(game.moves).toHaveLength(1) // the legal prefix stands
+  })
+})
 
 describe('enPassantTarget', () => {
   it('exposes the crossed square right after a double push, both colors', () => {

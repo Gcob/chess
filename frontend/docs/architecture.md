@@ -36,6 +36,7 @@ src/
 │   └── pages/                     # une page par route
 ├── composables/
 │   └── factories/                 # factory functions
+├── dev/                           # outillage QA (scénarios du mode dev) — jamais du domaine
 ├── engine/                        # logique métier pure — sans Vue
 ├── router/
 │   └── index.ts
@@ -252,6 +253,17 @@ toggle « pivoter les pièces quand le trait change », branché sur le setting 
 impossible) : livrer un mode = flipper son flag `available` + mapper sa composante de form.
 Sur mobile, la sélection de mode se compacte en une rangée de tuiles icône + titre court (clés i18n
 `*Short`), la description du mode sélectionné s'affichant une seule fois sous la rangée.
+
+**Mode dev.** `'dev'` est un mode de *form* (`NewGameMode = GameMode | 'dev'`, type UI dans
+`useNewGameStore`), jamais un `GameMode` du domaine : la partie créée est une vraie partie
+`mode: 'local'` dont l'historique a été semé par `replayMoves` (un scénario = une liste de coups
+rejouée via le vrai engine — registre `src/dev/scenarios.ts`, spec qui rejoue chaque scénario).
+Sa tuile n'apparaît que si le setting global `devMode` est activé (off par défaut — le setting
+est l'unique gate, l'outil marche donc aussi contre le build preview).
+`useGameLauncher.launch()` est le chemin de lancement unique (form et panneau dev) : payload +
+session + semis du scénario. In-game, `DevGamePanel` (même gate) relance un scénario en place ;
+le devMode désarme le prevent-leave, et `RouterView` est keyé sur le path pour qu'un changement
+de param remonte la page (les pages lisent leurs params une fois au setup).
 
 ```
 NewGameSettings (useNewGameStore)

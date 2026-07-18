@@ -28,15 +28,15 @@
 
 <script lang="ts" setup>
 import {computed} from 'vue'
-import {Users, Bot, Globe, Link} from 'lucide-vue-next'
+import {Users, Bot, Globe, Link, FlaskConical} from 'lucide-vue-next'
 import type {Component} from 'vue'
-import type {GameMode} from '@/types/chess'
-import type {NewGameSettings} from '@/stores/useNewGameStore'
+import {useSettingsStore} from '@/stores/useSettingsStore'
+import type {NewGameMode, NewGameSettings} from '@/stores/useNewGameStore'
 
 const props = defineProps<{ settings: NewGameSettings }>()
 
 interface ModeOption {
-  value: GameMode
+  value: NewGameMode
   icon: Component
   titleKey: string
   // Tile label on mobile, where the full title wouldn't fit.
@@ -50,11 +50,22 @@ const modes: ModeOption[] = [
   {value: 'vs-bot', icon: Bot, titleKey: 'newGame.mode.ai', titleShortKey: 'newGame.mode.aiShort', descKey: 'newGame.mode.aiDesc', available: false},
   {value: 'public-remote', icon: Globe, titleKey: 'newGame.mode.onlineRandom', titleShortKey: 'newGame.mode.onlineRandomShort', descKey: 'newGame.mode.onlineRandomDesc', available: false},
   {value: 'private-remote', icon: Link, titleKey: 'newGame.mode.onlinePrivate', titleShortKey: 'newGame.mode.onlinePrivateShort', descKey: 'newGame.mode.onlinePrivateDesc', available: false},
+  {value: 'dev', icon: FlaskConical, titleKey: 'newGame.mode.dev', titleShortKey: 'newGame.mode.devShort', descKey: 'newGame.mode.devDesc', available: true},
 ]
+
+const settingsStore = useSettingsStore()
 
 // Only playable modes reach the selector — an impossible choice is worse than an absent one.
 // Shipping a mode = flipping its `available` flag; its entry above is already wired.
-const availableModes = modes.filter(m => m.available)
+// The dev mode is additionally gated by the devMode setting (its only gate — works in prod builds).
+const availableModes = computed(() =>
+  modes.filter(m => m.available && (m.value !== 'dev' || settingsStore.settings.devMode)),
+)
+
+// A persisted 'dev' selection must not survive the setting being turned off.
+if (props.settings.mode === 'dev' && !settingsStore.settings.devMode) {
+  props.settings.mode = 'local'
+}
 
 const selected = computed(() => modes.find(m => m.value === props.settings.mode)!)
 </script>

@@ -168,6 +168,19 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   }
 }
 
+// Replays a trusted move list through makeMove — scenario seeding today, refresh/persistence
+// tomorrow. One shared `now` spends no clock time. A refused move throws: replayed data is
+// developer or persisted data, a corruption must scream, never half-apply silently.
+export function replayMoves(game: Game, moves: Array<[SquareKey, SquareKey]>, now: number = Date.now()): void {
+  for (const [from, to] of moves) {
+    const before = game.moves.length
+    makeMove(game, from, to, now)
+    if (game.moves.length === before) {
+      throw new Error(`replayMoves: move ${before + 1} (${from}-${to}) was refused by the engine`)
+    }
+  }
+}
+
 export function resign(game: Game, color: PieceColor): void {
   if (game.status === 'finished') {
     return

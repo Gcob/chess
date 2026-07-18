@@ -48,6 +48,11 @@
         <span>{{ $t('settings.showLegalMoves') }}</span>
         <input type="checkbox" class="c-checkbox" v-model="store.settings.showLegalMoves" />
       </label>
+
+      <label class="c-label">
+        <span>{{ $t('settings.devMode') }}</span>
+        <input type="checkbox" class="c-checkbox" v-model="store.settings.devMode" />
+      </label>
     </div>
 
     <template #footer="{ close }">

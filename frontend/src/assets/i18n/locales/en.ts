@@ -104,6 +104,7 @@ export default {
     boardTheme: 'Board theme',
     highlightLastMove: 'Highlight last move',
     showLegalMoves: 'Show legal moves',
+    devMode: 'Developer mode',
     boardThemes: {
       wood: 'Wood',
     },
@@ -143,6 +144,13 @@ export default {
       onlinePrivate: 'Online — Private',
       onlinePrivateShort: 'Private',
       onlinePrivateDesc: 'Invite a friend with a link.',
+      dev: 'Dev',
+      devShort: 'Dev',
+      devDesc: 'Local game seeded with a QA scenario.',
+    },
+    scenario: {
+      title: 'Scenario',
+      label: 'Starting position',
     },
     players: {
       title: 'Players',
@@ -168,6 +176,11 @@ export default {
     },
   },
   game: {
+    dev: {
+      title: 'Dev',
+      restart: 'Restart scenario',
+      editSetup: 'Edit setup',
+    },
     notFound: 'Game not found',
     notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',
     newGame: 'New game',

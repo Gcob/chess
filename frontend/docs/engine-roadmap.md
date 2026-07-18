@@ -152,7 +152,16 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       victime retirée par `applyMove` ; `Move.enPassant` + SAN `exd6` ; droit ep dans la
       signature de répétition (seulement si pseudo-capturable, aligné chess.js/FIDE 9.2) ;
       oracle sans filtre `e`
-- [ ] Promotion (choix de pièce dans l'UI ; l'id de la pièce survit — `Pe7` reste `Pe7`)
+- [ ] Promotion — ferme la phase ④, règles FIDE complètes. Engine : `makeMove` gagne le choix
+      (`promotion?: PieceType`) ; poussée de promotion sans choix = no-op, commande incomplète —
+      jamais de dame silencieuse, le défaut visible vit dans le setting ; le type change, l'id
+      survit (`Pe7` reste `Pe7`) ; oracle chess.js sans plus aucun filtre (notre choix mappé sur
+      le sien). UI : résolution `autoPromoteToQueen ? dame : picker` — setting global (comportement
+      attendu des deux joueurs en local) ; le picker radial est un pré-requis de la phase (sans lui,
+      pas de sous-promotion) : desktop ancré sur la case de promotion — le curseur est déjà là,
+      zéro voyage ; mobile : même langage mais centré en position fixe, grosses cibles touch ;
+      `prefers-reduced-motion` respecté ; coup en attente au drop, joué seulement au choix,
+      annulation = snap-back (l'intention pré-établie reste au Backlog parties distantes)
 
 ### ⑤ SAN complet & PGN
 
@@ -169,6 +178,23 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [ ] Sync du DTO par websocket — le mode `local` reste 100 % hors ligne
 - [ ] Spectateurs : observer une ou plusieurs parties sur une même page
 - [ ] Policies par mode finalisées (`vs-bot`, `private-remote`, `public-remote`)
+
+## Outillage dev / QA
+
+- [x] **Mode dev** : mode de *form* (le DTO reste `mode: 'local'` — le domaine ne connaît jamais
+      l'outillage), gaté par le setting global `devMode` (off par défaut — le setting EST le gate,
+      l'outil marche aussi contre le build preview) ; tuile + `NewGameDevForm` (pattern strategy),
+      scénario persisté comme le reste du form. Un scénario = une liste de coups rejouée par
+      `replayMoves` (engine, jette sur coup refusé — un scénario cassé échoue dans la suite, pas
+      en pleine session de QA), jamais un dump de pièces : toute position semée est légale par
+      construction. Registre `src/dev/scenarios.ts` (promotion, en passant, roques). Vision long
+      terme : sandbox pour développer pre-moves et mimer un backend.
+- [x] **Panneau dev in-game** (`DevGamePanel`, sidebar desktop + layout mobile, gaté par le même
+      setting) : choix du scénario + relance en place (nouvelle session semée via
+      `useGameLauncher` — le chemin de lancement partagé avec le form —, navigation, ancienne
+      session fermée) + lien vers le form. Le devMode désarme aussi le prevent-leave — le QA
+      saute de partie en partie sans confirm. `RouterView` keyé sur le path (game/:a → game/:b
+      remonte la page).
 
 ## Backlog UX / board
 
@@ -206,8 +232,8 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
       chevrons de coin façon target lock) ; cavalier = mini-flèche coudée en L (8 orientations) ;
       respecter `prefers-reduced-motion`
 - [ ] Parties en cours listées sur l'accueil + les rejoindre (plus tard : filtrées par compte).
-      Survivre au refresh = persister la liste de coups et la rejouer — réutilise la sérialisation
-      des positions de départ hardcodées
+      Survivre au refresh = persister la liste de coups et la rejouer — `replayMoves` (mode dev)
+      est déjà cette mécanique
 - [ ] Assets de pièces inlinés dans le bundle (SVG via Vite) : élimine le flash de chargement async
       et honore « local = 100 % hors ligne ». Préchargement + loading seulement si le bundle grossit
 - [ ] Spot discret des coordonnées de la case survolée — compléter l'illumination file/rangée de
@@ -221,6 +247,12 @@ Features propres aux modes `vs-bot` / `private-remote` / `public-remote` — rie
 
 - [ ] Pre-moves : préparer son coup pendant le tour adverse, exécuté dès le retour du trait.
       Sans objet en local — une seule souris joue les deux camps
+- [ ] Intention de promotion pré-établie par pion (idée relevée chez Aman Hambleton / ChessBrah :
+      le picker coûte du temps, et sur chess.com le popup meurt quand l'adversaire joue en
+      pre-move) : choisir la pièce d'avance, pendant l'attente — chaîne de résolution
+      `intention du pion ?? autoPromoteToQueen ?? picker`. État d'observateur privé, JAMAIS dans
+      le DTO `Game` (ne voyage pas) ; remote seulement — en local, l'écran partagé fuiterait
+      l'intention à l'adversaire. S'arrime aux pre-moves
 - [ ] Réactiver chaque mode dans le sélecteur du form quand il devient jouable : flag `available`
       dans `NewGameModeSection` + sa composante de form (pattern strategy) — les entrées, icônes
       et clés i18n sont déjà en place

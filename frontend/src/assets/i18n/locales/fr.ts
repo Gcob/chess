@@ -116,6 +116,7 @@ export default {
     boardTheme: 'Thème du plateau',
     highlightLastMove: 'Surligner le dernier coup',
     showLegalMoves: 'Afficher les coups légaux',
+    devMode: 'Mode développeur',
     boardThemes: {
       wood: 'Bois',
     },
@@ -155,6 +156,13 @@ export default {
       onlinePrivate: 'En ligne — Privé',
       onlinePrivateShort: 'Privé',
       onlinePrivateDesc: 'Invite un ami avec un lien.',
+      dev: 'Dev',
+      devShort: 'Dev',
+      devDesc: 'Partie locale amorcée avec un scénario de QA.',
+    },
+    scenario: {
+      title: 'Scénario',
+      label: 'Position de départ',
     },
     players: {
       title: 'Joueurs',
@@ -180,6 +188,11 @@ export default {
     },
   },
   game: {
+    dev: {
+      title: 'Dev',
+      restart: 'Relancer le scénario',
+      editSetup: 'Modifier la partie',
+    },
     notFound: 'Partie introuvable',
     notFoundDesc: 'La session #{id} n\'existe pas ou est déjà terminée.',
     newGame: 'Nouvelle partie',

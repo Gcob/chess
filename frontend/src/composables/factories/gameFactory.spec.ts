@@ -27,6 +27,7 @@ describe('toBackendPayload', () => {
       timerEnabled: false,
       timerMinutes: 10,
       timerIncrement: 0,
+      scenarioId: null,
     }
     const payload = toBackendPayload(settings)
     expect(payload.mode).toBe('local')
@@ -47,6 +48,7 @@ describe('toBackendPayload', () => {
       timerEnabled: false,
       timerMinutes: 10,
       timerIncrement: 0,
+      scenarioId: null,
     }
     const payload = toBackendPayload(settings)
     expect(payload.players.white.name).toBe('Alice')
@@ -63,6 +65,7 @@ describe('toBackendPayload', () => {
       timerEnabled: true,
       timerMinutes: 10,
       timerIncrement: 5,
+      scenarioId: null,
     }
     const payload = toBackendPayload(settings)
     expect(payload.time).toEqual({ minutes: 10, secondsIncrement: 5 })

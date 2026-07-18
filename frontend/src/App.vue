@@ -1,7 +1,9 @@
 <template>
   <div id="app-main">
     <SuperTopBar />
-    <RouterView />
+    <!-- Keyed on the path so a same-route param change (game/:a → game/:b) remounts the page —
+         pages read their params once at setup. -->
+    <RouterView :key="$route.path" />
     <AppFooter />
   </div>
 </template>

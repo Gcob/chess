@@ -13,17 +13,18 @@
 <script setup lang="ts">
 import {computed, ref, type Component} from 'vue'
 import {storeToRefs} from 'pinia'
-import {useNewGameStore} from '@/stores/useNewGameStore'
-import type {GameMode} from '@/types/chess'
+import {useNewGameStore, type NewGameMode} from '@/stores/useNewGameStore'
 import NewGameModeSection from '@/components/parts/NewGameModeSection.vue'
 import NewGameLocalForm from '@/components/parts/NewGameLocalForm.vue'
+import NewGameDevForm from '@/components/parts/NewGameDevForm.vue'
 
 // The whole form is driven by one DTO — the reactive `settings` from the store. The selected
 // mode resolves the rest of the form (strategy pattern): one form component per mode, each
 // honouring the same contract — a single `settings` prop + an exposed `validate()`. The map
 // stays partial on purpose: an unavailable mode can't be selected.
-const modeForms: Partial<Record<GameMode, Component>> = {
+const modeForms: Partial<Record<NewGameMode, Component>> = {
   local: NewGameLocalForm,
+  dev: NewGameDevForm,
 }
 
 // The strategy contract, as the parent sees it.

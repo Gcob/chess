@@ -8,6 +8,7 @@
     </div>
 
     <GameActions :view="view" />
+    <DevGamePanel />
   </div>
 </template>
 
@@ -16,6 +17,7 @@ import GameBoardArea from '@/components/game/GameBoardArea.vue'
 import PlayersPanel from '@/components/game/PlayersPanel.vue'
 import GameInfo from '@/components/game/GameInfo.vue'
 import GameActions from '@/components/game/GameActions.vue'
+import DevGamePanel from '@/components/game/DevGamePanel.vue'
 import type {GameView} from '@/composables/useGameView'
 
 defineProps<{ view: GameView }>()

@@ -12,6 +12,9 @@ export interface Settings {
   // Local games on mobile (phone flat between the players): the pieces turn 180° on
   // themselves toward the player to move. Desktop never turns anything.
   autoFlipPieces: boolean
+  // Unlocks the dev game mode (QA scenarios) in the new-game form — the setting IS the gate,
+  // so the tooling also works against preview/prod builds.
+  devMode: boolean
 }
 
 const STORAGE_KEY = 'settings'
@@ -23,6 +26,7 @@ const DEFAULTS: Settings = {
   highlightLastMove: true,
   showLegalMoves: true,
   autoFlipPieces: true,
+  devMode: false,
 }
 
 function loadFromStorage(): Settings {

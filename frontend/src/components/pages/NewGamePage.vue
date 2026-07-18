@@ -12,17 +12,13 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import NewGameForm from '@/components/NewGameForm.vue'
-import { useNewGameStore } from '@/stores/useNewGameStore'
-import { useGamesStore } from '@/stores/useGamesStore'
-import { toBackendPayload } from '@/composables/factories/gameFactory'
+import { useGameLauncher } from '@/composables/useGameLauncher'
 
 const router = useRouter()
-const newGameStore = useNewGameStore()
-const gamesStore = useGamesStore()
+const { launch } = useGameLauncher()
 
 function onStart() {
-  const payload = toBackendPayload(newGameStore.settings)
-  const session = gamesStore.open(payload)
+  const session = launch()
   router.push({ name: 'game', params: { id: session.id } })
 }
 </script>

@@ -22,7 +22,9 @@ import type {NewGameSettings} from '@/stores/useNewGameStore'
 // This is the single source of truth for what gets sent to the backend.
 export function toBackendPayload(settings: NewGameSettings): CreateGamePayload {
   return {
-    mode: settings.mode,
+    // 'dev' is a form-only mode: the game it creates is a real local game (scenario replayed
+    // after creation) — the domain payload never carries the tooling concern.
+    mode: settings.mode === 'dev' ? 'local' : settings.mode,
     players: {
       white: {name: settings.playerWhiteName.trim(), avatar: settings.playerWhiteAvatar},
       black: {name: settings.playerBlackName.trim(), avatar: settings.playerBlackAvatar},

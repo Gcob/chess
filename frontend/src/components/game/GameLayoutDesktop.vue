@@ -9,6 +9,7 @@
       <GameInfo :view="view" />
       <MoveHistory :view="view" />
       <GameActions :view="view" />
+      <DevGamePanel />
     </aside>
   </div>
 </template>
@@ -20,6 +21,7 @@ import PlayersPanel from '@/components/game/PlayersPanel.vue'
 import GameInfo from '@/components/game/GameInfo.vue'
 import MoveHistory from '@/components/game/MoveHistory.vue'
 import GameActions from '@/components/game/GameActions.vue'
+import DevGamePanel from '@/components/game/DevGamePanel.vue'
 import type {GameView} from '@/composables/useGameView'
 
 defineProps<{ view: GameView }>()
