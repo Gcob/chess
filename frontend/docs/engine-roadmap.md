@@ -147,10 +147,24 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
 - [x] **Drag mobile** : au toucher, le sprite monte de ~1,35 case au-dessus du doigt et double de
       taille (transition) ; la cible de drop suit la pièce, pas le doigt — case agrandie ombrée
       (`drop-target-touch`, façon key-preview) + code de destination au-dessus du sprite
+- [ ] Refactor du form nouvelle partie : le mode choisi (étape 1) pilote le reste du form —
+      une composante de form par mode, pattern strategy (seul `local` existe, la structure doit
+      être prête pour les autres) ; sélection de mode compacte sur mobile — les cartes actuelles
+      prennent trop de place verticalement
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
-      (actuel), ② seules les pièces pivotent de 180° (jeu face à face autour d'un téléphone à plat),
-      ③ board fixe. Réglage par observateur ; `orientation` est déjà un computed de policy
-      (`useGameView`) — un changement à chaud se réoriente par réactivité, aucun cas spécial
+      (actuel), ② board fixe + pièces pivotées sur elles-mêmes de 180° (jeu face à face autour
+      d'un téléphone à plat), ③ board fixe côté blancs. Jamais de board renversé (noirs en bas)
+      pour des joueurs locaux — la rotation 180° du board appartient aux modes distants et aux
+      spectateurs (voir Backlog parties distantes). Réglage par observateur ; `orientation` est
+      déjà un computed de policy (`useGameView`) — un changement à chaud se réoriente par
+      réactivité, aucun cas spécial
+- [ ] Identité visuelle des hints de coups légaux : remplacer points/anneaux (vocabulaire
+      chess.com/Lichess) par de petites flèches discrètes orientées selon la direction du coup
+      (verticale/horizontale/diagonale), animées en se dessinant depuis la pièce (stagger le long
+      du rayon — la « ligne de vue » qui se déploie, écho de l'épic pédagogie) ; capture = look
+      distinct à trancher (pointe de flèche « mordant » le bord de la case côté attaque, ou
+      chevrons de coin façon target lock) ; cavalier = mini-flèche coudée en L (8 orientations) ;
+      respecter `prefers-reduced-motion`
 - [ ] Parties en cours listées sur l'accueil + les rejoindre (plus tard : filtrées par compte).
       Survivre au refresh = persister la liste de coups et la rejouer — réutilise la sérialisation
       des positions de départ hardcodées
@@ -167,6 +181,10 @@ Features propres aux modes `vs-bot` / `private-remote` / `public-remote` — rie
 
 - [ ] Pre-moves : préparer son coup pendant le tour adverse, exécuté dès le retour du trait.
       Sans objet en local — une seule souris joue les deux camps
+- [ ] Politiques d'orientation des modes distants : board fixé du côté du joueur local —
+      c'est ici que la rotation 180° du board existe (un joueur noir voit le board renversé) ;
+      un spectateur choisit librement son côté et peut tourner le board à volonté.
+      Même mécanique de policy (`useGameView.orientation`)
 
 ## Épic pédagogie *(horizon)*
 
