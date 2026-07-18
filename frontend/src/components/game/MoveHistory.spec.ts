@@ -19,9 +19,9 @@ const payload: CreateGamePayload = {
 }
 
 function move(color: PieceColor, san: string): Move {
-  // from/to don't matter for the pairing — any square keeps the object honest
+  // from/to/pieceType don't matter for the pairing — any values keep the object honest
   const square: SquareKey = 'e4'
-  return {san, color, from: square, to: square, elapsedSeconds: 0}
+  return {san, color, pieceType: 'pawn', from: square, to: square, elapsedSeconds: 0}
 }
 
 function mountWithMoves(moves: Move[]) {

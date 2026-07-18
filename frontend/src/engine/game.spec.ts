@@ -3,6 +3,7 @@ import {
   acceptDraw,
   declineDraw,
   flagTimeout,
+  halfmovesSinceProgress,
   makeMove,
   offerDraw,
   oppositeColor,
@@ -332,6 +333,24 @@ function playMoves(game: Game, moves: Array<[SquareKey, SquareKey]>): void {
   }
 }
 
+describe('halfmovesSinceProgress', () => {
+  it('counts quiet moves and resets on a pawn move', () => {
+    const game = untimedGame()
+    playMoves(game, [['b1', 'c3'], ['b8', 'c6']])
+    expect(halfmovesSinceProgress(game)).toBe(2)
+    playMoves(game, [['e2', 'e4']])
+    expect(halfmovesSinceProgress(game)).toBe(0)
+  })
+
+  it('resets on a capture', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['d7', 'd5'], ['b1', 'c3'], ['b8', 'c6']])
+    expect(halfmovesSinceProgress(game)).toBe(2)
+    playMoves(game, [['c3', 'd5']]) // knight takes the pawn
+    expect(halfmovesSinceProgress(game)).toBe(0)
+  })
+})
+
 describe('makeMove — automatic endings', () => {
   it('ends on checkmate — scholar\'s mate, white wins', () => {
     const game = untimedGame()
@@ -387,6 +406,26 @@ describe('makeMove — automatic endings', () => {
     makeMove(game, 'c1', 'd2', T0) // …the bishop takes it: K+B vs K, dead position
     expect(game.status).toBe('finished')
     expect(game.result).toEqual({winner: null, reason: 'insufficient-material'})
+  })
+
+  it('ends on the fifty-move rule — 100 quiet half-moves', () => {
+    const game = untimedGame()
+    // Knight shuffle: 4 quiet half-moves per cycle, 25 cycles = exactly 100.
+    for (let cycle = 0; cycle < 25; cycle++) {
+      playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1'], ['c6', 'b8']])
+    }
+    expect(game.moves).toHaveLength(100)
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: null, reason: 'fifty-move-rule'})
+  })
+
+  it('stays active one half-move before the fifty-move limit', () => {
+    const game = untimedGame()
+    for (let cycle = 0; cycle < 24; cycle++) {
+      playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1'], ['c6', 'b8']])
+    }
+    playMoves(game, [['b1', 'c3'], ['b8', 'c6'], ['c3', 'b1']]) // 99
+    expect(game.status).toBe('active')
   })
 
   it('leaves the game running on a simple check', () => {

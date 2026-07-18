@@ -38,7 +38,7 @@ Types purs — pas de classes, pas de méthodes. La logique métier vit dans `sr
 | `Board`       | Échiquier — `Record<SquareKey, Square>`                                                                     |
 | `BoardPiece`  | Projection plate `{ piece, square }` — pièce + sa case, dérivée du board pour le rendu                      |
 | `Capture`     | Capture (pièce capturée)                                                                                    |
-| `Move`        | Déplacement plain data (san, color, from/to en SquareKey, elapsedSeconds, capture?)                         |
+| `Move`        | Déplacement plain data (san, color, pieceType, from/to en SquareKey, elapsedSeconds, capture?)              |
 | `GameResult`  | Fin de partie (winner — `null` = nulle —, reason)                                                           |
 | `Game`        | Partie (createdAt, startedAt, status, result, mode, activeColor, drawOffer, turnStartedAt, time?, type,     |
 |               | players{white,black}, board, moves)                                                                         |
@@ -109,6 +109,8 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
 - `Piece.textRepresentation` : `short` (ex. `'K'`) et `long` (ex. `'King'`)
 - `Move` est du plain data sérialisable — `from`/`to` en `SquareKey`, jamais des références `Square`
   (le graphe du board est circulaire). Le contexte en passant = l'entrée précédente de `Game.moves`.
+  `pieceType` = la pièce déplacée — le compteur des 50 coups (`halfmovesSinceProgress`, dérivé de
+  l'historique) et le SAN complet (phase ⑤) le lisent.
 - `GameTime` utilise des props explicites (`minutes`, `secondsIncrement`) — jamais la notation `"2|1"`
 - `Game.time` est optionnel — `undefined` = partie sans chrono
 - `Direction` est le type partagé pour les 8 directions (voisins de case, rayons d'attaque et de clouage).

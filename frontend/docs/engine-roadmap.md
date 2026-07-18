@@ -106,7 +106,10 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 - [x] Mat (victoire) et pat (nulle) — `hasAnyLegalMove(board, color)` dans `makeMove` : le nouveau
       trait sans aucun coup légal termine la partie (`checkmate` s'il est en échec, sinon
       `stalemate`) ; l'affichage du résultat et le gel des commandes existaient depuis la phase ①
-- [ ] Règle des 50 coups
+- [x] Règle des 50 coups — `halfmovesSinceProgress(game)` : compteur dérivé de l'historique
+      (remonté depuis la fin jusqu'au premier coup de pion ou capture, jamais tracké à part) ;
+      100 demi-coups sans progrès = nulle automatique dans `makeMove`. `Move.pieceType` ajouté
+      au DTO (le SAN complet de la phase ⑤ le lira aussi)
 - [ ] Triple répétition
 - [x] Matériel insuffisant — `hasInsufficientMaterial(board)` dans `makeMove` (après mat/pat) :
       position morte = nulle automatique. Aligné chess.js : roi vs roi, une mineure seule, ou

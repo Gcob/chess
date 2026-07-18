@@ -136,6 +136,8 @@ export interface Capture {
 export interface Move {
   san: string // Standard Algebraic Notation — e.g. 'e4', 'Nf3', 'O-O', 'exd5', 'Qxh7#'
   color: PieceColor
+  // What moved — the fifty-move clock and the full SAN (phase ⑤) both read it.
+  pieceType: PieceType
   from: SquareKey
   to: SquareKey
   elapsedSeconds: number

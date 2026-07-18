@@ -11,6 +11,25 @@ import {findCheckers} from './board'
 // No clock runs here: time is computed from turnStartedAt (epoch ms) and only settled into
 // the mover's timer when a move is played. `now` is injectable for tests and future sync.
 
+// 50 full moves by each side — the rule counts half-moves.
+const FIFTY_MOVE_LIMIT = 100
+
+// Half-moves played since the last irreversible event (pawn move or capture), walked from the
+// end of the history — the fifty-move clock is derived from the moves, never tracked apart.
+export function halfmovesSinceProgress(game: Game): number {
+  let count = 0
+  for (let i = game.moves.length - 1; i >= 0; i--) {
+    const move = game.moves[i]!
+    if (move.pieceType === 'pawn' || move.capture) {
+      break
+    }
+
+    count++
+  }
+
+  return count
+}
+
 export function oppositeColor(color: PieceColor): PieceColor {
   return color === 'white' ? 'black' : 'white'
 }
@@ -78,6 +97,8 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
       : {winner: null, reason: 'stalemate'})
   } else if (hasInsufficientMaterial(game.board)) {
     endGame(game, {winner: null, reason: 'insufficient-material'})
+  } else if (halfmovesSinceProgress(game) >= FIFTY_MOVE_LIMIT) {
+    endGame(game, {winner: null, reason: 'fifty-move-rule'})
   }
 }
 
@@ -183,6 +204,7 @@ function buildMove(
   const move: Move = {
     san: buildSan(piece, captured, from, to),
     color: piece.color,
+    pieceType: piece.type,
     from,
     to,
     elapsedSeconds,
