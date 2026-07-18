@@ -12,7 +12,8 @@ import {
 } from './game'
 import {applyMove} from './move'
 import {createGameSession} from '@/composables/factories/gameFactory'
-import type {Board, CreateGamePayload, Game, SquareKey} from '@/types/chess'
+import {keepOnly} from '@/test/board'
+import type {CreateGamePayload, Game, SquareKey} from '@/types/chess'
 
 const T0 = 1_700_000_000_000
 
@@ -322,15 +323,6 @@ function playMoves(game: Game, moves: Array<[SquareKey, SquareKey]>): void {
   }
 }
 
-// Strips the position down to the listed squares — ending specs read on a sparse board.
-function keepOnly(board: Board, keep: SquareKey[]): void {
-  for (const [key, square] of Object.entries(board.squares)) {
-    if (!keep.includes(key as SquareKey)) {
-      square.piece = null
-    }
-  }
-}
-
 describe('makeMove — automatic endings', () => {
   it('ends on checkmate — scholar\'s mate, white wins', () => {
     const game = untimedGame()
@@ -377,6 +369,15 @@ describe('makeMove — automatic endings', () => {
     expect(game.status).toBe('finished')
     expect(game.result).toEqual({winner: null, reason: 'stalemate'})
     expect(game.players.black.isInCheck).toBe(false)
+  })
+
+  it('ends on insufficient material — the capture leaves a dead position', () => {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'e8', 'c1', 'd7'])
+    applyMove(game.board, 'd7', 'd2') // the black pawn checks the white king…
+    makeMove(game, 'c1', 'd2', T0) // …the bishop takes it: K+B vs K, dead position
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: null, reason: 'insufficient-material'})
   })
 
   it('leaves the game running on a simple check', () => {

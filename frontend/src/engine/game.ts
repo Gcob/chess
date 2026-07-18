@@ -1,5 +1,6 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
 import {canMove, applyMove, hasAnyLegalMove} from './move'
+import {hasInsufficientMaterial} from './material'
 import {findCheckers} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
@@ -69,11 +70,14 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   game.activeColor = oppositeColor(game.activeColor)
   game.turnStartedAt = now
 
-  // The move may have ended the game: no legal reply = checkmate (in check) or stalemate.
+  // The move may have ended the game: no legal reply = checkmate (in check) or stalemate;
+  // otherwise a dead position (no possible mate for anyone) is an automatic draw.
   if (!hasAnyLegalMove(game.board, game.activeColor)) {
     endGame(game, game.players[game.activeColor].isInCheck
       ? {winner: oppositeColor(game.activeColor), reason: 'checkmate'}
       : {winner: null, reason: 'stalemate'})
+  } else if (hasInsufficientMaterial(game.board)) {
+    endGame(game, {winner: null, reason: 'insufficient-material'})
   }
 }
 

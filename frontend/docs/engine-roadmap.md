@@ -108,7 +108,13 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       `stalemate`) ; l'affichage du résultat et le gel des commandes existaient depuis la phase ①
 - [ ] Règle des 50 coups
 - [ ] Triple répétition
-- [ ] Matériel insuffisant
+- [x] Matériel insuffisant — `hasInsufficientMaterial(board)` dans `makeMove` (après mat/pat) :
+      position morte = nulle automatique. Aligné chess.js : roi vs roi, une mineure seule, ou
+      fous seuls tous sur la même couleur de cases (la paire classique couvre les deux couleurs,
+      donc jamais morte)
+- [ ] Timeout vs matériel insuffisant = nulle (règle du drapeau, FIDE 6.9) : au drapeau tombé,
+      si l'adversaire ne peut mater par aucune suite de coups légaux, la partie est nulle au
+      lieu d'une victoire au temps — brancher `hasInsufficientMaterial` dans `flagTimeout`
 - [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
 - [ ] Oracle chess.js (devDependency seulement) : spec de tests différentiels qui valide l'engine
       contre chess.js (coups légaux, mats, pats) — nos specs restent le contrat de NOTRE design ;

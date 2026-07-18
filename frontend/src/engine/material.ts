@@ -1,4 +1,5 @@
-import type {Game, PieceColor, PieceType} from '@/types/chess'
+import type {Board, Game, PieceColor, PieceType} from '@/types/chess'
+import {getBoardPieces} from './board'
 
 export interface CapturedPiece {
   color: PieceColor
@@ -31,6 +32,32 @@ export function getCapturedPieces(game: Game): CapturedByColor {
   }
 
   return captured
+}
+
+// Dead position: no sequence of legal moves can ever produce a checkmate — an automatic draw.
+// Aligned with chess.js for the future differential oracle: king vs king, one lone minor, or
+// bishops only (any count, either side) all roaming the same square colour — such bishops can
+// never even check a king standing on the other colour. The classic bishop PAIR mates because
+// it spans both colours, so it never matches here.
+export function hasInsufficientMaterial(board: Board): boolean {
+  const pieces = getBoardPieces(board).filter(({piece}) => piece.type !== 'king')
+  if (pieces.some(({piece}) => piece.type === 'pawn' || piece.type === 'rook' || piece.type === 'queen')) {
+    return false
+  }
+
+  // Only minors remain: none, or a single one, can't mate anybody.
+  if (pieces.length <= 1) {
+    return true
+  }
+
+  // Several minors: only the all-bishops-on-one-colour case stays dead — any knight in the
+  // mix (or bishops on both colours) leaves a helpmate possible.
+  if (pieces.some(({piece}) => piece.type === 'knight')) {
+    return false
+  }
+
+  const squareColors = new Set(pieces.map(({square}) => board.squares[square].color))
+  return squareColors.size === 1
 }
 
 function materialValue(pieces: CapturedPiece[]): number {
