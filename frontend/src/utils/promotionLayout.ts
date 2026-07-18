@@ -7,6 +7,13 @@ export interface PromotionSlot {
   y: number
 }
 
+// The ring's heart — the slots' centroid, not the queen's square. The halo (which IS the safe
+// selection zone) centers here, so it hugs the choices instead of hanging off one of them.
+export function promotionRingCenter(slots: PromotionSlot[]): {x: number; y: number} {
+  const total = slots.reduce((sum, slot) => ({x: sum.x + slot.x, y: sum.y + slot.y}), {x: 0, y: 0})
+  return {x: total.x / slots.length, y: total.y / slots.length}
+}
+
 // The promotion ring geometry: the queen sits ON the anchor square — pre-armed under the
 // cursor, an immediate release picks her — and the three underpromotions fan out on an arc
 // deployed toward the board interior on BOTH axes: away from the promotion edge and squeezed

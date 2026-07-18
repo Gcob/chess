@@ -1,5 +1,23 @@
 import {describe, it, expect} from 'vitest'
-import {promotionSlotCenters} from './promotionLayout'
+import {promotionRingCenter, promotionSlotCenters} from './promotionLayout'
+
+describe('promotionRingCenter', () => {
+  it('sits at the heart of the slots, not on the queen', () => {
+    const slots = promotionSlotCenters(4, 0)
+    const center = promotionRingCenter(slots)
+    expect(center.x).toBeCloseTo(4.5) // symmetric fan on a central file
+    expect(center.y).toBeGreaterThan(slots[0]!.y) // pulled inward, away from the queen
+  })
+
+  it('stays roughly equidistant from every slot', () => {
+    for (const [col, row] of [[0, 0], [3, 0], [7, 0], [4, 7]] as const) {
+      const slots = promotionSlotCenters(col, row)
+      const center = promotionRingCenter(slots)
+      const distances = slots.map(slot => Math.hypot(slot.x - center.x, slot.y - center.y))
+      expect(Math.max(...distances) - Math.min(...distances), `col ${col}`).toBeLessThan(0.5)
+    }
+  })
+})
 
 describe('promotionSlotCenters', () => {
   it('pre-arms the queen on the anchor square itself', () => {

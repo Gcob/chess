@@ -61,7 +61,7 @@ import type {PieceAnimation, PlacedPiece, SquareHighlight} from '@/types/look-an
 import type {GameView} from '@/composables/useGameView'
 import {getBoardPieces} from '@/engine/board'
 import {squareToCoords} from '@/utils/boardCoords'
-import {promotionSlotCenters, type PromotionSlot} from '@/utils/promotionLayout'
+import {promotionRingCenter, promotionSlotCenters, type PromotionSlot} from '@/utils/promotionLayout'
 import {usePieceDrag} from '@/composables/usePieceDrag'
 import {useIsMobile} from '@/composables/useMediaQuery'
 import cSquare from './cSquare.vue'
@@ -308,23 +308,24 @@ watch([dragX, dragY, dragPromotion], () => {
   hoveredSlotPiece.value = resolveHoveredSlot()
 })
 
-// Distance from the cursor to the open ring's anchor, in grid units — null when no ring.
-function distanceToAnchor(): number | null {
-  const promotion = dragPromotion.value
+// Distance from the cursor to the open ring's heart, in grid units — null when no ring.
+// Measured from the same center the halo is drawn around, so the zone matches what is seen.
+function distanceToRingCenter(): number | null {
+  const picker = promotionPicker.value
   const cursor = cursorGrid()
-  if (!promotion || !cursor) {
+  if (!dragPromotion.value || !picker || !cursor) {
     return null
   }
 
-  const {col, row} = squareToCoords(promotion.anchor, orientation.value)
-  return Math.hypot(cursor.x - (col + 0.5), cursor.y - (row + 0.5))
+  const center = promotionRingCenter(picker.slots)
+  return Math.hypot(cursor.x - center.x, cursor.y - center.y)
 }
 
 // The safe selection zone: what the player SEES — the halo and the slots. Inside, the ring
 // owns the gesture: no neighbouring promotion square can steal it. Stepping outside closes
 // the picker, freeing the cursor to aim at another promotion square.
 function isWithinSafeZone(): boolean {
-  const distance = distanceToAnchor()
+  const distance = distanceToRingCenter()
   return hoveredSlotPiece.value !== null || (distance !== null && distance <= RING_HALO)
 }
 

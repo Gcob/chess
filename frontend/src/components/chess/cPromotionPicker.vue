@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 import {computed} from 'vue'
 import type {PieceColor, PieceType} from '@/types/chess'
-import type {PromotionSlot} from '@/utils/promotionLayout'
+import {promotionRingCenter, type PromotionSlot} from '@/utils/promotionLayout'
 import {useChessTheme} from '@/composables/useChessTheme'
 
 // The promotion ring. Anchored mode: slots sit in absolute board coordinates (grid units from
@@ -67,17 +67,17 @@ function slotStyle(slot: PromotionSlot) {
   }
 }
 
-// The halo circle, centered on the anchor slot (the queen — always first).
+// The halo circle, centered on the ring's heart — it hugs the choices as a group.
 const haloStyle = computed(() => {
   const radius = props.haloRadius
-  const anchor = props.slots[0]
-  if (!radius || !anchor) {
+  if (!radius || !props.slots.length) {
     return undefined
   }
 
+  const center = promotionRingCenter(props.slots)
   return {
-    left: `${(anchor.x - radius) * 12.5}%`,
-    top: `${(anchor.y - radius) * 12.5}%`,
+    left: `${(center.x - radius) * 12.5}%`,
+    top: `${(center.y - radius) * 12.5}%`,
     width: `${radius * 2 * 12.5}%`,
     height: `${radius * 2 * 12.5}%`,
   }
@@ -104,8 +104,8 @@ const haloStyle = computed(() => {
   &__halo {
     position: absolute;
     border-radius: 50%;
-    background: rgba(128, 128, 128, 0.35);
-    backdrop-filter: blur(0.5px);
+    background: var(--bg-elevated);
+    //opacity: 0.6;
     animation: c-promotion-pop 0.12s ease-out;
 
     @media (prefers-reduced-motion: reduce) {
@@ -121,13 +121,12 @@ const haloStyle = computed(() => {
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: $border-width-base solid var(--border-color);
     border-radius: 50%;
-    background: var(--bg-elevated);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    border: $border-width-base solid transparent;
     pointer-events: auto;
     cursor: pointer;
     animation: c-promotion-pop 0.12s ease-out;
+    transition: none;
 
     @media (prefers-reduced-motion: reduce) {
       animation: none;
@@ -135,12 +134,13 @@ const haloStyle = computed(() => {
 
     &:hover,
     &--hovered {
+      background: var(--bg-elevated);
+      border: $border-width-base solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       border-color: var(--accent);
       // The accent is a translucent tint — layered OVER the elevated base, which stays opaque
       // so the board never shows through the slot.
       background-image: linear-gradient(var(--accent-subtle), var(--accent-subtle));
-      // Composes under the sprite scale — the whole slot swells toward the cursor.
-      scale: 1.12;
       // The swollen slot rides over its overlapping neighbours (the ring is deliberately tight)
       // and, in interactive mode, is the only one still catching the pointer — never the one
       // underneath, which would make a click land on the wrong piece.
