@@ -125,6 +125,10 @@ export default {
       required: 'Enter a name',
       sameName: 'Players must have different names',
     },
+    board: {
+      title: 'Board',
+      autoFlip: 'Flip the pieces when the turn changes',
+    },
     mode: {
       title: 'Game Mode',
       local: 'Local',

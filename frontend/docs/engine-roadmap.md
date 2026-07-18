@@ -154,13 +154,14 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
       `settings` + `validate()` exposé) ; sélection de mode compacte sur mobile — rangée de
       tuiles icône + titre court, description du mode sélectionné une seule fois sous la rangée ;
       seuls les modes jouables sont offerts — pas de choix impossible dans l'UI
-- [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
-      (actuel), ② board fixe + pièces pivotées sur elles-mêmes de 180° (jeu face à face autour
-      d'un téléphone à plat), ③ board fixe côté blancs. Jamais de board renversé (noirs en bas)
-      pour des joueurs locaux — la rotation 180° du board appartient aux modes distants et aux
-      spectateurs (voir Backlog parties distantes). Réglage par observateur ; `orientation` est
-      déjà un computed de policy (`useGameView`) — un changement à chaud se réoriente par
-      réactivité, aucun cas spécial
+- [x] Face-à-face en mode local : le board ne se réoriente jamais (blancs en bas, comme un
+      plateau physique) ; sur mobile, TOUTES les pièces pivotent de 180° sur elles-mêmes vers le
+      joueur au trait (`view.piecesFlipped` → wrapper `c-piece__flip`, `rotate` en propriété
+      individuelle qui compose avec les états du sprite, demi-tour animé) — gaté par le setting
+      par observateur `autoFlipPieces`, un toggle dans le form local, mobile seulement (même
+      signal `useIsMobile` que le switch de layout) ; desktop ne pivote rien. Jamais de board
+      renversé (noirs en bas) en local — la rotation 180° du board appartient aux modes distants
+      et aux spectateurs (voir Backlog parties distantes)
 - [ ] Identité visuelle des hints de coups légaux : remplacer points/anneaux (vocabulaire
       chess.com/Lichess) par de petites flèches discrètes orientées selon la direction du coup
       (verticale/horizontale/diagonale), animées en se dessinant depuis la pièce (stagger le long
@@ -229,3 +230,4 @@ Non bloquants, à faire si le cœur nous en dit.
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
   contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.
+

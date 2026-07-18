@@ -9,6 +9,9 @@ export interface Settings {
   boardSize: BoardSize
   highlightLastMove: boolean
   showLegalMoves: boolean
+  // Local games on mobile (phone flat between the players): the pieces turn 180° on
+  // themselves toward the player to move. Desktop never turns anything.
+  autoFlipPieces: boolean
 }
 
 const STORAGE_KEY = 'settings'
@@ -19,6 +22,7 @@ const DEFAULTS: Settings = {
   boardSize: 'normal',
   highlightLastMove: true,
   showLegalMoves: true,
+  autoFlipPieces: true,
 }
 
 function loadFromStorage(): Settings {

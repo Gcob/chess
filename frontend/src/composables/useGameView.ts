@@ -1,6 +1,7 @@
 import {computed, reactive} from 'vue'
 import {useGameSession} from '@/composables/useGameSession'
 import {useGameClock} from '@/composables/useGameClock'
+import {useIsMobile} from '@/composables/useMediaQuery'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import {findKingSquare, toSquareKey} from '@/engine/board'
@@ -15,17 +16,24 @@ import type {PieceColor, SquareKey} from '@/types/chess'
 export function useGameView(id: string) {
   const session = useGameSession(id)
   const settingsStore = useSettingsStore()
+  const isMobile = useIsMobile()
 
   const activeColor = computed<PieceColor>(() => session.game.value?.activeColor ?? 'white')
 
-  // Local mode: the board follows the player to move (auto-flip). Others come later.
-  const orientation = computed<PieceColor>(() => {
-    if (session.game.value?.mode === 'local') {
-      return activeColor.value
-    }
+  // Local mode: the board NEVER re-orients — white-down on every device, like a physical
+  // board laid between the players; only the pieces turn (see piecesFlipped).
+  // TODO: remote modes seed from the local player's colour.
+  const orientation = computed<PieceColor>(() => 'white')
 
-    return 'white' // TODO: seed from the local player's colour for vs-bot / online
-  })
+  // Face-à-face: on mobile (phone flat between the players), the pieces turn 180° on
+  // themselves toward the player to move — per-viewer toggle in the local new-game form.
+  // Desktop never turns anything: both players face the same upright screen.
+  const piecesFlipped = computed<boolean>(() =>
+    session.game.value?.mode === 'local'
+    && isMobile.value
+    && settingsStore.settings.autoFlipPieces
+    && activeColor.value === 'black',
+  )
 
   function move(from: SquareKey, to: SquareKey) {
     session.makeMove(from, to)
@@ -109,6 +117,7 @@ export function useGameView(id: string) {
     blackPlayer: session.blackPlayer,
     activeColor,
     orientation,
+    piecesFlipped,
     topColor,
     bottomColor,
     boardSize: computed(() => settingsStore.settings.boardSize),

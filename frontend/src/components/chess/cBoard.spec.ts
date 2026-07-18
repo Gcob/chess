@@ -9,6 +9,7 @@ import {useGamesStore} from '@/stores/useGamesStore'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useGameView} from '@/composables/useGameView'
 import {makeMove, resign} from '@/engine/game'
+import {stubMatchMedia} from '@/test/mediaQuery'
 import type {CreateGamePayload, Game} from '@/types/chess'
 import type {GameView} from '@/composables/useGameView'
 
@@ -60,6 +61,7 @@ describe('cBoard', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
+    stubMatchMedia(false)
   })
 
   afterEach(() => {
@@ -237,6 +239,16 @@ describe('cBoard', () => {
     const enemy = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'd5')!
     expect(enemy.classes()).toContain('c-piece--popped')
     expect(enemy.get('img').classes()).toContain('c-piece__img--popped')
+  })
+
+  it('turns the sprites toward the player to move — mobile face-à-face', async () => {
+    stubMatchMedia(true)
+    const {view, game} = freshView()
+    const wrapper = mount(cBoard, {props: {view}})
+    expect(wrapper.findAll('.c-piece__flip--flipped')).toHaveLength(0)
+    makeMove(game, 'e2', 'e4')
+    await nextTick()
+    expect(wrapper.findAll('.c-piece__flip--flipped')).toHaveLength(32)
   })
 
   it('only lets the player to move grab pieces', () => {

@@ -13,6 +13,7 @@ describe('useSettingsStore', () => {
     expect(store.settings.highlightLastMove).toBe(true)
     expect(store.settings.showLegalMoves).toBe(true)
     expect(store.settings.boardSize).toBe('normal')
+    expect(store.settings.autoFlipPieces).toBe(true)
   })
 
   it('fills keys missing from older persisted settings with their defaults', () => {

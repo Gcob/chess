@@ -12,13 +12,15 @@
     @transitionend="moving = false"
     @transitioncancel="moving = false"
   >
-    <img
-      class="c-piece__img"
-      :class="{ 'c-piece__img--lifted': lifted, 'c-piece__img--popped': popped }"
-      :src="getPieceImage(piece.color, piece.type)"
-      :alt="`${piece.color} ${piece.type}`"
-      draggable="false"
-    />
+    <div class="c-piece__flip" :class="{ 'c-piece__flip--flipped': flipped }">
+      <img
+        class="c-piece__img"
+        :class="{ 'c-piece__img--lifted': lifted, 'c-piece__img--popped': popped }"
+        :src="getPieceImage(piece.color, piece.type)"
+        :alt="`${piece.color} ${piece.type}`"
+        draggable="false"
+      />
+    </div>
   </div>
 </template>
 
@@ -46,12 +48,15 @@ const props = withDefaults(defineProps<{
   lifted?: boolean
   // Touch drag: this piece stands on the popped target square and grows with it.
   popped?: boolean
+  // Face-à-face (mobile local): the sprite is turned 180° toward the player to move.
+  flipped?: boolean
 }>(), {
   dragging: false,
   dragX: 0,
   dragY: 0,
   lifted: false,
   popped: false,
+  flipped: false,
 })
 
 const {getPieceImage} = useChessTheme()
@@ -132,6 +137,27 @@ const style = computed(() => ({
     // let the pointer fall through to the square below — a tap on an opponent piece must still
     // reach cSquare's click-to-move logic (capture of a selected piece's target)
     pointer-events: none;
+  }
+
+  // The face-à-face half-turn lives on its own layer: the img keeps its transform states
+  // (lifted, popped, hop, float) untouched — everything simply rotates with this wrapper,
+  // so a flipped player's drag lift mirrors toward THEIR side of the phone. The half-turn
+  // animates both ways; the base-transition caveat below only concerns the img's transform.
+  &__flip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    transition: rotate 0.35s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+
+    &--flipped {
+      rotate: 180deg;
+    }
   }
 
   // No base transition on the sprite: entering a state animates only if that state carries

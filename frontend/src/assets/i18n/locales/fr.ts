@@ -137,6 +137,10 @@ export default {
       required: 'Entre un nom',
       sameName: 'Les joueurs doivent avoir des noms différents',
     },
+    board: {
+      title: 'Plateau',
+      autoFlip: 'Pivoter les pièces quand le trait change',
+    },
     mode: {
       title: 'Mode de jeu',
       local: 'Local',

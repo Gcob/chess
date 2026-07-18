@@ -32,6 +32,7 @@
             :drag-y="draggingId === p.id ? dragY : 0"
             :lifted="draggingId === p.id && isTouch"
             :popped="draggingId !== p.id && touchDropSquare === p.square"
+            :flipped="view.piecesFlipped"
             @pointerdown="onPiecePointerDown($event, p)"
             @mouseenter="hoveredSquare = p.square"
           />

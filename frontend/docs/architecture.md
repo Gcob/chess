@@ -187,8 +187,13 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 - Les **sections sont partagées** ; seuls les layouts les arrangent (desktop = board + sidebar 3 zones ;
   mobile = empilé). Le DTO passe en **une prop `:view`** partout (pas de drilling).
 - Les **différences de mode** vivent dans `useGameView` (policy-données). Seul `local` est câblé :
-  le board auto-flip pour suivre le joueur au trait (`orientation = activeColor`). D'où le retrait du
-  bouton « tourner » de `cBoard` (l'orientation est pilotée par la policy).
+  le board ne se réoriente jamais (blancs en bas, comme un plateau physique posé entre les joueurs) ;
+  sur mobile les PIÈCES pivotent de 180° sur elles-mêmes vers le joueur au trait (`view.piecesFlipped`,
+  gaté par le setting par observateur `autoFlipPieces` — toggle dans le form local, mobile seulement).
+  Desktop ne pivote rien : deux joueurs devant le même écran. Le pivot vit sur un wrapper dédié du
+  sprite (`c-piece__flip`, `rotate` en propriété individuelle, demi-tour animé) — les états du sprite
+  (lifted, popped, hop, float) pivotent avec lui, donc le drag d'un joueur « flippé » se miroite vers
+  son côté du téléphone. D'où le retrait du bouton « tourner » de `cBoard` (piloté par la policy).
 - `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `PlayersPanel` → `PlayerCard`,
   `GameInfo` (contrôle de temps, mode, **état de partie** sur sa propre ligne : attente / trait / résultat),
   `MoveHistory` (SAN par tour depuis `view.moves`, **desktop-only**), `GameActions` (masqué si partie finie ;
@@ -235,8 +240,9 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 form par un mapping mode → composante (pattern strategy) — `NewGameLocalForm` pour `local`, seul mode
 existant. Chaque form de mode respecte le même contrat : **une seule prop DTO** (l'objet réactif
 `settings` du store, lu/muté directement — pas de props/events à l'infini) + un `validate()` exposé,
-appelé par le bouton start du parent. `NewGameLocalForm` = sections joueurs + cadran ; la validation
-vit dans la section Joueurs. Seuls les modes jouables apparaissent dans le sélecteur (pas de choix
+appelé par le bouton start du parent. `NewGameLocalForm` = sections joueurs + cadran + (mobile seulement) le
+toggle « pivoter les pièces quand le trait change », branché sur le setting par observateur
+`autoFlipPieces` — desktop ne pivote jamais ; la validation vit dans la section Joueurs. Seuls les modes jouables apparaissent dans le sélecteur (pas de choix
 impossible) : livrer un mode = flipper son flag `available` + mapper sa composante de form.
 Sur mobile, la sélection de mode se compacte en une rangée de tuiles icône + titre court (clés i18n
 `*Short`), la description du mode sélectionné s'affichant une seule fois sous la rangée.
