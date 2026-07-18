@@ -205,8 +205,6 @@ describe('cBoard', () => {
     // the drop target is the square under the finger — shown as the popped-out square
     expect(findSquare(wrapper, 'e4').find('.c-square__highlight--drop-target-touch').exists()).toBe(true)
     expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(false)
-    // the destination code is pinned above the popped target square
-    expect(findSquare(wrapper, 'e4').find('.c-square__drag-label').text()).toBe('e4')
   })
 
   it('only pops legal touch targets — even with the hints setting off', async () => {
@@ -220,7 +218,6 @@ describe('cBoard', () => {
     window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 250, buttons: 1}))
     await nextTick()
     expect(wrapper.find('.c-square__highlight--drop-target-touch').exists()).toBe(false)
-    expect(wrapper.find('.c-square__drag-label').exists()).toBe(false)
     // e4 — legal: pops despite the hints being off (drop feedback is not a hint)
     window.dispatchEvent(new MouseEvent('pointermove', {clientX: 450, clientY: 450, buttons: 1}))
     await nextTick()

@@ -160,7 +160,7 @@ const style = computed(() => ({
   // The shadow renders before the transform, so its offsets are doubled on screen by the
   // scale — keep the values half of the intended look.
   &__img--lifted {
-    transform: translate(10%, -55%) scale(2.25) rotate(10deg);
+    transform: translate(0%, -100%) scale(2.25) rotate(10deg);
     transform-origin: bottom left;
     filter: drop-shadow(8px 12px 2px rgba(0, 0, 0, 0.35));
     transition: transform 0.15s ease-out, filter 0.15s ease-out;
@@ -180,12 +180,14 @@ const style = computed(() => ({
 @keyframes c-piece-float {
   0%, 100% {
     translate: 0 0;
-    rotate: -1.5deg;
+    rotate: -.5deg;
+    scale: 1;
   }
 
   50% {
-    translate: 0 -4%;
-    rotate: 1.5deg;
+    translate: 0 -1%;
+    rotate: .5deg;
+    scale: 1.01;
   }
 }
 

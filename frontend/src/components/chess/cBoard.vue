@@ -15,7 +15,6 @@
             :square="square"
             :highlights="highlightsFor(`${square.file}${square.rank}`)"
             :hints-key="hintFrom ?? ''"
-            :show-code="touchDropSquare === `${square.file}${square.rank}`"
             @click="activateSquare(`${square.file}${square.rank}`)"
             @mouseenter="hoveredSquare = `${square.file}${square.rank}`"
           />
@@ -356,8 +355,8 @@ const areaStyle = computed(() => {
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
 
-    // No overflow: hidden here — the popped touch tile and its code label must escape over
-    // the frame on edge squares. The rounded board corners are carried by the four corner
+    // No overflow: hidden here — the popped touch tile must escape over the frame on
+    // edge squares. The rounded board corners are carried by the four corner
     // cells instead (grid order: 1 = top-left, 8 = top-right, 57 = bottom-left, 64 = bottom-right).
     .c-square:nth-child(1) {
       border-radius: $border-radius-sm 0 0 0;

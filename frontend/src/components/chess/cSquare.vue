@@ -7,8 +7,6 @@
       :class="[`c-square__highlight--${highlight}`, {'c-square__highlight--popped': isHintPopped(highlight)}]"
       :style="highlight === 'drop-target-touch' ? {background: squareBackground} : undefined"
     />
-    <!-- purely visual echo of the coordinates — never announced during a drag -->
-    <span v-if="showCode" class="c-square__drag-label" aria-hidden="true">{{ square.file }}{{ square.rank }}</span>
   </div>
 </template>
 
@@ -26,12 +24,9 @@ const props = withDefaults(defineProps<{
   highlights?: SquareHighlight[]
   // Cache-busting key for the hint overlays — cBoard passes the engaged piece's square.
   hintsKey?: string
-  // Touch drag: pins this square's code above the popped target tile.
-  showCode?: boolean
 }>(), {
   highlights: () => [],
   hintsKey: '',
-  showCode: false,
 })
 
 const {boardTheme} = useChessTheme()
@@ -60,8 +55,6 @@ function isHintPopped(highlight: SquareHighlight): boolean {
   position: relative;
   width: 100%;
   height: 100%;
-  // sizes the drag label in container units (cqw)
-  container-type: size;
 
   &__highlight {
     position: absolute;
@@ -125,27 +118,6 @@ function isHintPopped(highlight: SquareHighlight): boolean {
       background: radial-gradient(circle closest-side,
         transparent 0 76%, $square-highlight-legal 77% 97%, transparent 98%);
     }
-  }
-
-  // The destination code pinned above the popped tile during a touch drag — a discreet dark
-  // pill; the grown sprite spans up-right from the finger, its glyph mostly clears the pill.
-  &__drag-label {
-    position: absolute;
-    bottom: 140%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    padding: 3cqw 10cqw;
-    font-size: 34cqw;
-    font-weight: 600;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.75);
-    border-radius: 10cqw;
-    // see-through as a whole — a piece standing on the square above stays readable under it
-    opacity: 0.7;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
   }
 }
 
