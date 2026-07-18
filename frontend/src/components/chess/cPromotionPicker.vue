@@ -141,12 +141,23 @@ const haloStyle = computed(() => {
       background-image: linear-gradient(var(--accent-subtle), var(--accent-subtle));
       // Composes under the sprite scale — the whole slot swells toward the cursor.
       scale: 1.12;
-      // The swollen slot rides over its overlapping neighbours (the ring is deliberately tight).
+      // The swollen slot rides over its overlapping neighbours (the ring is deliberately tight)
+      // and, in interactive mode, is the only one still catching the pointer — never the one
+      // underneath, which would make a click land on the wrong piece.
       z-index: 1;
     }
 
+    // Interactive mode: while a slot holds the pointer, its neighbours step aside.
+    &--hovered ~ .c-promotion-picker__slot:not(:hover) {
+      pointer-events: none;
+    }
+
+    // Drag mode: the ring is display-only and the cursor is tracked by geometry. Taking the
+    // slots out of hit-testing keeps the browser's own idea of "hovered" — which counts the
+    // border and the swollen scale — from disagreeing with it.
     &:disabled {
       cursor: inherit;
+      pointer-events: none;
     }
   }
 

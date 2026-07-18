@@ -61,7 +61,7 @@ import type {PieceAnimation, PlacedPiece, SquareHighlight} from '@/types/look-an
 import type {GameView} from '@/composables/useGameView'
 import {getBoardPieces} from '@/engine/board'
 import {squareToCoords} from '@/utils/boardCoords'
-import {promotionSlotCenters} from '@/utils/promotionLayout'
+import {promotionSlotCenters, type PromotionSlot} from '@/utils/promotionLayout'
 import {usePieceDrag} from '@/composables/usePieceDrag'
 import {useIsMobile} from '@/composables/useMediaQuery'
 import cSquare from './cSquare.vue'
@@ -248,25 +248,20 @@ const promotionPicker = computed(() => {
     color: board.value?.squares[anchored.from].piece?.color ?? 'white',
     interactive: anchored.interactive,
     centered: anchored.interactive && isMobile.value,
-    // Drag mode shows the ring's presence; pending mode has the backdrop instead.
-    halo: anchored.interactive ? null : RING_HALO_VISUAL,
+    // Drag mode shows its safe zone; pending mode has the backdrop instead.
+    halo: anchored.interactive ? null : RING_HALO,
   }
 })
 
-// The keep-open halo around the ring, in grid units from the anchor's center: the travel from
-// the queen to a satellite crosses slot-free gaps, and the ring must survive them — it only
-// closes once the cursor genuinely leaves the neighborhood (satellites reach 1.75 at their
-// outer edge, the halo grants another half-square of slack).
-const RING_HALO = 2.3
-
-// The DRAWN halo is deliberately smaller than the logical one: a compact presence the
-// satellites poke out of, while the cancel zone stays permissive around it.
-const RING_HALO_VISUAL = 1
+// The halo's radius in grid units — drawn AND logical: what the player sees IS the safe zone.
+// With the halo reaching the satellites' own centers, the zone (halo ∪ slots) is continuous:
+// traveling from the queen to any slot never leaves it. Stepping out closes the ring.
+const RING_HALO = 1
 
 // Dwell time before the ring opens: with several promotion squares side by side, a diagonal
 // travel sweeps across the middle one — the ring waits for the cursor to SETTLE, so crossing
 // a square never counts as aiming at it.
-const RING_OPEN_DELAY = 160
+const RING_OPEN_DELAY = 25
 
 // The cursor in grid units — dragX/dragY hold the sprite's top-left, one half-square off the
 // pointer. Still readable right after the drag ends (they never reset), which is exactly when
@@ -284,82 +279,110 @@ function cursorGrid(): {x: number; y: number} | null {
   }
 }
 
-// Slots may overlap a touch (tight ring), so the NEAREST one within reach wins.
-const hoveredSlotPiece = computed<PieceType | null>(() => {
-  if (!dragPromotion.value || !promotionPicker.value) {
-    return null
-  }
+// How close the cursor must be to a slot's center to be on it — the slot is one square wide.
+const SLOT_HIT_RADIUS = 0.55
 
+// The slot under the cursor. Slots overlap (the ring is tight), so two rules keep the pick
+// unambiguous: the slot already holding the cursor keeps it (it is the one painted on top),
+// and otherwise the TOPMOST candidate wins — last in paint order, never the one underneath.
+const hoveredSlotPiece = ref<PieceType | null>(null)
+
+function resolveHoveredSlot(): PieceType | null {
+  const picker = promotionPicker.value
   const cursor = cursorGrid()
-  if (!cursor) {
+  if (!dragPromotion.value || !picker || !cursor) {
     return null
   }
 
-  let nearest: {piece: PieceType; distance: number} | null = null
-  for (const slot of promotionPicker.value.slots) {
-    const distance = Math.hypot(slot.x - cursor.x, slot.y - cursor.y)
-    if (distance <= 0.55 && (!nearest || distance < nearest.distance)) {
-      nearest = {piece: slot.piece, distance}
-    }
+  const holds = (slot: PromotionSlot) => Math.hypot(slot.x - cursor.x, slot.y - cursor.y) <= SLOT_HIT_RADIUS
+
+  const current = picker.slots.find(slot => slot.piece === hoveredSlotPiece.value)
+  if (current && holds(current)) {
+    return current.piece
   }
 
-  return nearest?.piece ?? null
+  return [...picker.slots].reverse().find(holds)?.piece ?? null
+}
+
+watch([dragX, dragY, dragPromotion], () => {
+  hoveredSlotPiece.value = resolveHoveredSlot()
 })
 
-function isWithinRingHalo(): boolean {
+// Distance from the cursor to the open ring's anchor, in grid units — null when no ring.
+function distanceToAnchor(): number | null {
   const promotion = dragPromotion.value
   const cursor = cursorGrid()
   if (!promotion || !cursor) {
-    return false
+    return null
   }
 
   const {col, row} = squareToCoords(promotion.anchor, orientation.value)
-  return Math.hypot(cursor.x - (col + 0.5), cursor.y - (row + 0.5)) <= RING_HALO
+  return Math.hypot(cursor.x - (col + 0.5), cursor.y - (row + 0.5))
 }
 
-// Traveling toward a side slot clips the bottom edge of the NEIGHBOUR promotion square — a
-// re-anchor there would steal the ring mid-gesture. Stealing requires a deliberate visit:
-// no slot hovered, and the cursor deep in the promotion row (past the clipped edge band).
-function mayReanchor(): boolean {
-  if (!dragPromotion.value) {
-    return true
-  }
-
-  if (hoveredSlotPiece.value) {
-    return false
-  }
-
-  const cursor = cursorGrid()
-  if (!cursor) {
-    return false
-  }
-
-  const {row} = squareToCoords(dragPromotion.value.anchor, orientation.value)
-  const inward = row === 0 ? 1 : -1
-  return (cursor.y - (row + 0.5)) * inward <= 0.25
+// The safe selection zone: what the player SEES — the halo and the slots. Inside, the ring
+// owns the gesture: no neighbouring promotion square can steal it. Stepping outside closes
+// the picker, freeing the cursor to aim at another promotion square.
+function isWithinSafeZone(): boolean {
+  const distance = distanceToAnchor()
+  return hoveredSlotPiece.value !== null || (distance !== null && distance <= RING_HALO)
 }
 
-// Mouse drag only — touch picks after the drop. Settling on a legal promotion square anchors
-// the ring there (after RING_OPEN_DELAY, so a crossing never opens it); another promotion
-// square re-anchors only on a deliberate visit (mayReanchor); the ring closes once the cursor
-// leaves the halo — the buffer zone that lets a hand travel toward its slot in peace.
+// The ring waits for the cursor to settle on a promotion square: the timer is armed when the
+// square is entered and left running while the cursor stays there, so a crossing never opens
+// a ring but a pause does.
 let ringOpenTimer = 0
-watch(dropTarget, target => {
+let armedTarget: SquareKey | null = null
+
+function armRing(from: SquareKey, target: SquareKey) {
+  disarmRing()
+  armedTarget = target
+  ringOpenTimer = window.setTimeout(() => {
+    armedTarget = null
+    if (draggingId.value && dropTarget.value === target) {
+      dragPromotion.value = {from, anchor: target}
+    }
+  }, RING_OPEN_DELAY)
+}
+
+function disarmRing() {
   window.clearTimeout(ringOpenTimer)
+  armedTarget = null
+}
+
+// Mouse drag only — touch picks after the drop. Driven by the cursor itself, not just by
+// square changes: the ring must let go the moment its safe zone is left, even when that
+// happens without entering another square.
+watch([dropTarget, dragX, dragY], () => {
   if (!draggingId.value || isTouch.value || !dragFrom.value) {
     return
   }
 
-  const from = dragFrom.value
-  if (target && target !== dragPromotion.value?.anchor && props.view.needsPromotionChoice(from, target)) {
-    // Re-checked when the timer fires: by then the cursor may have moved on or reached a slot.
-    ringOpenTimer = window.setTimeout(() => {
-      if (draggingId.value && dropTarget.value === target && mayReanchor()) {
-        dragPromotion.value = {from, anchor: target}
-      }
-    }, RING_OPEN_DELAY)
-  } else if (dragPromotion.value && !isWithinRingHalo()) {
+  if (dragPromotion.value) {
+    // Inside its safe zone the open ring owns the gesture — nothing else may steal it.
+    if (isWithinSafeZone()) {
+      return
+    }
+
     dragPromotion.value = null
+    disarmRing()
+  }
+
+  const from = dragFrom.value
+  const target = dropTarget.value
+  if (!target) {
+    disarmRing()
+    return
+  }
+
+  if (target === armedTarget) {
+    return
+  }
+
+  if (props.view.needsPromotionChoice(from, target)) {
+    armRing(from, target)
+  } else {
+    disarmRing()
   }
 })
 
@@ -381,6 +404,7 @@ function onPromotionPick(piece: PieceType) {
 // so the pick lives here, on the end of the drag, not in onDrop).
 watch(draggingId, (id, prev) => {
   if (prev && !id) {
+    disarmRing()
     const promotion = dragPromotion.value
     if (promotion) {
       const picked = hoveredSlotPiece.value

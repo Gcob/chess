@@ -169,12 +169,15 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       pré-armée sous le curseur, et un release sur la case de promotion la joue même si l'anneau
       n'a pas eu le temps de s'ouvrir (un seul geste, jamais de clic de plus) ; release sur un slot =
       sous-promotion, ailleurs = drop illégal donc snap-back existant (l'annulation tombe de la
-      légalité) ; zone tampon `RING_HALO` (le trajet dame → satellite traverse des vides sans
-      fermer l'anneau, sortir du halo annule) avec un halo DESSINÉ plus petit que la zone
-      logique (`RING_HALO_VISUAL` — les satellites en dépassent, la tolérance reste permissive) ;
-      une autre case de promotion ne ré-ancre que sur une visite délibérée (`mayReanchor` :
-      aucun slot survolé + curseur au cœur de la rangée — le trajet vers un slot latéral clippe
-      le bas de la case voisine sans voler l'anneau). Click-to-move
+      légalité) ; **safe selection zone** = ce que le joueur VOIT (halo `RING_HALO` dessiné ∪
+      slots, zone continue puisque le halo atteint le centre des satellites) : à l'intérieur
+      l'anneau possède le geste — aucune autre case de promotion ne peut le voler — et en sortir
+      ferme le picker aussitôt, la case suivante pouvant alors le reprendre. Suivi par le
+      curseur lui-même, pas seulement au changement de case. Slots qui se chevauchent : le
+      survolé garde le curseur tant qu'il le contient, sinon c'est le slot du DESSUS qui gagne ;
+      en drag, les slots sortent du hit-testing DOM (`pointer-events: none` sur `:disabled`)
+      pour que la bordure et le zoom n'induisent pas un survol différent de la géométrie.
+      Click-to-move
       et drag touch = coup pending + picker interactif (backdrop annule ; centré fixe grosses
       cibles en mobile) ; `prefers-reduced-motion` respecté (l'intention pré-établie reste au
       Backlog parties distantes)

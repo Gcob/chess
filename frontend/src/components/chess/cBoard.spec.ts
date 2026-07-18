@@ -33,6 +33,14 @@ function promotionView(): { view: GameView; game: Game } {
   return {view, game}
 }
 
+// The same, on a central file: the ring fans out both ways, so neighbouring slots overlap.
+function centralPromotionView(): { view: GameView; game: Game } {
+  const {view, game} = freshView()
+  applyMove(game.board, 'e2', 'd7')
+  game.board.squares['d8'].piece = null
+  return {view, game}
+}
+
 function findSquare(wrapper: VueWrapper, key: string) {
   return wrapper.findAllComponents(cSquare).find(
     s => `${s.props('square').file}${s.props('square').rank}` === key,
@@ -298,15 +306,71 @@ describe('cBoard', () => {
     expect(view.moves[0]).toMatchObject({to: 'b8', promotion: 'rook'}) // the ring never jumped to a8
   })
 
-  it('re-anchors on a deliberate visit of another promotion square', async () => {
+  it('never re-anchors from inside the safe zone, even lingering on another promotion square', async () => {
+    mockBoardRect()
+    const {view} = promotionView() // a7 pawn: a8 push and b8 capture both promote
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(50, 50, true) // a8 — anchor
+    await movePointer(150, 50, true) // b8's heart, but still under the ring's own slot
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 150, clientY: 50}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'a8'}) // the a8 ring kept the gesture
+  })
+
+  it('picks the topmost slot where two overlap', async () => {
+    mockBoardRect()
+    const {view} = centralPromotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'd7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(350, 50, true) // d8 — anchor
+    await movePointer(309, 129) // the knight/rook overlap — rook is painted above
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 309, clientY: 129}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'd8', promotion: 'rook'})
+  })
+
+  it('keeps the hovered slot while the cursor stays on it, overlap or not', async () => {
+    mockBoardRect()
+    const {view} = centralPromotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'd7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(350, 50, true) // d8 — anchor
+    await movePointer(350, 150) // the knight's heart
+    await movePointer(309, 129) // drift into the overlap — the knight still holds the cursor
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 309, clientY: 129}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'd8', promotion: 'knight'})
+  })
+
+  it('lets go as soon as the cursor leaves the safe zone, without changing square', async () => {
     mockBoardRect()
     const {view} = promotionView()
     const wrapper = mount(cBoard, {props: {view}})
     const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
     await pawn.trigger('pointerdown', {pointerType: 'mouse'})
     await movePointer(150, 50, true) // b8 — anchor
-    await movePointer(50, 50, true) // settle on a8's heart
-    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 50, clientY: 50})) // release on a8's queen
+    await movePointer(110, 50) // a8's near edge, still inside b8's zone
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(true)
+    await movePointer(20, 50) // deeper into the SAME square, now out of the zone
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false) // the picker closed at once
+    vi.advanceTimersByTime(200) // …and the square it sits on takes the ring over
+    await nextTick()
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(true)
+  })
+
+  it('re-anchors on another promotion square reached beyond the safe zone', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(150, 50, true) // b8 — anchor
+    await movePointer(20, 50, true) // deep into a8, past b8's safe zone
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 20, clientY: 50})) // a8's queen sits there
     await nextTick()
     expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'queen'})
   })
