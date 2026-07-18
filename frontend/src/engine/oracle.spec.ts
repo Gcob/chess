@@ -114,10 +114,18 @@ function playRandomGame(seed: number): void {
     makeMove(game, from, to, T0, promoting ? ourPiece : null)
     expect(game.moves.length, `our engine refused its own legal move ${from}-${to} — ${context}`)
       .toBe(played.length + 1)
+
     // Mirroring throws if chess.js disagrees the move is legal.
     const mirrored = promoting ? {from, to, promotion: theirPiece} : {from, to}
-    expect(() => oracle.move(mirrored), `${from}-${to} legal for us, not for chess.js — ${context}`)
-      .not.toThrow()
+    let oracleSan = ''
+    expect(() => {
+      oracleSan = oracle.move(mirrored).san
+    }, `${from}-${to} legal for us, not for chess.js — ${context}`).not.toThrow()
+
+    // The referee also writes SAN: same move, same notation — disambiguation included. Their
+    // check and mate marks are stripped until we produce our own (next step of phase ⑤).
+    expect(game.moves[game.moves.length - 1]!.san, `SAN diverges on ${from}-${to} — ${context}`)
+      .toBe(oracleSan.replace(/[+#]/g, ''))
     played.push(`${from}${to}`)
   }
 }

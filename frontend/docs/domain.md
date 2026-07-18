@@ -165,8 +165,10 @@ La couleur d'une case : `(fileIndex + rank) % 2 === 1 → dark` — a1 est dark,
   Requis pour : droits de roque (roi + tours), double avance initiale du pion.
 - `Player.isInCheck` — snapshot d'affichage mis à jour à chaque `makeMove`.
   L'engine ne le lit jamais : les checkers se recalculent à la demande (`findCheckers`).
-- `Move.san` contient la notation **SAN** (Standard Algebraic Notation) —
-  ex. `'e4'`, `'Nf3'`, `'O-O'`, `'exd5'`, `'Qxh7#'`. Le PGN (format de partie complète) viendra plus tard.
+- `Move.san` contient la notation **SAN** (Standard Algebraic Notation) — ex. `'e4'`, `'Nf3'`,
+  `'O-O'`, `'exd5'`, `'a8=Q'`, `'Nbd2'`. Écrite par `engine/san.ts` au moment du coup, à partir de
+  la position d'AVANT : capture, roque et désambiguïsation s'en dérivent (jamais repassés en
+  paramètre). Les marques `+`/`#` et le PGN viendront plus tard.
 
 ## Concepts à intégrer éventuellement
 

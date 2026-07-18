@@ -1,17 +1,9 @@
-import type {CastlingSide, Game, GameResult, Move, Piece, PieceColor, PieceType, SquareKey} from '@/types/chess'
-import {
-  applyMove,
-  canMove,
-  enPassantVictimKey,
-  getCastlingSide,
-  hasAnyLegalMove,
-  isPromotionChoice,
-  isPromotionMove,
-} from './move'
+import type {Game, GameResult, Move, PieceColor, PieceType, SquareKey} from '@/types/chess'
+import {applyMove, canMove, hasAnyLegalMove, isPromotionChoice, isPromotionMove} from './move'
 import {hasInsufficientMaterial, hasMatingMaterial} from './material'
 import {findCheckers, getPlacement, placementSignature} from './board'
 import {MoveHistory, doublePushTarget} from './moveHistory'
-import {PIECE_DATA} from './piece'
+import {MoveRecord} from './moveRecord'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
 // Pure, Vue-agnostic functions mutating the Game DTO in place. Each command is guarded by the
@@ -132,12 +124,13 @@ export function makeMove(
     return
   }
 
-  if (!canMove(game.board, from, to, enPassantTarget(game.moves))) {
+  const epTarget = enPassantTarget(game.moves)
+  if (!canMove(game.board, from, to, epTarget)) {
     return
   }
 
   // A promotion push without a valid choice is an incomplete command — never a silent queen:
-  // the visible default lives in the UI setting, the engine only executes explicit choices.
+  // the engine only ever executes an explicit choice.
   const promoting = isPromotionMove(piece, to)
   if (promoting && !isPromotionChoice(promotion)) {
     return
@@ -155,19 +148,12 @@ export function makeMove(
     return
   }
 
-  // The Move is built BEFORE the board mutates: a promotion transforms the piece in place,
-  // and the record must keep the pawn's identity (pieceType feeds the fifty-move clock).
-  const victimKey = enPassantVictimKey(game.board, piece, from, to)
-  const captured = victimKey ? game.board.squares[victimKey].piece : game.board.squares[to].piece
-  const move = buildMove(
-    piece,
-    captured,
-    from,
-    to,
-    elapsedSeconds,
-    victimKey !== null,
-    promoting ? promotion : null,
-  )
+  // The record reads the position the move is played FROM, so its DTO is settled BEFORE the
+  // board mutates: a promotion transforms the piece in place, the record must keep the pawn's
+  // identity (pieceType feeds the fifty-move clock), and the SAN disambiguates against that
+  // very position.
+  const record = new MoveRecord(game.board, piece, from, to, promoting ? promotion : null, epTarget)
+  const move = record.toDto(elapsedSeconds)
   applyMove(game.board, from, to, promotion)
   game.moves.push(move)
 
@@ -300,61 +286,3 @@ function endGame(game: Game, result: GameResult): void {
   game.turnStartedAt = null
 }
 
-// Naive SAN — no disambiguation, no check/mate marks until the rules engine lands (see roadmap)
-function buildSan(
-  piece: Piece,
-  captured: Piece | null,
-  from: SquareKey,
-  to: SquareKey,
-  castling: CastlingSide | null,
-  promotion: PieceType | null,
-): string {
-  if (castling) {
-    return castling === 'king-side' ? 'O-O' : 'O-O-O'
-  }
-
-  if (piece.type === 'pawn') {
-    const base = captured ? `${from[0]}x${to}` : to
-    return promotion ? `${base}=${PIECE_DATA[promotion].short}` : base
-  }
-
-  return `${piece.textRepresentation.short}${captured ? 'x' : ''}${to}`
-}
-
-function buildMove(
-  piece: Piece,
-  captured: Piece | null,
-  from: SquareKey,
-  to: SquareKey,
-  elapsedSeconds: number,
-  enPassant: boolean,
-  promotion: PieceType | null,
-): Move {
-  const castling = getCastlingSide(piece, from, to)
-  const move: Move = {
-    san: buildSan(piece, captured, from, to, castling, promotion),
-    color: piece.color,
-    pieceType: piece.type,
-    from,
-    to,
-    elapsedSeconds,
-  }
-
-  if (captured) {
-    move.capture = {capturedPiece: captured}
-  }
-
-  if (castling) {
-    move.castling = castling
-  }
-
-  if (enPassant) {
-    move.enPassant = true
-  }
-
-  if (promotion) {
-    move.promotion = promotion
-  }
-
-  return move
-}

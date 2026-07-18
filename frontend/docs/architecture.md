@@ -182,7 +182,10 @@ seulement après un tap.
 > types), `engine/moveHistory.ts` (classe `MoveHistory` — miroir de `Board` pour `Game.moves` :
 > les questions d'historique seulement — `enPassantTarget`, `halfmovesSinceProgress`,
 > `castlingRightsAt` en cache paresseux ; les règles qui mélangent board et historique restent
-> dans `game.ts`), `engine/material.ts` (captures dérivées).
+> dans `game.ts`), `engine/moveRecord.ts` (classe `MoveRecord` — le coup lu contre la position
+> d'AVANT : capture, roque, en passant, SAN, et `toDto()` qui en fait un `Move` plat ; réponses
+> paresseuses, donc valide tant que le board n'a pas muté), `engine/san.ts` (notation —
+> désambiguïsation par légalité, pas par géométrie), `engine/material.ts` (captures dérivées).
 
 ## Vue de partie (game view)
 

@@ -184,8 +184,15 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 ### ⑤ SAN complet & PGN
 
-- [ ] Désambiguïsation (`Nbd2`, `R1e2`)
-- [ ] `+` / `#`, `O-O` / `O-O-O`, `=Q`
+- [x] Désambiguïsation (`Nbd2`, `R1e2`, `Qh4e1`) — le SAN quitte `game.ts` pour `engine/san.ts`,
+      et le coup joué devient un organe : `MoveRecord` (`engine/moveRecord.ts`) lit le coup contre
+      la position d'AVANT — capture (en passant inclus), roque, notation — et produit le `Move`
+      plat (`toDto`). `buildSan(record)` en dépend en *import type* seulement, donc aucun cycle.
+      Colonne si elle suffit, sinon rangée, sinon la case entière ; pion et roi
+      exempts. **Légalité, pas géométrie** : un jumeau cloué ne crée aucune ambiguïté, donc le
+      filtre passe par `canMove`. L'oracle compare désormais NOTRE SAN à celui de chess.js coup
+      par coup (leurs `+`/`#` filtrés jusqu'à l'étape suivante)
+- [ ] `+` / `#` (`O-O`/`O-O-O` et `=Q` déjà livrés en phase ④)
 - [ ] Export PGN complet (en-têtes, résultat)
 
 ### ⑥ Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
@@ -312,7 +319,8 @@ Non bloquants, à faire si le cœur nous en dit.
 
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste
   de coups (ou FEN), board reconstruit localement. À trancher en phase ⑥.
-- **SAN naïf** — pas de désambiguïsation ni de `+`/`#` tant que la légalité n'existe pas (phase ⑤).
+- **SAN sans `+`/`#`** — la désambiguïsation est livrée ; les marques d'échec et de mat demandent
+  la position d'APRÈS le coup, prochaine étape de la phase ⑤.
 - **`getRaysFrom(square)`** — si un besoin futur veut les rayons hors du roi (éval d'IA, heatmap de
   contrôle), `PositionAnalysis.rays()` se généralise sans casser le vocabulaire.
 - **`GameType` recalculé, jamais persisté** — vérifier son rôle quand le backend arrivera.
