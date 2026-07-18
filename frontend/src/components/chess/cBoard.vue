@@ -37,6 +37,18 @@
             @mouseenter="hoveredSquare = p.square"
           />
         </div>
+
+        <cPromotionPicker
+          v-if="promotionPicker"
+          :slots="promotionPicker.slots"
+          :color="promotionPicker.color"
+          :hovered="hoveredSlotPiece"
+          :interactive="promotionPicker.interactive"
+          :centered="promotionPicker.centered"
+          :halo-radius="promotionPicker.halo"
+          @pick="onPromotionPick"
+          @cancel="pendingPromotion = null"
+        />
       </div>
     </cBoardFrame>
   </div>
@@ -44,15 +56,18 @@
 
 <script lang="ts" setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import type {Board, PieceColor, SquareFile, SquareKey, SquareRank} from '@/types/chess'
+import type {Board, PieceColor, PieceType, SquareFile, SquareKey, SquareRank} from '@/types/chess'
 import type {PieceAnimation, PlacedPiece, SquareHighlight} from '@/types/look-and-feel'
 import type {GameView} from '@/composables/useGameView'
 import {getBoardPieces} from '@/engine/board'
 import {squareToCoords} from '@/utils/boardCoords'
+import {promotionSlotCenters} from '@/utils/promotionLayout'
 import {usePieceDrag} from '@/composables/usePieceDrag'
+import {useIsMobile} from '@/composables/useMediaQuery'
 import cSquare from './cSquare.vue'
 import cPiece from './cPiece.vue'
 import cBoardFrame from './cBoardFrame.vue'
+import cPromotionPicker from './cPromotionPicker.vue'
 
 // The view is the single DTO prop — board, orientation, policies (movableColor, lastMove) and
 // the move command all come from it. Only `size` stays apart: it's measured by the parent's
@@ -128,13 +143,33 @@ const {draggingId, dragX, dragY, dropTarget, dragFrom, isTouch, start} = usePiec
   orientation,
   onDrop: (from, to) => {
     selected.value = null
+
+    // A promotion ring is open: the release picks a slot, not a square — resolved on drag end.
+    if (dragPromotion.value) {
+      return
+    }
+
     const movesBefore = props.view.moves.length
-    props.view.move(from, to)
+    if (props.view.needsPromotionChoice(from, to)) {
+      // Touch has no ring to release into: the choice comes after the drop, as a pending move.
+      if (isTouch.value) {
+        pendingPromotion.value = {from, to}
+        return
+      }
+
+      // Mouse dropped on the promotion square before the ring even opened — that IS the
+      // pre-armed queen: one straight gesture, no dwelling, no extra click.
+      props.view.move(from, to, 'queen')
+    } else {
+      props.view.move(from, to)
+    }
+
     dropApplied = props.view.moves.length > movesBefore
   },
   onTap: activateSquare,
   onDragStart: () => {
     selected.value = null
+    pendingPromotion.value = null
   },
 })
 
@@ -178,15 +213,186 @@ function activateSquare(square: SquareKey) {
     return
   }
 
+  // A promotion destination waits in the picker — the move only plays on a slot choice.
+  if (props.view.needsPromotionChoice(current, square)) {
+    pendingPromotion.value = {from: current, to: square}
+    selected.value = null
+    return
+  }
+
   props.view.move(current, square)
   selected.value = null
+}
+
+// ─── Promotion picker ──────────────────────────────────────────────────────────
+// Two gestures, one ring. Mouse drag: hovering a legal promotion square opens the ring — the
+// queen sits pre-armed under the cursor and the RELEASE picks (a release outside every slot is
+// an illegal drop, so the existing snap-back cancels for free). Click-to-move and touch drag:
+// the move waits as pendingPromotion until a slot is tapped; anywhere else cancels.
+const dragPromotion = ref<{from: SquareKey; anchor: SquareKey} | null>(null)
+const pendingPromotion = ref<{from: SquareKey; to: SquareKey} | null>(null)
+const isMobile = useIsMobile()
+
+const promotionPicker = computed(() => {
+  const anchored = dragPromotion.value
+    ? {from: dragPromotion.value.from, to: dragPromotion.value.anchor, interactive: false}
+    : pendingPromotion.value && {...pendingPromotion.value, interactive: true}
+
+  if (!anchored) {
+    return null
+  }
+
+  const {col, row} = squareToCoords(anchored.to, orientation.value)
+  return {
+    slots: promotionSlotCenters(col, row),
+    color: board.value?.squares[anchored.from].piece?.color ?? 'white',
+    interactive: anchored.interactive,
+    centered: anchored.interactive && isMobile.value,
+    // Drag mode shows the ring's presence; pending mode has the backdrop instead.
+    halo: anchored.interactive ? null : RING_HALO_VISUAL,
+  }
+})
+
+// The keep-open halo around the ring, in grid units from the anchor's center: the travel from
+// the queen to a satellite crosses slot-free gaps, and the ring must survive them — it only
+// closes once the cursor genuinely leaves the neighborhood (satellites reach 1.75 at their
+// outer edge, the halo grants another half-square of slack).
+const RING_HALO = 2.3
+
+// The DRAWN halo is deliberately smaller than the logical one: a compact presence the
+// satellites poke out of, while the cancel zone stays permissive around it.
+const RING_HALO_VISUAL = 1
+
+// Dwell time before the ring opens: with several promotion squares side by side, a diagonal
+// travel sweeps across the middle one — the ring waits for the cursor to SETTLE, so crossing
+// a square never counts as aiming at it.
+const RING_OPEN_DELAY = 160
+
+// The cursor in grid units — dragX/dragY hold the sprite's top-left, one half-square off the
+// pointer. Still readable right after the drag ends (they never reset), which is exactly when
+// the release needs them.
+function cursorGrid(): {x: number; y: number} | null {
+  const rect = areaEl.value?.getBoundingClientRect()
+  if (!rect?.width) {
+    return null
+  }
+
+  const squareSize = rect.width / 8
+  return {
+    x: (dragX.value + squareSize / 2) / squareSize,
+    y: (dragY.value + squareSize / 2) / squareSize,
+  }
+}
+
+// Slots may overlap a touch (tight ring), so the NEAREST one within reach wins.
+const hoveredSlotPiece = computed<PieceType | null>(() => {
+  if (!dragPromotion.value || !promotionPicker.value) {
+    return null
+  }
+
+  const cursor = cursorGrid()
+  if (!cursor) {
+    return null
+  }
+
+  let nearest: {piece: PieceType; distance: number} | null = null
+  for (const slot of promotionPicker.value.slots) {
+    const distance = Math.hypot(slot.x - cursor.x, slot.y - cursor.y)
+    if (distance <= 0.55 && (!nearest || distance < nearest.distance)) {
+      nearest = {piece: slot.piece, distance}
+    }
+  }
+
+  return nearest?.piece ?? null
+})
+
+function isWithinRingHalo(): boolean {
+  const promotion = dragPromotion.value
+  const cursor = cursorGrid()
+  if (!promotion || !cursor) {
+    return false
+  }
+
+  const {col, row} = squareToCoords(promotion.anchor, orientation.value)
+  return Math.hypot(cursor.x - (col + 0.5), cursor.y - (row + 0.5)) <= RING_HALO
+}
+
+// Traveling toward a side slot clips the bottom edge of the NEIGHBOUR promotion square — a
+// re-anchor there would steal the ring mid-gesture. Stealing requires a deliberate visit:
+// no slot hovered, and the cursor deep in the promotion row (past the clipped edge band).
+function mayReanchor(): boolean {
+  if (!dragPromotion.value) {
+    return true
+  }
+
+  if (hoveredSlotPiece.value) {
+    return false
+  }
+
+  const cursor = cursorGrid()
+  if (!cursor) {
+    return false
+  }
+
+  const {row} = squareToCoords(dragPromotion.value.anchor, orientation.value)
+  const inward = row === 0 ? 1 : -1
+  return (cursor.y - (row + 0.5)) * inward <= 0.25
+}
+
+// Mouse drag only — touch picks after the drop. Settling on a legal promotion square anchors
+// the ring there (after RING_OPEN_DELAY, so a crossing never opens it); another promotion
+// square re-anchors only on a deliberate visit (mayReanchor); the ring closes once the cursor
+// leaves the halo — the buffer zone that lets a hand travel toward its slot in peace.
+let ringOpenTimer = 0
+watch(dropTarget, target => {
+  window.clearTimeout(ringOpenTimer)
+  if (!draggingId.value || isTouch.value || !dragFrom.value) {
+    return
+  }
+
+  const from = dragFrom.value
+  if (target && target !== dragPromotion.value?.anchor && props.view.needsPromotionChoice(from, target)) {
+    // Re-checked when the timer fires: by then the cursor may have moved on or reached a slot.
+    ringOpenTimer = window.setTimeout(() => {
+      if (draggingId.value && dropTarget.value === target && mayReanchor()) {
+        dragPromotion.value = {from, anchor: target}
+      }
+    }, RING_OPEN_DELAY)
+  } else if (dragPromotion.value && !isWithinRingHalo()) {
+    dragPromotion.value = null
+  }
+})
+
+function onPromotionPick(piece: PieceType) {
+  const pending = pendingPromotion.value
+  if (!pending) {
+    return
+  }
+
+  pendingPromotion.value = null
+  props.view.move(pending.from, pending.to, piece)
 }
 
 // A played drop snaps only the released piece instantly — it is already under the cursor,
 // while anything riding along (the castling rook) keeps its slide. Any other release
 // (refused move, same square, off-board, cancelled drag) slides the piece back home.
+// A release with the promotion ring open resolves FIRST: the hovered slot is the choice
+// (usePieceDrag never reports a drop on the origin square, which the ring may well cover —
+// so the pick lives here, on the end of the drag, not in onDrop).
 watch(draggingId, (id, prev) => {
   if (prev && !id) {
+    const promotion = dragPromotion.value
+    if (promotion) {
+      const picked = hoveredSlotPiece.value
+      if (picked) {
+        const movesBefore = props.view.moves.length
+        props.view.move(promotion.from, promotion.anchor, picked)
+        dropApplied = props.view.moves.length > movesBefore
+      }
+
+      dragPromotion.value = null
+    }
+
     if (dropApplied) {
       snapPieceThenRestore(prev)
     } else {
@@ -205,9 +411,15 @@ watch(dropTarget, target => {
   }
 })
 
-// Coordinate highlight source: the live drop target while dragging (null off-board = no highlight),
-// otherwise the hovered square.
-const coordSquare = computed(() => (draggingId.value ? dropTarget.value : hoveredSquare.value))
+// Coordinate highlight source: the live drop target while dragging (null off-board = no
+// highlight), pinned on the anchor while the promotion ring is open, otherwise the hovered square.
+const coordSquare = computed(() => {
+  if (dragPromotion.value) {
+    return dragPromotion.value.anchor
+  }
+
+  return draggingId.value ? dropTarget.value : hoveredSquare.value
+})
 const hoveredFile = computed<SquareFile | null>(() =>
   coordSquare.value ? (coordSquare.value[0] as SquareFile) : null,
 )
@@ -246,8 +458,10 @@ function highlightsFor(square: SquareKey): SquareHighlight[] {
     result.push('last-move')
   }
 
-  // Touch only acknowledges squares a drop could land on; the mouse veil follows the cursor.
-  if (isTouch.value ? touchDropSquare.value === square : dropTarget.value === square) {
+  // Touch only acknowledges squares a drop could land on; the mouse veil follows the cursor —
+  // silenced while the ring is open: the selection zone belongs to the picker, the board
+  // beneath stops reacting.
+  if (!dragPromotion.value && (isTouch.value ? touchDropSquare.value === square : dropTarget.value === square)) {
     result.push(isTouch.value ? 'drop-target-touch' : 'drop-target')
   }
 
@@ -331,12 +545,14 @@ function snapBackThenRestore() {
 
 watch(orientation, () => {
   selected.value = null // a flip is an unrelated action — drop any selection
+  pendingPromotion.value = null
   teleportThenRestore()
 })
 onBeforeUnmount(() => {
   cancelAnimationFrame(restoreRaf)
   cancelAnimationFrame(snapRaf)
   window.clearTimeout(snapBackTimer)
+  window.clearTimeout(ringOpenTimer)
 })
 
 const areaStyle = computed(() => {

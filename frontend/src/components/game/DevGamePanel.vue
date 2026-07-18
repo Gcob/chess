@@ -1,25 +1,27 @@
 <template>
   <div v-if="settingsStore.settings.devMode" class="dev-panel">
-    <h2 class="c-h4 dev-panel__title">
-      <FlaskConical :size="16" />
+    <div class="dev-panel__header">
+      <FlaskConical :size="14" />
       {{ $t('game.dev.title') }}
-    </h2>
+    </div>
 
-    <label class="c-label">
-      <span>{{ $t('newGame.scenario.label') }}</span>
-      <select class="c-select" v-model="newGameStore.settings.scenarioId">
-        <option v-for="scenario in DEV_SCENARIOS" :key="scenario.id" :value="scenario.id">
-          {{ scenario.name }}
-        </option>
-      </select>
-    </label>
+    <div class="dev-panel__body">
+      <label class="c-label">
+        <span>{{ $t('newGame.scenario.label') }}</span>
+        <select class="c-select" v-model="newGameStore.settings.scenarioId">
+          <option v-for="scenario in DEV_SCENARIOS" :key="scenario.id" :value="scenario.id">
+            {{ scenario.name }}
+          </option>
+        </select>
+      </label>
 
-    <div class="dev-panel__buttons">
-      <cButton variant="ter" :to="{ name: 'new-game' }">{{ $t('game.dev.editSetup') }}</cButton>
-      <cButton variant="ter" @click="restart">
-        <RotateCcw :size="16" />
-        {{ $t('game.dev.restart') }}
-      </cButton>
+      <div class="dev-panel__buttons">
+        <cButton variant="ter" :to="{ name: 'new-game' }">{{ $t('game.dev.editSetup') }}</cButton>
+        <cButton variant="ter" @click="restart">
+          <RotateCcw :size="16" />
+          {{ $t('game.dev.restart') }}
+        </cButton>
+      </div>
     </div>
   </div>
 </template>
@@ -58,15 +60,31 @@ async function restart() {
 </script>
 
 <style lang="scss" scoped>
+// Dressed like the move-history panel — the sidebar speaks one visual language.
 .dev-panel {
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
+  background: var(--bg-elevated);
+  border: $border-width-base solid var(--border-color);
+  border-radius: $border-radius-base;
+  overflow: hidden;
 
-  &__title {
+  &__header {
     display: flex;
     align-items: center;
     gap: $spacing-2;
+    padding: $spacing-2 $spacing-3;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: var(--text-secondary);
+    border-bottom: $border-width-thin solid var(--border-color);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-3;
+    padding: $spacing-3;
   }
 
   &__buttons {

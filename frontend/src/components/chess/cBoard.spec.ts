@@ -9,6 +9,7 @@ import {useGamesStore} from '@/stores/useGamesStore'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useGameView} from '@/composables/useGameView'
 import {makeMove, resign} from '@/engine/game'
+import {applyMove} from '@/engine/move'
 import {stubMatchMedia} from '@/test/mediaQuery'
 import type {CreateGamePayload, Game} from '@/types/chess'
 import type {GameView} from '@/composables/useGameView'
@@ -22,6 +23,14 @@ const payload: CreateGamePayload = {
 function freshView(): { view: GameView; game: Game } {
   const session = useGamesStore().open(payload)
   return {view: useGameView(session.id), game: session.game}
+}
+
+// A white pawn on a7, its promotion square a8 freed — one push from glory.
+function promotionView(): { view: GameView; game: Game } {
+  const {view, game} = freshView()
+  applyMove(game.board, 'e2', 'a7')
+  game.board.squares['a8'].piece = null
+  return {view, game}
 }
 
 function findSquare(wrapper: VueWrapper, key: string) {
@@ -57,14 +66,28 @@ async function drag(wrapper: VueWrapper, from: string, to: {x: number; y: number
   await nextTick()
 }
 
+// Moves the pointer mid-drag. `settle` waits out the promotion ring's dwell delay — a plain
+// move is a crossing, a settled move is an aim.
+async function movePointer(x: number, y: number, settle = false) {
+  window.dispatchEvent(new MouseEvent('pointermove', {clientX: x, clientY: y, buttons: 1}))
+  await nextTick()
+  if (settle) {
+    vi.advanceTimersByTime(200)
+    await nextTick()
+  }
+}
+
 describe('cBoard', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
     stubMatchMedia(false)
+    // The promotion ring waits for the cursor to settle — specs drive that clock themselves.
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
@@ -207,6 +230,135 @@ describe('cBoard', () => {
     }
     const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'e2')!
     expect(pawn.classes()).toContain('c-piece--anim-slide')
+  })
+
+  it('plays the pre-armed queen when the drag releases on the promotion square', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await drag(wrapper, 'a7', {x: 50, y: 50}) // a8 — release right where the queen waits
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'queen'})
+  })
+
+  it('opens the ring once the cursor settles, and picks the slot under the release', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(50, 50, true) // settle on a8
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(true)
+    expect(wrapper.find('.c-promotion-picker__backdrop').exists()).toBe(false) // drag mode: no backdrop
+    expect(wrapper.find('.c-promotion-picker__halo').exists()).toBe(true) // the ring's presence shows
+    // The board beneath goes quiet: no drop veil chasing the cursor through the zone.
+    expect(wrapper.find('.c-square__highlight--drop-target').exists()).toBe(false)
+    await movePointer(50, 170) // knight slot
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 50, clientY: 170}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'knight'})
+  })
+
+  it('ignores a promotion square merely crossed on the way', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(50, 50) // sweeps over a8 without stopping
+    await movePointer(150, 50) // …and moves on to b8
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false) // no ring opened in transit
+  })
+
+  it('keeps the ring open while traveling through the gap between slots', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(50, 50, true) // a8 — ring opens
+    await movePointer(50, 112) // the dead band en route
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(true) // still open — the halo holds it
+    await movePointer(50, 170) // knight slot
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 50, clientY: 170}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'knight'})
+  })
+
+  it('never re-anchors while traveling toward a side slot over a neighbour promotion square', async () => {
+    mockBoardRect()
+    const {view} = promotionView() // a7 pawn: two targets — a8 push and b8 capture
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(150, 50, true) // b8 — anchor
+    await movePointer(75, 90, true) // clips a8's bottom edge, even lingering there
+    await movePointer(52, 119) // b8's left slot (rook)
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 52, clientY: 119}))
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'b8', promotion: 'rook'}) // the ring never jumped to a8
+  })
+
+  it('re-anchors on a deliberate visit of another promotion square', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(150, 50, true) // b8 — anchor
+    await movePointer(50, 50, true) // settle on a8's heart
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 50, clientY: 50})) // release on a8's queen
+    await nextTick()
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'queen'})
+  })
+
+  it('cancels the promotion drag with a snap-back when released off the ring', async () => {
+    mockBoardRect()
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    const pawn = wrapper.findAllComponents(cPiece).find(p => p.props('piece').square === 'a7')!
+    await pawn.trigger('pointerdown', {pointerType: 'mouse'})
+    await movePointer(50, 50, true) // settle on a8
+    await movePointer(450, 450) // far away
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false) // the ring closed on exit
+    window.dispatchEvent(new MouseEvent('pointerup', {clientX: 450, clientY: 450}))
+    await nextTick()
+    expect(view.moves).toHaveLength(0)
+    expect(wrapper.find('.c-piece--anim-snap-back').exists()).toBe(true)
+  })
+
+  it('waits in the picker on a click-to-move promotion, then plays the tapped slot', async () => {
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'a7')
+    await clickSquare(wrapper, 'a8')
+    expect(view.moves).toHaveLength(0)
+    expect(wrapper.find('.c-promotion-picker__backdrop').exists()).toBe(true) // pending mode
+    expect(wrapper.find('.c-promotion-picker__halo').exists()).toBe(false) // the backdrop is the boundary
+    const rookSlot = wrapper.findAll('.c-promotion-picker__slot')
+      .find(slot => slot.find('img').attributes('alt') === 'white rook')!
+    await rookSlot.trigger('click')
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'rook'})
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)
+  })
+
+  it('cancels a pending promotion from the backdrop', async () => {
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'a7')
+    await clickSquare(wrapper, 'a8')
+    await wrapper.find('.c-promotion-picker__backdrop').trigger('click')
+    expect(view.moves).toHaveLength(0)
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)
+  })
+
+  it('skips the picker entirely with auto-promote-to-queen on', async () => {
+    useSettingsStore().settings.autoPromoteToQueen = true
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'a7')
+    await clickSquare(wrapper, 'a8')
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'queen'})
   })
 
   it('grows a touch-dragged piece and targets the square under the finger', async () => {

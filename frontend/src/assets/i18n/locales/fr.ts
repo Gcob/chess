@@ -116,6 +116,7 @@ export default {
     boardTheme: 'Thème du plateau',
     highlightLastMove: 'Surligner le dernier coup',
     showLegalMoves: 'Afficher les coups légaux',
+    autoPromoteToQueen: 'Toujours promouvoir en dame',
     devMode: 'Mode développeur',
     boardThemes: {
       wood: 'Bois',

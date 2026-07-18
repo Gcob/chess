@@ -32,7 +32,7 @@ src/
 │       └── _commons.scss
 ├── components/
 │   ├── core-ui/                   # composants génériques réutilisables
-│   ├── chess/                     # composants d'échiquier (cBoard, cSquare, cPiece)
+│   ├── chess/                     # composants d'échiquier (cBoard, cSquare, cPiece, cPromotionPicker)
 │   └── pages/                     # une page par route
 ├── composables/
 │   └── factories/                 # factory functions

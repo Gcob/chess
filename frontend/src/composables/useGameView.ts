@@ -5,9 +5,9 @@ import {useIsMobile} from '@/composables/useMediaQuery'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import {findKingSquare, toSquareKey} from '@/engine/board'
-import {legalDestinations} from '@/engine/move'
+import {isPromotionMove, legalDestinations} from '@/engine/move'
 import {enPassantTarget} from '@/engine/game'
-import type {PieceColor, SquareKey} from '@/types/chess'
+import type {PieceColor, PieceType, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
 // `:view` prop down to the layout and its sections — no prop/event drilling.
@@ -36,8 +36,27 @@ export function useGameView(id: string) {
     && activeColor.value === 'black',
   )
 
-  function move(from: SquareKey, to: SquareKey) {
-    session.makeMove(from, to)
+  // The auto-queen setting resolves here — the engine itself never defaults silently, so a
+  // promotion push reaching it without a choice stays a no-op (the picker's business).
+  function move(from: SquareKey, to: SquareKey, promotion: PieceType | null = null) {
+    if (!promotion && settingsStore.settings.autoPromoteToQueen && isPromotionPush(from, to)) {
+      promotion = 'queen'
+    }
+
+    session.makeMove(from, to, promotion)
+  }
+
+  // Whether this drop must go through the promotion picker: a legal promotion push, with the
+  // auto-queen shortcut turned off.
+  function needsPromotionChoice(from: SquareKey, to: SquareKey): boolean {
+    return !settingsStore.settings.autoPromoteToQueen
+      && isPromotionPush(from, to)
+      && dropTargets(from).includes(to)
+  }
+
+  function isPromotionPush(from: SquareKey, to: SquareKey): boolean {
+    const piece = session.game.value?.board.squares[from].piece
+    return !!piece && isPromotionMove(piece, to)
   }
 
   // Legal destinations of the piece on `from`, always — the query behind the touch drop pop.
@@ -132,6 +151,7 @@ export function useGameView(id: string) {
     move,
     dropTargets,
     legalTargets,
+    needsPromotionChoice,
     resign: session.resign,
     offerDraw: session.offerDraw,
     acceptDraw: session.acceptDraw,

@@ -134,7 +134,7 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       (flags roque/en passant filtrés, poussées de promotion jamais jouées) — les réactiver
       fera partie de la phase ④. Nos specs restent le contrat de NOTRE design
 
-### ④ Coups spéciaux
+### ④ Coups spéciaux *(complète — l'engine couvre toutes les règles FIDE du jeu)*
 
 - [x] Roque (petit/grand, droits via `hasMoved`, cases traversées non attaquées) — géométrie dans
       `CastlingMoveType` (marche vers une tour jamais bougée, cases libres), sécurité dans le
@@ -152,21 +152,31 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       victime retirée par `applyMove` ; `Move.enPassant` + SAN `exd6` ; droit ep dans la
       signature de répétition (seulement si pseudo-capturable, aligné chess.js/FIDE 9.2) ;
       oracle sans filtre `e`
-- [ ] Promotion — ferme la phase ④, règles FIDE complètes. Engine : `makeMove` gagne le choix
-      (`promotion?: PieceType`) ; poussée de promotion sans choix = no-op, commande incomplète —
-      jamais de dame silencieuse, le défaut visible vit dans le setting ; le type change, l'id
-      survit (`Pe7` reste `Pe7`) ; oracle chess.js sans plus aucun filtre (notre choix mappé sur
-      le sien). UI : résolution `autoPromoteToQueen ? dame : picker` — setting global (comportement
-      attendu des deux joueurs en local) ; le picker radial est un pré-requis de la phase (sans lui,
-      pas de sous-promotion). Drag desktop = release-pick : le survol d'une case de promotion EN
-      DRAG ouvre l'anneau ancré dessus, dame sous le curseur (release immédiat = dame — un seul
-      geste), release sur un autre slot = sous-promotion, release ailleurs = drop illégal donc
-      snap-back existant (l'annulation tombe de la légalité : un pion en 7ᵉ n'a que des promotions) ;
-      sortir de l'anneau referme le picker, survoler une autre case de promotion le rouvre là.
-      L'anneau se déploie vers l'intérieur du board sur LES DEUX axes (coins a8/h8 = quadrant,
-      ordre des slots stable pour la mémoire musculaire). Click-to-move et drag touch mobile =
-      coup pending + picker (centré fixe, grosses cibles en mobile), tap sur un slot joue, à côté
-      annule + snap-back ; `prefers-reduced-motion` respecté (l'intention pré-établie reste au
+- [x] Promotion — ferme la phase ④, règles FIDE complètes. Engine : `makeMove` gagne le choix
+      (`promotion`, 5ᵉ param) ; poussée de promotion sans choix valide = no-op, commande
+      incomplète — jamais de dame silencieuse, le défaut visible vit dans le setting
+      (`isPromotionMove`/`isPromotionChoice`) ; `transformPiece` change type/valeur/texte, l'id
+      survit (`Pe7` reste `Pe7`) ; le `Move` est construit avant la mutation (son `pieceType`
+      reste `pawn` — les 50 coups en dépendent) ; SAN `a8=Q`/`axb8=Q` ; **oracle chess.js sans
+      plus aucun filtre** (choix tiré du PRNG, donné aux deux engines). UI : résolution
+      `autoPromoteToQueen ? dame : picker` dans `useGameView.move` — setting global (comportement
+      attendu des deux joueurs en local). Picker radial (`cPromotionPicker` + géométrie pure
+      `promotionSlotCenters` : dame SUR la case d'ancrage, satellites en arc serré vers
+      l'intérieur du board sur les deux axes — colonnes a/h = quadrant, ordre stable, léger
+      chevauchement assumé donc hit-test au plus proche). Drag desktop = release-pick : se poser
+      sur une case de promotion EN DRAG ouvre l'anneau après un délai d'intention
+      (`RING_OPEN_DELAY` — une case seulement traversée en diagonale n'ouvre rien) ; la dame est
+      pré-armée sous le curseur, et un release sur la case de promotion la joue même si l'anneau
+      n'a pas eu le temps de s'ouvrir (un seul geste, jamais de clic de plus) ; release sur un slot =
+      sous-promotion, ailleurs = drop illégal donc snap-back existant (l'annulation tombe de la
+      légalité) ; zone tampon `RING_HALO` (le trajet dame → satellite traverse des vides sans
+      fermer l'anneau, sortir du halo annule) avec un halo DESSINÉ plus petit que la zone
+      logique (`RING_HALO_VISUAL` — les satellites en dépassent, la tolérance reste permissive) ;
+      une autre case de promotion ne ré-ancre que sur une visite délibérée (`mayReanchor` :
+      aucun slot survolé + curseur au cœur de la rangée — le trajet vers un slot latéral clippe
+      le bas de la case voisine sans voler l'anneau). Click-to-move
+      et drag touch = coup pending + picker interactif (backdrop annule ; centré fixe grosses
+      cibles en mobile) ; `prefers-reduced-motion` respecté (l'intention pré-établie reste au
       Backlog parties distantes)
 
 ### ⑤ SAN complet & PGN
