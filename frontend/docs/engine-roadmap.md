@@ -112,9 +112,10 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
       position morte = nulle automatique. Aligné chess.js : roi vs roi, une mineure seule, ou
       fous seuls tous sur la même couleur de cases (la paire classique couvre les deux couleurs,
       donc jamais morte)
-- [ ] Timeout vs matériel insuffisant = nulle (règle du drapeau, FIDE 6.9) : au drapeau tombé,
-      si l'adversaire ne peut mater par aucune suite de coups légaux, la partie est nulle au
-      lieu d'une victoire au temps — brancher `hasInsufficientMaterial` dans `flagTimeout`
+- [x] Timeout vs matériel insuffisant = nulle (règle du drapeau, FIDE 6.9) —
+      `hasMatingMaterial(board, color)` dans `flagTimeout` : le drapeau tombé ne perd que si
+      l'adversaire peut encore mater, jugé sur son seul matériel (convention standard en ligne :
+      roi seul, roi + 1 mineure, fous mono-couleur = pas de matériel de mat), sinon nulle au temps
 - [ ] `GameEndReason` : les valeurs sont déjà toutes déclarées — brancher la logique qui les produit
 - [ ] Oracle chess.js (devDependency seulement) : spec de tests différentiels qui valide l'engine
       contre chess.js (coups légaux, mats, pats) — nos specs restent le contrat de NOTRE design ;

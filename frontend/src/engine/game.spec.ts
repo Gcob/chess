@@ -273,6 +273,15 @@ describe('flagTimeout', () => {
     expect(game.players.white.timer?.secondsRemaining).toBe(0)
   })
 
+  it('scores a draw when the opponent of the flag cannot mate — the flag rule', () => {
+    const game = timedGame()
+    keepOnly(game.board, ['e1', 'd1', 'e8']) // white Ke1 + Qd1 vs a lone black king
+    startGame(game, T0)
+    flagTimeout(game, 'white') // white flags: black has no mating material
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: null, reason: 'timeout'})
+  })
+
   it('is a no-op on an untimed game', () => {
     const game = untimedGame()
     startGame(game, T0)

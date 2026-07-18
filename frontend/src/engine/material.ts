@@ -60,6 +60,29 @@ export function hasInsufficientMaterial(board: Board): boolean {
   return squareColors.size === 1
 }
 
+// Whether `color` still owns enough material to ever deliver a mate — the flag-rule question
+// (a fallen flag only loses if the opponent could still mate, FIDE 6.9). Judged on that side's
+// material alone, the online-standard convention: king alone, king + one minor, or bishops all
+// on one square colour can't mate; anything else (a pawn promotes!) can.
+export function hasMatingMaterial(board: Board, color: PieceColor): boolean {
+  const pieces = getBoardPieces(board)
+    .filter(({piece}) => piece.color === color && piece.type !== 'king')
+  if (pieces.some(({piece}) => piece.type === 'pawn' || piece.type === 'rook' || piece.type === 'queen')) {
+    return true
+  }
+
+  if (pieces.length <= 1) {
+    return false
+  }
+
+  if (pieces.some(({piece}) => piece.type === 'knight')) {
+    return true
+  }
+
+  const squareColors = new Set(pieces.map(({square}) => board.squares[square].color))
+  return squareColors.size > 1
+}
+
 function materialValue(pieces: CapturedPiece[]): number {
   return pieces.reduce((sum, piece) => sum + PIECE_VALUES[piece.type], 0)
 }

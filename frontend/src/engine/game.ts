@@ -1,6 +1,6 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
 import {canMove, applyMove, hasAnyLegalMove} from './move'
-import {hasInsufficientMaterial} from './material'
+import {hasInsufficientMaterial, hasMatingMaterial} from './material'
 import {findCheckers} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
@@ -124,7 +124,13 @@ export function flagTimeout(game: Game, color: PieceColor): void {
   }
 
   timer.secondsRemaining = 0
-  endGame(game, {winner: oppositeColor(color), reason: 'timeout'})
+
+  // The flag rule (FIDE 6.9): the fallen flag only loses if the opponent could still mate —
+  // a lone king (or a lone minor) facing the flag scores a draw, not a win.
+  const opponent = oppositeColor(color)
+  endGame(game, hasMatingMaterial(game.board, opponent)
+    ? {winner: opponent, reason: 'timeout'}
+    : {winner: null, reason: 'timeout'})
 }
 
 // Display helper: the settled time, minus the running turn time when color is on the move.

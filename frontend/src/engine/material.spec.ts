@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {getCapturedPieces, hasInsufficientMaterial, materialDiff, type CapturedByColor} from './material'
+import {getCapturedPieces, hasInsufficientMaterial, hasMatingMaterial, materialDiff, type CapturedByColor} from './material'
 import {makeMove} from './game'
 import {applyMove} from './move'
 import {createGameSession} from '@/composables/factories/gameFactory'
@@ -97,5 +97,41 @@ describe('hasInsufficientMaterial', () => {
 
   it('is false on the initial position', () => {
     expect(hasInsufficientMaterial(createGameSession(payload, 'test-id').game.board)).toBe(false)
+  })
+})
+
+describe('hasMatingMaterial', () => {
+  const payload: CreateGamePayload = {
+    mode: 'local',
+    players: {white: {name: 'Alice', avatar: 'circle'}, black: {name: 'Bob', avatar: 'square'}},
+  }
+
+  function boardWith(keep: SquareKey[]): Board {
+    const board = createGameSession(payload, 'test-id').game.board
+    keepOnly(board, keep)
+    return board
+  }
+
+  it('denies a lone king, a lone minor, and same-colour bishops', () => {
+    expect(hasMatingMaterial(boardWith(['e1', 'e8']), 'black')).toBe(false)
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'f8']), 'black')).toBe(false) // K+B
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'b8']), 'black')).toBe(false) // K+N
+  })
+
+  it('grants any pawn (it promotes), rook or queen', () => {
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'a7']), 'black')).toBe(true)
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'a8']), 'black')).toBe(true)
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'd8']), 'black')).toBe(true)
+  })
+
+  it('grants two minors when they are not same-colour bishops', () => {
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'c8', 'f8']), 'black')).toBe(true) // the pair
+    expect(hasMatingMaterial(boardWith(['e1', 'e8', 'b8', 'g8']), 'black')).toBe(true) // two knights
+  })
+
+  it('judges one side only — the opponent material is irrelevant', () => {
+    const board = boardWith(['e1', 'd1', 'e8']) // white Ke1 + Qd1 vs lone black king
+    expect(hasMatingMaterial(board, 'white')).toBe(true)
+    expect(hasMatingMaterial(board, 'black')).toBe(false)
   })
 })
