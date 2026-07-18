@@ -1,5 +1,5 @@
-import type {Board as BoardDto, SquareKey} from '@/types/chess'
-import {Board} from './board'
+import type {Board as BoardDto, PieceColor, SquareKey} from '@/types/chess'
+import {Board, getBoardPieces} from './board'
 import type {Piece} from './piece'
 import type {Square} from './square'
 
@@ -14,9 +14,19 @@ export function canMove(boardDto: BoardDto, from: SquareKey, to: SquareKey): boo
 }
 
 // Every legal destination of the piece sitting on `from` — the query the local aids consume.
-// Phase ③ will loop it over every piece of a color (mate/stalemate = no destination anywhere).
 export function legalDestinations(boardDto: BoardDto, from: SquareKey): SquareKey[] {
   return legalSquaresFrom(new Board(boardDto), from).map(square => square.key)
+}
+
+// Whether `color` still has a legal move anywhere — THE mate/stalemate question.
+// One shared Board answers every piece, and the scan stops at the first piece with a
+// destination: a living position exits almost immediately, the full sweep only happens
+// in real endings.
+export function hasAnyLegalMove(boardDto: BoardDto, color: PieceColor): boolean {
+  const board = new Board(boardDto)
+  return getBoardPieces(boardDto).some(({piece, square}) =>
+    piece.color === color && legalSquaresFrom(board, square).length > 0,
+  )
 }
 
 // Progressive restriction: raw geometry, then one legality filter per rule. Each filter

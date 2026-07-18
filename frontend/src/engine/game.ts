@@ -1,5 +1,5 @@
 import type {Game, GameResult, Move, Piece, PieceColor, SquareKey} from '@/types/chess'
-import {canMove, applyMove} from './move'
+import {canMove, applyMove, hasAnyLegalMove} from './move'
 import {findCheckers} from './board'
 
 // ─── Game commands ─────────────────────────────────────────────────────────────
@@ -68,6 +68,13 @@ export function makeMove(game: Game, from: SquareKey, to: SquareKey, now: number
   game.drawOffer = null
   game.activeColor = oppositeColor(game.activeColor)
   game.turnStartedAt = now
+
+  // The move may have ended the game: no legal reply = checkmate (in check) or stalemate.
+  if (!hasAnyLegalMove(game.board, game.activeColor)) {
+    endGame(game, game.players[game.activeColor].isInCheck
+      ? {winner: oppositeColor(game.activeColor), reason: 'checkmate'}
+      : {winner: null, reason: 'stalemate'})
+  }
 }
 
 export function resign(game: Game, color: PieceColor): void {

@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {canMove, applyMove, legalDestinations} from './move'
+import {canMove, applyMove, hasAnyLegalMove, legalDestinations} from './move'
 import {getAttackers, findCheckers, findKingSquare, toSquareKey} from './board'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {Board, CreateGamePayload} from '@/types/chess'
@@ -619,5 +619,13 @@ describe('findKingSquare', () => {
     const board = freshBoard()
     board.squares['e1'].piece = null
     expect(findKingSquare(board, 'white')).toBeNull()
+  })
+})
+
+describe('hasAnyLegalMove', () => {
+  it('finds a move in the initial position, both colors', () => {
+    const board = freshBoard()
+    expect(hasAnyLegalMove(board, 'white')).toBe(true)
+    expect(hasAnyLegalMove(board, 'black')).toBe(true)
   })
 })

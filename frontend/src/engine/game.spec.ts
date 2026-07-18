@@ -10,8 +10,9 @@ import {
   resign,
   startGame,
 } from './game'
+import {applyMove} from './move'
 import {createGameSession} from '@/composables/factories/gameFactory'
-import type {CreateGamePayload, Game} from '@/types/chess'
+import type {Board, CreateGamePayload, Game, SquareKey} from '@/types/chess'
 
 const T0 = 1_700_000_000_000
 
@@ -312,5 +313,79 @@ describe('remainingSeconds', () => {
     const game = timedGame()
     startGame(game, T0)
     expect(remainingSeconds(game, 'white', T0 + 700_000)).toBe(0)
+  })
+})
+
+function playMoves(game: Game, moves: Array<[SquareKey, SquareKey]>): void {
+  for (const [from, to] of moves) {
+    makeMove(game, from, to, T0)
+  }
+}
+
+// Strips the position down to the listed squares — ending specs read on a sparse board.
+function keepOnly(board: Board, keep: SquareKey[]): void {
+  for (const [key, square] of Object.entries(board.squares)) {
+    if (!keep.includes(key as SquareKey)) {
+      square.piece = null
+    }
+  }
+}
+
+describe('makeMove — automatic endings', () => {
+  it('ends on checkmate — scholar\'s mate, white wins', () => {
+    const game = untimedGame()
+    playMoves(game, [
+      ['e2', 'e4'], ['e7', 'e5'],
+      ['f1', 'c4'], ['b8', 'c6'],
+      ['d1', 'h5'], ['g8', 'f6'],
+      ['h5', 'f7'],
+    ])
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: 'white', reason: 'checkmate'})
+    expect(game.players.black.isInCheck).toBe(true)
+  })
+
+  it('refuses any move after the mate', () => {
+    const game = untimedGame()
+    playMoves(game, [
+      ['e2', 'e4'], ['e7', 'e5'],
+      ['f1', 'c4'], ['b8', 'c6'],
+      ['d1', 'h5'], ['g8', 'f6'],
+      ['h5', 'f7'],
+    ])
+    makeMove(game, 'a7', 'a6', T0)
+    expect(game.moves).toHaveLength(7)
+  })
+
+  it('ends on checkmate — fool\'s mate, black wins', () => {
+    const game = untimedGame()
+    playMoves(game, [
+      ['f2', 'f3'], ['e7', 'e5'],
+      ['g2', 'g4'], ['d8', 'h4'],
+    ])
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: 'black', reason: 'checkmate'})
+  })
+
+  it('ends on stalemate — no legal reply, no check', () => {
+    const game = untimedGame()
+    // Sparse ending: white Ke1 + Qb1 vs a lone black Ka8. Qb6 then seals a7/b7/b8.
+    keepOnly(game.board, ['e1', 'd1', 'e8'])
+    applyMove(game.board, 'd1', 'b1')
+    applyMove(game.board, 'e8', 'a8')
+    makeMove(game, 'b1', 'b6', T0)
+    expect(game.status).toBe('finished')
+    expect(game.result).toEqual({winner: null, reason: 'stalemate'})
+    expect(game.players.black.isInCheck).toBe(false)
+  })
+
+  it('leaves the game running on a simple check', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['f7', 'f5'], ['d1', 'h5']]) // Qh5+, blockable
+    expect(game.status).toBe('active')
+    expect(game.players.black.isInCheck).toBe(true)
+    makeMove(game, 'g7', 'g6', T0) // the block — play resumes normally
+    expect(game.status).toBe('active')
+    expect(game.players.black.isInCheck).toBe(false)
   })
 })

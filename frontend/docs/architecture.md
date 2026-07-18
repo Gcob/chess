@@ -167,7 +167,7 @@ seulement après un tap.
 > `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helper `remainingSeconds`) — voir
 > `docs/engine-roadmap.md` pour les principes et la progression. `makeMove` exige le trait, enregistre le
 > `Move` (SAN naïf) avec temps débité + incrément, et le premier coup démarre une partie `waiting` (jamais
-> sur tentative invalide). Couche board : `engine/move.ts` (`canMove` / `legalDestinations` — pipeline
+> sur tentative invalide). Couche board : `engine/move.ts` (`canMove` / `legalDestinations` / `hasAnyLegalMove` — pipeline
 > de restrictions partagé, `applyMove`), `engine/board.ts` (classe `Board` — l'Échiquier du MDD :
 > cache de wrappers, rayons, attaques, clouages, réponses à l'échec + API fonctionnelle DTO :
 > `getBoardPieces`, `findKingSquare`, `toSquareKey`, `getAttackers`, `findCheckers`),

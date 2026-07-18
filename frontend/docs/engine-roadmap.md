@@ -103,7 +103,9 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 ### ③ Fins de partie automatiques
 
-- [ ] Mat (victoire) et pat (nulle)
+- [x] Mat (victoire) et pat (nulle) — `hasAnyLegalMove(board, color)` dans `makeMove` : le nouveau
+      trait sans aucun coup légal termine la partie (`checkmate` s'il est en échec, sinon
+      `stalemate`) ; l'affichage du résultat et le gel des commandes existaient depuis la phase ①
 - [ ] Règle des 50 coups
 - [ ] Triple répétition
 - [ ] Matériel insuffisant
