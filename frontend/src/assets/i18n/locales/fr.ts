@@ -139,14 +139,17 @@ export default {
     },
     mode: {
       title: 'Mode de jeu',
-      comingSoon: 'À venir',
       local: 'Local',
+      localShort: 'Local',
       localDesc: 'Deux joueurs sur le même appareil.',
       ai: 'vs Ordinateur',
+      aiShort: 'IA',
       aiDesc: 'Joue contre une IA.',
       onlineRandom: 'En ligne — Aléatoire',
+      onlineRandomShort: 'Aléatoire',
       onlineRandomDesc: 'Affronte un joueur au hasard.',
       onlinePrivate: 'En ligne — Privé',
+      onlinePrivateShort: 'Privé',
       onlinePrivateDesc: 'Invite un ami avec un lien.',
     },
     players: {

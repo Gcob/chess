@@ -149,10 +149,11 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
       haut-droite, hors de l'ombre du pouce, où il flotte en boucle — case agrandie ombrée
       (`drop-target-touch`, façon key-preview), seulement sur une destination légale
       (`view.dropTargets`, jamais gaté par le setting des hints)
-- [ ] Refactor du form nouvelle partie : le mode choisi (étape 1) pilote le reste du form —
-      une composante de form par mode, pattern strategy (seul `local` existe, la structure doit
-      être prête pour les autres) ; sélection de mode compacte sur mobile — les cartes actuelles
-      prennent trop de place verticalement
+- [x] Refactor du form nouvelle partie : le mode choisi (étape 1) pilote le reste du form —
+      une composante de form par mode, pattern strategy (`NewGameLocalForm`, contrat : prop
+      `settings` + `validate()` exposé) ; sélection de mode compacte sur mobile — rangée de
+      tuiles icône + titre court, description du mode sélectionné une seule fois sous la rangée ;
+      seuls les modes jouables sont offerts — pas de choix impossible dans l'UI
 - [ ] Politiques d'orientation en mode local, changeables en cours de partie : ① board auto-flip
       (actuel), ② board fixe + pièces pivotées sur elles-mêmes de 180° (jeu face à face autour
       d'un téléphone à plat), ③ board fixe côté blancs. Jamais de board renversé (noirs en bas)
@@ -183,6 +184,9 @@ Features propres aux modes `vs-bot` / `private-remote` / `public-remote` — rie
 
 - [ ] Pre-moves : préparer son coup pendant le tour adverse, exécuté dès le retour du trait.
       Sans objet en local — une seule souris joue les deux camps
+- [ ] Réactiver chaque mode dans le sélecteur du form quand il devient jouable : flag `available`
+      dans `NewGameModeSection` + sa composante de form (pattern strategy) — les entrées, icônes
+      et clés i18n sont déjà en place
 - [ ] Politiques d'orientation des modes distants : board fixé du côté du joueur local —
       c'est ici que la rotation 180° du board existe (un joueur noir voit le board renversé) ;
       un spectateur choisit librement son côté et peut tourner le board à volonté.

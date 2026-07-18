@@ -127,14 +127,17 @@ export default {
     },
     mode: {
       title: 'Game Mode',
-      comingSoon: 'Coming soon',
       local: 'Local',
+      localShort: 'Local',
       localDesc: 'Two players on the same device.',
       ai: 'vs Computer',
+      aiShort: 'AI',
       aiDesc: 'Play against an AI opponent.',
       onlineRandom: 'Online — Random',
+      onlineRandomShort: 'Random',
       onlineRandomDesc: 'Get matched with a random player.',
       onlinePrivate: 'Online — Private',
+      onlinePrivateShort: 'Private',
       onlinePrivateDesc: 'Invite a friend with a link.',
     },
     players: {

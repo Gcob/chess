@@ -1,8 +1,7 @@
 <template>
   <div class="new-game-form">
     <NewGameModeSection :settings="settings" />
-    <NewGamePlayersSection ref="playersSection" :settings="settings" />
-    <NewGameTimerSection :settings="settings" />
+    <component :is="modeForm" ref="modeFormRef" :settings="settings" />
 
     <div class="new-game-form__actions">
       <cButton variant="ter" :to="{ name: 'home' }">{{ $t('common.cancel') }}</cButton>
@@ -12,24 +11,36 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue'
+import {computed, ref, type Component} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useNewGameStore} from '@/stores/useNewGameStore'
+import type {GameMode} from '@/types/chess'
 import NewGameModeSection from '@/components/parts/NewGameModeSection.vue'
-import NewGamePlayersSection from '@/components/parts/NewGamePlayersSection.vue'
-import NewGameTimerSection from '@/components/parts/NewGameTimerSection.vue'
+import NewGameLocalForm from '@/components/parts/NewGameLocalForm.vue'
 
-// The whole form is driven by one DTO — the reactive `settings` from the store. Each section
-// receives it and reads/writes its own fields, so there is no prop/event drilling.
+// The whole form is driven by one DTO — the reactive `settings` from the store. The selected
+// mode resolves the rest of the form (strategy pattern): one form component per mode, each
+// honouring the same contract — a single `settings` prop + an exposed `validate()`. The map
+// stays partial on purpose: an unavailable mode can't be selected.
+const modeForms: Partial<Record<GameMode, Component>> = {
+  local: NewGameLocalForm,
+}
+
+// The strategy contract, as the parent sees it.
+interface ModeFormInstance {
+  validate: () => boolean
+}
+
 const store = useNewGameStore()
 const {settings} = storeToRefs(store)
 
 const emit = defineEmits<{ start: [] }>()
 
-const playersSection = ref<InstanceType<typeof NewGamePlayersSection> | null>(null)
+const modeForm = computed(() => modeForms[settings.value.mode])
+const modeFormRef = ref<ModeFormInstance | null>(null)
 
 function handleStart() {
-  if (playersSection.value?.validate()) {
+  if (modeFormRef.value?.validate()) {
     emit('start')
   }
 }

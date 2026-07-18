@@ -231,10 +231,15 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 
 ## Flux de création de partie
 
-`NewGameForm` est un orchestrateur découpé en sections (`NewGameModeSection`, `NewGamePlayersSection`,
-`NewGameTimerSection`). Chacune reçoit **une seule prop DTO** : l'objet réactif `settings` du store, qu'elle
-lit/mute directement (pas de props/events à l'infini). La validation vit dans la section Joueurs et est
-appelée par le parent via `validate()` exposé (`defineExpose`).
+`NewGameForm` est un orchestrateur : `NewGameModeSection` choisit le `GameMode`, qui résout le reste du
+form par un mapping mode → composante (pattern strategy) — `NewGameLocalForm` pour `local`, seul mode
+existant. Chaque form de mode respecte le même contrat : **une seule prop DTO** (l'objet réactif
+`settings` du store, lu/muté directement — pas de props/events à l'infini) + un `validate()` exposé,
+appelé par le bouton start du parent. `NewGameLocalForm` = sections joueurs + cadran ; la validation
+vit dans la section Joueurs. Seuls les modes jouables apparaissent dans le sélecteur (pas de choix
+impossible) : livrer un mode = flipper son flag `available` + mapper sa composante de form.
+Sur mobile, la sélection de mode se compacte en une rangée de tuiles icône + titre court (clés i18n
+`*Short`), la description du mode sélectionné s'affichant une seule fois sous la rangée.
 
 ```
 NewGameSettings (useNewGameStore)
