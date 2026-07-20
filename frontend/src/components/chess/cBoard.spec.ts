@@ -419,7 +419,7 @@ describe('cBoard', () => {
     expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)
   })
 
-  // The picker is the one and only way a promotion piece gets chosen — no setting bypasses it.
+  // Auto-queen off (the default): the picker is the only way a promotion piece gets chosen.
   it('never promotes without going through the picker', async () => {
     const {view} = promotionView()
     const wrapper = mount(cBoard, {props: {view}})
@@ -427,6 +427,16 @@ describe('cBoard', () => {
     await clickSquare(wrapper, 'a8')
     expect(view.moves).toHaveLength(0)
     expect(wrapper.find('.c-promotion-picker').exists()).toBe(true)
+  })
+
+  it('skips the picker entirely with auto-promote-to-queen on', async () => {
+    useSettingsStore().settings.autoPromoteToQueen = true
+    const {view} = promotionView()
+    const wrapper = mount(cBoard, {props: {view}})
+    await clickSquare(wrapper, 'a7')
+    await clickSquare(wrapper, 'a8')
+    expect(wrapper.find('.c-promotion-picker').exists()).toBe(false)
+    expect(view.moves[0]).toMatchObject({to: 'a8', promotion: 'queen'})
   })
 
   it('grows a touch-dragged piece and targets the square under the finger', async () => {
