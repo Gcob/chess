@@ -208,24 +208,45 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
 
 ### ⑥ Analyse primaire d'une partie
 
-- [ ] Permettre l'import d'un PGN, ou, une fois une partie terminée, tomber en analyse primaire.
-- [ ] Permettre de naviguer dans l'historique de coup d'une partie avec les flèches gauche et droite ou avec les
-  historiques SAN qui sont des boutons. La fleche en bas = nav direct vers la fin de la partie, fleche en haut = nav
-  directement au debut. Les horloges doivent suivre pour une partie terminée. Les SAN doivent avoir un feedback visuel
-  pour montrer quel position qu'on regarde.
-- [ ] Permettre de naviguer l'historique d'une partie pendant son déroulement, sans avoir tous les features de
-  l'analyse. Les horloges doivent toujours afficher le temps restant des joueurs en cours de partie.
-- [ ] Ajouter la possibilité de dessiner des flèches sur l'échiquier avec un clique droit "drag and drop". Les flèches
-  appartiennent à un "half-move". Un clique gauche efface les flèches.
-- [ ] Avec un simple clique droit, permettre de toggle le focus sur une case. Ce focus fait partie du système de
-  flèches : un clique gauche les efface et ils appartiennent à un demi-coup.
-- [ ] Scénarios alternatifs : pendant l'analyse, permettre de déplacer les pieces, comme durant une partie, afin de
-  bifurquer et de créer une historique à part entière à partir d'un demi-coup. Les variantes
-  respectent la nav, sauf qu'avec la flèche de droite, on va toujours prendre le scénario principal. Il faut donc penser
-  comment on affiche l'historique des scénarios alternatif. Idée : le move-history__move aurait un bouton qui change
-  complètement move-history__list pour le scénario courant (alternatif ou non.) Ce serait un bouton par scénario
-  alternatif pour ne pas perdre. Pour l'exportation PGN, on ne permet pas pour le moment d'exporter les scénarios
-  alternatifs.
+**Analyse manuelle, pas de moteur.** Navigation, annotations et variantes créées à la main — aucune
+évaluation moteur (pas d'eval bar, de meilleur coup, de détection de gaffe). L'eval moteur vivra côté
+backend, plus tard (voir Épic analyse moteur). Mode local, calque par-dessus une partie finie ou en cours.
+
+**Principe — l'état d'analyse est un calque de vue, jamais dans le DTO.** La navigation est un curseur
+(`currentPly`) dans `useGameView` ; l'arbre de variantes vit dans la couche analyse, hors `Game`.
+`game.moves` reste une liste plate et immuable — la donnée qui voyage reste plate.
+
+Primitives fondatrices (tout le reste s'appuie dessus) :
+
+- [ ] Reconstruire la position à un demi-coup N — board neuf + `replayMoves` jusqu'à N (le board se
+  reconstruit déjà) ; base commune de la nav, des horloges et des variantes
+- [ ] Horloge à un demi-coup N — dérivée de `move.elapsedSeconds` + incrément, marchée depuis le début
+  (aujourd'hui `secondsRemaining` n'est qu'un snapshot de fin)
+- [ ] Parser PGN (SAN → coups) — le même organe que l'import de la phase ⑤ (scénarios dev) : import
+  analyse et import dev le partagent
+
+Features :
+
+- [ ] Import d'un PGN, ou bascule en analyse à la fin d'une partie — même vue avec un flag, pas une
+  nouvelle route. Un PGN externe peut contenir des variantes (RAV, parenthèses récursives) : pour le
+  moment on les aplatit sur la ligne principale (on ne les charge pas)
+- [ ] Naviguer l'historique d'une partie finie — ←/→ = coup précédent/suivant, Home/End (ou haut/bas) =
+  début/fin ; SAN cliquables ; feedback visuel sur le SAN de la position regardée ; les horloges suivent
+  la position
+- [ ] Naviguer l'historique pendant la partie — sans les features d'analyse ; les horloges affichent
+  toujours le temps restant réel des joueurs. Règle : naviguer dans le passé est view-only ; jouer un
+  coup (ou un coup qui arrive) re-snap au live (live = `moves.length`)
+- [ ] Calque d'annotations (flèches + focus de case) — clic droit glissé = flèche, clic droit simple =
+  toggle du focus d'une case ; clic gauche efface ; les annotations appartiennent à un demi-coup.
+  Éphémères (perdues au reload) — PGN a une convention (`[%cal]` / `[%csl]`) si on veut les sauver un
+  jour. **Desktop seulement** : impossible au touch (pas de clic droit). Remplace l'item flèches du
+  Backlog UX / board
+- [ ] Variantes (scénarios alternatifs) — déplacer les pièces pendant l'analyse pour bifurquer d'un
+  demi-coup et bâtir un historique à part. La nav respecte la variante, sauf → qui prend toujours la
+  ligne principale ; un geste dédié entre dans une variante. Affichage : idée — un bouton sur
+  `move-history__move` qui bascule `move-history__list` vers le scénario courant, un bouton par variante
+  pour ne rien perdre. Hors primaire : promouvoir une variante en ligne principale, la supprimer.
+  Export PGN des variantes : pas pour le moment (l'arbre est hors DTO)
 
 ### Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
 
@@ -302,8 +323,6 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
   et honore « local = 100 % hors ligne ». Préchargement + loading seulement si le bundle grossit
 - [ ] Spot discret des coordonnées de la case survolée — compléter l'illumination file/rangée de
   `cBoardFrame`, pas la doubler
-- [ ] Dessiner des flèches (clic droit glissé, à la Lichess) — calque SVG au-dessus du board,
-  mapping via `boardCoords`
 
 ## Backlog parties distantes
 
@@ -338,6 +357,14 @@ Effets de jeu à la chess.com — hors scope pour le moment, les idées s'accumu
   setting, profitera du SAN complet de la phase ⑤
 - [ ] Feedback quand on tente de bouger une pièce pendant que son roi est en échec
 - [ ] Effet de « flag » au timeout
+
+## Épic analyse moteur *(horizon — côté backend)*
+
+Évaluation moteur d'une partie — hors de l'analyse primaire ⑥ (manuelle). L'engine d'éval vivra côté
+backend Laravel ; le frontend ne fera qu'afficher ce qu'il reçoit.
+
+- [ ] Eval bar, meilleur coup, détection de gaffe / imprécision, annotations NAG (`!?`, `?!`) et
+  commentaires — sur les positions de l'historique et des variantes
 
 ## Nice-to-haves
 
