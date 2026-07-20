@@ -198,12 +198,36 @@ Les `GameMode` ont des impacts structurels — à garder en tête à chaque phas
   Un pat reste sans marque. La marque est apposée AVANT le `push` dans `game.moves` :
   une fois dans le tableau réactif, muter la référence brute passerait à côté du proxy.
   **L'oracle compare désormais le SAN complet, caractère pour caractère** — plus aucun filtre
-- [ ] Export PGN complet (en-têtes, résultat)
+- [x] Export PGN complet (en-têtes, résultat) — `engine/pgn.ts` pur (`buildPgn`/`buildMovetext`) lit les
+  `san` déjà stockés ; Seven Tag Roster (placeholders `?`/`-`) + `TimeControl` + `Termination` descriptif
+  dérivé de `GameResult` ; wrapping 80 colonnes ; l'oracle compare le movetext token par token ; bouton
+  « Copier PGN » dans `DevGamePanel`
 - [ ] Import / utilisation de PGN pour les scénarios de devs. Ajouter des scénarios de devs pour des tests de edges
   cases. Penser à une manière de garder les scénarios à tester simples accessible, et éventuellement une liste plus
   poussée pour des cas comme en passant qui fait un check-mat.
 
-### ⑥ Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
+### ⑥ Analyse primaire d'une partie
+
+- [ ] Permettre l'import d'un PGN, ou, une fois une partie terminée, tomber en analyse primaire.
+- [ ] Permettre de naviguer dans l'historique de coup d'une partie avec les flèches gauche et droite ou avec les
+  historiques SAN qui sont des boutons. La fleche en bas = nav direct vers la fin de la partie, fleche en haut = nav
+  directement au debut. Les horloges doivent suivre pour une partie terminée. Les SAN doivent avoir un feedback visuel
+  pour montrer quel position qu'on regarde.
+- [ ] Permettre de naviguer l'historique d'une partie pendant son déroulement, sans avoir tous les features de
+  l'analyse. Les horloges doivent toujours afficher le temps restant des joueurs en cours de partie.
+- [ ] Ajouter la possibilité de dessiner des flèches sur l'échiquier avec un clique droit "drag and drop". Les flèches
+  appartiennent à un "half-move". Un clique gauche efface les flèches.
+- [ ] Avec un simple clique droit, permettre de toggle le focus sur une case. Ce focus fait partie du système de
+  flèches : un clique gauche les efface et ils appartiennent à un demi-coup.
+- [ ] Scénarios alternatifs : pendant l'analyse, permettre de déplacer les pieces, comme durant une partie, afin de
+  bifurquer et de créer une historique à part entière à partir d'un demi-coup. Les variantes
+  respectent la nav, sauf qu'avec la flèche de droite, on va toujours prendre le scénario principal. Il faut donc penser
+  comment on affiche l'historique des scénarios alternatif. Idée : le move-history__move aurait un bouton qui change
+  complètement move-history__list pour le scénario courant (alternatif ou non.) Ce serait un bouton par scénario
+  alternatif pour ne pas perdre. Pour l'exportation PGN, on ne permet pas pour le moment d'exporter les scénarios
+  alternatifs.
+
+### Sync backend / websocket *(horizon — aura son propre roadmap côté backend Laravel)*
 
 - [ ] Backend = source de vérité (vrais ULID, arbitrage des coups, horloge serveur)
 - [ ] Identité des commandes : qui a le droit de jouer / accepter / refuser (sans objet en local — un
@@ -270,7 +294,7 @@ Features UI en marge des phases engine — elles ne les bloquent jamais.
   chevrons de coin façon target lock) ; cavalier = mini-flèche coudée en L (8 orientations) ;
   respecter `prefers-reduced-motion`
 - [ ] Ajout d'une fenêtre d'état quand une partie est terminée. Il faut montrer clairement le gagnant (si non nulle), la
-  raison, et ce qui est pertinent.
+  raison, et ce qui est pertinent. On pourrait aussi proposer d'exporter le PGN. La partie terminée tombe en analyse.
 - [ ] Parties en cours listées sur l'accueil + les rejoindre (plus tard : filtrées par compte).
   Survivre au refresh = persister la liste de coups et la rejouer — `replayMoves` (mode dev)
   est déjà cette mécanique

@@ -3,6 +3,7 @@ import {Chess} from 'chess.js'
 import {enPassantTarget, makeMove} from './game'
 import {legalDestinations} from './move'
 import {getBoardPieces} from './board'
+import {buildMovetext} from './pgn'
 import {createGameSession} from '@/composables/factories/gameFactory'
 import type {CreateGamePayload, Game, PieceType, SquareKey} from '@/types/chess'
 
@@ -90,6 +91,21 @@ function compareEnding(game: Game, oracle: Chess, context: string): void {
   }
 }
 
+// Our movetext must match chess.js token for token — move numbering included. The trailing
+// result token is dropped from both: chess.js keeps '*' even after mate, ours is the real
+// result (unit-tested separately). Whitespace is collapsed, so wrapping never matters.
+function compareMovetext(game: Game, oracle: Chess, context: string): void {
+  const ours = movetextBody(buildMovetext(game.moves, game.result))
+  const theirs = movetextBody(oracle.pgn().split('\n\n')[1] ?? '')
+  expect(ours, `movetext diverges — ${context}`).toBe(theirs)
+}
+
+function movetextBody(movetext: string): string {
+  const tokens = movetext.trim().split(/\s+/).filter(Boolean)
+  tokens.pop() // drop the trailing result token
+  return tokens.join(' ')
+}
+
 function playRandomGame(seed: number): void {
   const game = createGameSession(payload, 'oracle').game
   const oracle = new Chess()
@@ -101,6 +117,7 @@ function playRandomGame(seed: number): void {
     comparePosition(game, oracle, context)
     if (game.status === 'finished') {
       compareEnding(game, oracle, context)
+      compareMovetext(game, oracle, context)
       return
     }
 
@@ -128,6 +145,9 @@ function playRandomGame(seed: number): void {
       .toBe(oracleSan)
     played.push(`${from}${to}`)
   }
+
+  // The game hit MAX_PLIES without ending — the running movetext must still match.
+  compareMovetext(game, oracle, `seed ${seed}, after [${played.join(' ')}]`)
 }
 
 describe('engine vs chess.js — differential oracle', () => {

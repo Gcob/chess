@@ -181,6 +181,7 @@ export default {
       title: 'Dev',
       restart: 'Restart scenario',
       editSetup: 'Edit setup',
+      copyPgn: 'Copy PGN',
     },
     notFound: 'Game not found',
     notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',

@@ -21,6 +21,10 @@
           <RotateCcw :size="16" />
           {{ $t('game.dev.restart') }}
         </cButton>
+        <cButton variant="ter" @click="copyPgn">
+          <ClipboardCopy :size="16" />
+          {{ $t('game.dev.copyPgn') }}
+        </cButton>
       </div>
     </div>
   </div>
@@ -28,11 +32,12 @@
 
 <script lang="ts" setup>
 import {useRoute, useRouter} from 'vue-router'
-import {FlaskConical, RotateCcw} from 'lucide-vue-next'
+import {ClipboardCopy, FlaskConical, RotateCcw} from 'lucide-vue-next'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useNewGameStore} from '@/stores/useNewGameStore'
 import {useGamesStore} from '@/stores/useGamesStore'
 import {useGameLauncher} from '@/composables/useGameLauncher'
+import {buildPgn} from '@/engine/pgn'
 import {DEV_SCENARIOS} from '@/dev/scenarios'
 
 // In-game dev tooling: reseed a fresh game with a QA scenario without leaving the game page.
@@ -47,6 +52,17 @@ const {launch} = useGameLauncher()
 // The panel may show over a game launched without a scenario — settle a valid default once.
 if (!DEV_SCENARIOS.some(scenario => scenario.id === newGameStore.settings.scenarioId)) {
   newGameStore.settings.scenarioId = DEV_SCENARIOS[0]!.id
+}
+
+// Dev QA affordance: the current game as PGN, ready to paste into Lichess/chess.com to
+// verify the round-trip. Clipboard failure is swallowed — this is dev tooling.
+async function copyPgn() {
+  const session = gamesStore.get(String(route.params.id ?? ''))
+  if (!session) {
+    return
+  }
+
+  await navigator.clipboard.writeText(buildPgn(session.game))
 }
 
 // Restarting from here IS choosing the dev mode — the persisted form follows along.
@@ -89,11 +105,10 @@ async function restart() {
 
   &__buttons {
     display: flex;
+    flex-direction: column;
     gap: $spacing-2;
 
     :deep(.c-button) {
-      flex: 1;
-      padding: $spacing-2 $spacing-1;
       font-size: 0.8rem;
     }
   }

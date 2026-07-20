@@ -193,6 +193,7 @@ export default {
       title: 'Dev',
       restart: 'Relancer le scénario',
       editSetup: 'Modifier la partie',
+      copyPgn: 'Copier le PGN',
     },
     notFound: 'Partie introuvable',
     notFoundDesc: 'La session #{id} n\'existe pas ou est déjà terminée.',
