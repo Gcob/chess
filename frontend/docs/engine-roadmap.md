@@ -376,6 +376,17 @@ Non bloquants, à faire si le cœur nous en dit.
 - [ ] `npm run lint` est documenté dans CLAUDE.md mais le script n'existe pas dans `package.json` —
   configurer ESLint et l'ajouter, ou retirer la mention
 
+## Performance
+
+Baseline de vitesse de l'engine, figée par version via un tag git (`v1` = première mesure).
+
+- `npm run bench` — script `scripts/bench-engine.ts` (runner `vite-node`). Rejoue des positions
+  déterministes dans le vrai pipeline (`replayMoves` / `makeMove`) et mesure médiane + p95.
+- Un rapport horodaté par exécution dans `docs/perf/engine-bench-{Y_m_d-HH-MM}.md` — on commit celui
+  qui sert de baseline, puis on pose le tag dessus.
+- KPI couverts : partie complète (headline), `legalDestinations`, `hasAnyLegalMove` (vivant + mat),
+  `applyMove`.
+
 ## Dettes connues
 
 - **Board non sérialisable** — `Square.neighbors` forme un graphe circulaire ; le format wire sera la liste

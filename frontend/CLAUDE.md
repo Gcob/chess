@@ -94,6 +94,7 @@ Ne jamais laisser un test échouer silencieusement.
 
 - `npm run dev` — serveur de dev
 - `npm run test:unit` — tests unitaires (Vitest)
+- `npm run bench` — benchmark de l'engine (rapport horodaté dans `docs/perf/`)
 - `npm run test:ui` — tests UI Playwright (Chrome + mobile + tablette)
 - `npm run test:features` — tests features Playwright (Chrome)
 - `npm run test:e2e` — tests E2E flows Playwright (3 navigateurs)
