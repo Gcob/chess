@@ -386,6 +386,11 @@ Baseline de vitesse de l'engine, figée par version via un tag git (`v1` = premi
   qui sert de baseline, puis on pose le tag dessus.
 - KPI couverts : partie complète (headline), `legalDestinations`, `hasAnyLegalMove` (vivant + mat),
   `applyMove`.
+- **Perft / NPS** — le KPI de force du moteur : `perft(D)` génère et joue tous les coups légaux
+  jusqu'à profondeur `D`, NPS = nœuds / seconde. Deux positions codées en dur : départ et Kiwipete
+  (Position 2, chargée via un mini-lecteur FEN interne au bench). Les comptes sont validés contre la
+  table universelle (départ perft(4) = 197 281 ; Kiwipete perft(4) = 4 085 603) — un écart = bug de
+  légalité. Le perft **prouve** la conformité FIDE de la phase ④.
 
 ## Dettes connues
 
