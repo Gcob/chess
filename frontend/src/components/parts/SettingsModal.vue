@@ -50,6 +50,11 @@
       </label>
 
       <label class="c-label">
+        <span>{{ $t('settings.autoPromoteToQueen') }}</span>
+        <input type="checkbox" class="c-checkbox" v-model="store.settings.autoPromoteToQueen" />
+      </label>
+
+      <label class="c-label">
         <span>{{ $t('settings.devMode') }}</span>
         <input type="checkbox" class="c-checkbox" v-model="store.settings.devMode" />
       </label>

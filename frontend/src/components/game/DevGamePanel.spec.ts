@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, it, expect, beforeEach, vi} from 'vitest'
 import {flushPromises, mount} from '@vue/test-utils'
 import {createPinia, setActivePinia} from 'pinia'
 import {createI18n} from 'vue-i18n'
@@ -9,6 +9,7 @@ import {useSettingsStore} from '@/stores/useSettingsStore'
 import {useNewGameStore} from '@/stores/useNewGameStore'
 import {useGamesStore} from '@/stores/useGamesStore'
 import {useGameLauncher} from '@/composables/useGameLauncher'
+import {buildPgn} from '@/engine/pgn'
 import {DEV_SCENARIOS} from '@/dev/scenarios'
 
 // Keys render as themselves — the spec asserts behaviour, never copy.
@@ -61,5 +62,15 @@ describe('DevGamePanel', () => {
     expect(gamesStore.get(session.id)).toBeUndefined()
     expect(gamesStore.get(newId)!.game.moves.length).toBeGreaterThan(0)
     expect(useNewGameStore().settings.mode).toBe('dev')
+  })
+
+  it('copies the current game PGN to the clipboard', async () => {
+    useSettingsStore().settings.devMode = true
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {value: {writeText}, configurable: true})
+    const {wrapper, session} = await mountPanel()
+    await wrapper.findAll('button').find(b => b.text().includes('copyPgn'))!.trigger('click')
+    await flushPromises()
+    expect(writeText).toHaveBeenCalledWith(buildPgn(session.game))
   })
 })

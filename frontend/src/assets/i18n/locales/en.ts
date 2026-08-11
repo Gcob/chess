@@ -104,6 +104,7 @@ export default {
     boardTheme: 'Board theme',
     highlightLastMove: 'Highlight last move',
     showLegalMoves: 'Show legal moves',
+    autoPromoteToQueen: 'Always promote to queen',
     devMode: 'Developer mode',
     boardThemes: {
       wood: 'Wood',
@@ -180,6 +181,7 @@ export default {
       title: 'Dev',
       restart: 'Restart scenario',
       editSetup: 'Edit setup',
+      copyPgn: 'Copy PGN',
     },
     notFound: 'Game not found',
     notFoundDesc: 'Session #{id} doesn\'t exist or has already ended.',

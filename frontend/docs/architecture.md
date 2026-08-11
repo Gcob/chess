@@ -185,7 +185,9 @@ seulement après un tap.
 > dans `game.ts`), `engine/moveRecord.ts` (classe `MoveRecord` — le coup lu contre la position
 > d'AVANT : capture, roque, en passant, SAN, et `toDto()` qui en fait un `Move` plat ; réponses
 > paresseuses, donc valide tant que le board n'a pas muté), `engine/san.ts` (notation —
-> désambiguïsation par légalité, pas par géométrie), `engine/material.ts` (captures dérivées).
+> désambiguïsation par légalité, pas par géométrie), `engine/material.ts` (captures dérivées),
+> `engine/pgn.ts` (export PGN pur — `buildPgn`/`buildMovetext` sur le DTO, en-têtes STR + extras,
+> movetext numéroté et wrappé à 80 colonnes).
 
 ## Vue de partie (game view)
 

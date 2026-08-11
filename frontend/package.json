@@ -11,6 +11,7 @@
         "preview": "vite preview",
         "preview:public": "vite preview --host",
         "test:unit": "vitest",
+        "bench": "vite-node scripts/bench-engine.ts",
         "test:ui": "playwright test --project=ui-desktop --project=ui-mobile --project=ui-tablet",
         "test:features": "playwright test --project=features",
         "test:e2e": "playwright test --project=flows-chromium --project=flows-firefox --project=flows-webkit",
@@ -54,6 +55,7 @@
         "sass-embedded": "^1.98.0",
         "typescript": "~5.9.3",
         "vite": "^7.3.1",
+        "vite-node": "^6.0.0",
         "vite-plugin-vue-devtools": "^8.0.6",
         "vitest": "^4.0.18",
         "vue-tsc": "^3.2.5"
