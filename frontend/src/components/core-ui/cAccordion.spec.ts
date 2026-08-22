@@ -65,41 +65,70 @@ describe('cAccordion', () => {
     expect(wrapper.find('.c-accordion__panel').attributes('id')).toBe(controls)
   })
 
-  it('scrolls itself into view when it opens', async () => {
+  // The panel opens through a height transition. Scrolling before it finishes aims past a
+  // scrollHeight that does not exist yet, the browser clamps to the old bottom, and the section
+  // never reaches the top — which reads to a user as "the scroll stopped working".
+  it('waits for the panel to finish opening before scrolling', async () => {
+    vi.useFakeTimers()
     const wrapper = mountAccordion()
+
     await wrapper.find('.c-accordion__trigger').trigger('click')
     await wrapper.vm.$nextTick()
+    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled()
 
+    await vi.advanceTimersByTimeAsync(400)
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith(
       expect.objectContaining({block: 'start'}),
     )
+    vi.useRealTimers()
+  })
+
+  it('scrolls as soon as the transition reports it is done', async () => {
+    vi.useFakeTimers()
+    const wrapper = mountAccordion()
+
+    await wrapper.find('.c-accordion__trigger').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    wrapper.find('.c-accordion__panel').element.dispatchEvent(new Event('transitionend'))
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
   it('does not scroll when it closes', async () => {
+    vi.useFakeTimers()
     const wrapper = mountAccordion({open: true})
     await wrapper.find('.c-accordion__trigger').trigger('click')
-    await wrapper.vm.$nextTick()
+    await vi.advanceTimersByTimeAsync(400)
 
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
   it('stays put when scrollOnOpen is off', async () => {
+    vi.useFakeTimers()
     const wrapper = mountAccordion({scrollOnOpen: false})
     await wrapper.find('.c-accordion__trigger').trigger('click')
-    await wrapper.vm.$nextTick()
+    await vi.advanceTimersByTimeAsync(400)
 
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
   it('jumps instead of gliding under prefers-reduced-motion', async () => {
+    vi.useFakeTimers()
     window.matchMedia = vi.fn().mockReturnValue({matches: true}) as unknown as typeof window.matchMedia
     const wrapper = mountAccordion()
+
     await wrapper.find('.c-accordion__trigger').trigger('click')
-    await wrapper.vm.$nextTick()
+    await vi.advanceTimersByTimeAsync(400)
 
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith(
       expect.objectContaining({behavior: 'auto'}),
     )
+    vi.useRealTimers()
   })
 
   // Sticky positioning dies inside an `overflow: hidden` ancestor, and the collapsing panel

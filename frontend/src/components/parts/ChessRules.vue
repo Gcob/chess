@@ -66,19 +66,17 @@ const TIPS = [
 
       <div class="chess-rules__cards">
         <article v-for="piece in PIECES" :key="piece" class="chess-rules__card">
+          <h4 class="chess-rules__card-title chess-rules__card-title--piece">
+            <img
+              class="chess-rules__sprite"
+              :src="getPieceImage('white', piece)"
+              alt=""
+              aria-hidden="true"
+            >
+            {{ $t(`chessRules.${piece}`) }}
+          </h4>
           <RuleDiagram v-bind="PIECE_DIAGRAMS[piece]!" />
-          <div class="chess-rules__card-text">
-            <h4 class="chess-rules__card-title chess-rules__card-title--piece">
-              <img
-                class="chess-rules__sprite"
-                :src="getPieceImage('white', piece)"
-                alt=""
-                aria-hidden="true"
-              >
-              {{ $t(`chessRules.${piece}`) }}
-            </h4>
-            <p>{{ $t(`chessRules.${piece}Text`) }}</p>
-          </div>
+          <p class="chess-rules__card-body">{{ $t(`chessRules.${piece}Text`) }}</p>
         </article>
       </div>
     </cAccordion>
@@ -128,11 +126,9 @@ const TIPS = [
 
       <div class="chess-rules__cards">
         <article v-for="special in SPECIALS" :key="special" class="chess-rules__card">
+          <h4 class="chess-rules__card-title">{{ $t(`chessRules.${special}`) }}</h4>
           <RuleDiagram v-bind="SPECIAL_DIAGRAMS[special]!" />
-          <div class="chess-rules__card-text">
-            <h4 class="chess-rules__card-title">{{ $t(`chessRules.${special}`) }}</h4>
-            <p>{{ $t(`chessRules.${special}Text`) }}</p>
-          </div>
+          <p class="chess-rules__card-body">{{ $t(`chessRules.${special}Text`) }}</p>
         </article>
       </div>
     </cAccordion>
@@ -147,13 +143,11 @@ const TIPS = [
            tips are ordered, and the first one is the one that decides beginner games. -->
       <ul class="chess-rules__tips">
         <li v-for="tip in TIPS" :key="tip.key" class="chess-rules__card chess-rules__tip">
+          <h4 class="chess-rules__card-title chess-rules__tip-title">
+            {{ $t(`chessRules.${tip.key}`) }}
+          </h4>
           <RuleDiagram v-if="tip.diagram" v-bind="tip.diagram" />
-          <div class="chess-rules__card-text">
-            <h4 class="chess-rules__card-title chess-rules__tip-title">
-              {{ $t(`chessRules.${tip.key}`) }}
-            </h4>
-            <p>{{ $t(`chessRules.${tip.key}Text`) }}</p>
-          </div>
+          <p class="chess-rules__card-body">{{ $t(`chessRules.${tip.key}Text`) }}</p>
         </li>
       </ul>
     </cAccordion>
@@ -169,22 +163,18 @@ const TIPS = [
       <h4 class="chess-rules__group">{{ $t('chessRules.endWinTitle') }}</h4>
       <ul class="chess-rules__endings">
         <li v-for="reason in WIN_REASONS" :key="reason" class="chess-rules__card">
+          <h5 class="chess-rules__card-title">{{ $t(`chessRules.end${reason}`) }}</h5>
           <RuleDiagram v-if="END_DIAGRAM_FOR[reason]" v-bind="END_DIAGRAM_FOR[reason]!" />
-          <div class="chess-rules__card-text">
-            <h5 class="chess-rules__card-title">{{ $t(`chessRules.end${reason}`) }}</h5>
-            <p>{{ $t(`chessRules.end${reason}Text`) }}</p>
-          </div>
+          <p class="chess-rules__card-body">{{ $t(`chessRules.end${reason}Text`) }}</p>
         </li>
       </ul>
 
       <h4 class="chess-rules__group">{{ $t('chessRules.endDrawTitle') }}</h4>
       <ul class="chess-rules__endings">
         <li v-for="reason in DRAW_REASONS" :key="reason" class="chess-rules__card">
+          <h5 class="chess-rules__card-title">{{ $t(`chessRules.end${reason}`) }}</h5>
           <RuleDiagram v-if="END_DIAGRAM_FOR[reason]" v-bind="END_DIAGRAM_FOR[reason]!" />
-          <div class="chess-rules__card-text">
-            <h5 class="chess-rules__card-title">{{ $t(`chessRules.end${reason}`) }}</h5>
-            <p>{{ $t(`chessRules.end${reason}Text`) }}</p>
-          </div>
+          <p class="chess-rules__card-body">{{ $t(`chessRules.end${reason}Text`) }}</p>
         </li>
       </ul>
     </cAccordion>
@@ -226,34 +216,72 @@ const TIPS = [
     margin-top: $spacing-3;
   }
 
-  // A diagram beside its text on a wide modal, stacked on a narrow one.
   &__cards {
     display: flex;
     flex-direction: column;
     gap: $spacing-6;
   }
 
+  // Mobile reads in DOM order — title, diagram, then prose — because naming the thing before
+  // showing it is what makes the diagram legible. Wide screens re-place the same three children
+  // on a grid: board on the left spanning both rows, title and prose stacked on the right.
+  // A grid (not a flex row) is what lets the title move across the layout without moving in the
+  // DOM, so the reading order stays right on every screen.
   &__card {
     display: flex;
     flex-direction: column;
-    gap: $spacing-3;
     align-items: center;
+    gap: $spacing-3;
+
+    // The prose and the title span the full width on mobile; only the board is centred.
+    > .chess-rules__card-title,
+    > .chess-rules__card-body {
+      align-self: stretch;
+    }
 
     @include md {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: $spacing-5;
+      display: grid;
+      // A DEFINITE first column: the diagram sizes itself with width:100%, which collapses to
+      // zero inside an `auto` track (the track waits on the content, the content waits on the
+      // track). The second track takes whatever is left.
+      grid-template-columns: $rule-diagram-size 1fr;
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      column-gap: $spacing-5;
+      row-gap: $spacing-1;
 
-      // Hold the board at its own size and give every remaining pixel to the prose.
       .rule-diagram {
-        flex: 0 0 auto;
+        grid-column: 1;
+        grid-row: 1 / -1;
       }
     }
   }
 
-  &__card-text {
-    flex: 1;
-    min-width: 0;
+  &__card-title {
+    @include md {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+
+  &__card-body {
+    @include md {
+      grid-column: 2;
+      grid-row: 2;
+    }
+  }
+
+  // A card with no diagram has nothing in the first column: collapse it so the text does not
+  // sit behind a phantom gutter.
+  &__card:not(:has(.rule-diagram)) {
+    @include md {
+      grid-template-columns: 1fr;
+
+      .chess-rules__card-title,
+      .chess-rules__card-body {
+        grid-column: 1;
+      }
+    }
   }
 
   &__sprite {
@@ -270,7 +298,7 @@ const TIPS = [
   }
 
   &__card-title {
-    margin-bottom: $spacing-1;
+    align-self: start;
     font-family: $font-family-display;
     font-size: $font-size-base;
     font-weight: $font-weight-semibold;

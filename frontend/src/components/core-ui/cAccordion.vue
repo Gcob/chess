@@ -21,6 +21,36 @@ const emit = defineEmits<{ toggle: [open: boolean] }>()
 const isOpen = ref(props.open)
 const panelId = useId()
 const root = ref<HTMLElement | null>(null)
+const panel = ref<HTMLElement | null>(null)
+
+// Matches $transition-base, plus a margin. Used as the fallback deadline when transitionend
+// never fires — reduced motion, a hidden tab, or a browser that skips the transition.
+const PANEL_TRANSITION_MS = 300
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+}
+
+// The panel grows through a height transition. Scrolling before it finishes aims past a
+// scrollHeight that does not exist YET, so the browser clamps the scroll to the old bottom and
+// the section never reaches the top — which reads as "the scroll stopped working".
+function panelSettled(): Promise<void> {
+  const el = panel.value
+  if (!el) {
+    return Promise.resolve()
+  }
+
+  return new Promise(resolve => {
+    const done = () => {
+      el.removeEventListener('transitionend', done)
+      clearTimeout(timer)
+      resolve()
+    }
+
+    const timer = setTimeout(done, PANEL_TRANSITION_MS)
+    el.addEventListener('transitionend', done)
+  })
+}
 
 async function toggle() {
   isOpen.value = !isOpen.value
@@ -30,12 +60,13 @@ async function toggle() {
     return
   }
 
-  // After the panel has been laid out, or the scroll aims at the collapsed height. Optional
-  // call: jsdom has no scrollIntoView, and neither do some embedded webviews.
   await nextTick()
+  await panelSettled()
+
+  // Optional call: jsdom has no scrollIntoView, and neither do some embedded webviews.
   root.value?.scrollIntoView?.({
     block: 'start',
-    behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
   })
 }
 </script>
@@ -59,7 +90,7 @@ async function toggle() {
     <!-- Height animates through grid-template-rows 0fr → 1fr: no JS measuring, and it works
          whatever the content height turns out to be. The inner wrapper must keep overflow
          hidden, otherwise the content spills while the row is collapsed. -->
-    <div :id="panelId" class="c-accordion__panel" role="region">
+    <div :id="panelId" ref="panel" class="c-accordion__panel" role="region">
       <div class="c-accordion__panel-inner">
         <div class="c-accordion__content">
           <slot />

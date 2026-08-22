@@ -191,7 +191,7 @@ onBeforeUnmount(() => clearTimeout(timer))
   // mismatched; without the cap, a diagram in a row swallows the whole line and squeezes the
   // text beside it into an unreadable column.
   width: 100%;
-  max-width: 17rem;
+  max-width: $rule-diagram-size;
   margin: 0;
 
   &__board {
@@ -200,7 +200,7 @@ onBeforeUnmount(() => clearTimeout(timer))
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
     width: 100%;
-    max-width: 17rem;
+    max-width: $rule-diagram-size;
     aspect-ratio: 1;
     border-radius: $border-radius-base;
     overflow: hidden;

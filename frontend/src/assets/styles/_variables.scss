@@ -89,6 +89,11 @@ $border-radius-lg: 0.75rem;  // 12px
 $border-radius-xl: 1rem;     // 16px
 $border-radius-full: 9999px;
 
+// Side of a rules diagram board. Shared: RuleDiagram caps itself with it, and the layouts that
+// place a diagram beside prose size their column with it — a percentage width inside an `auto`
+// grid track resolves to zero, so that column needs a definite size.
+$rule-diagram-size: 17rem;
+
 $border-width-thin: 1px;
 $border-width-base: 2px;
 
