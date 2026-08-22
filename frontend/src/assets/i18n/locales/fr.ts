@@ -156,18 +156,10 @@ export default {
     themeLight: 'Clair',
     themeDark: 'Sombre',
     sound: 'Effets sonores',
-    boardTheme: 'Thème du plateau',
     highlightLastMove: 'Surligner le dernier coup',
     showLegalMoves: 'Afficher les coups légaux',
     autoPromoteToQueen: 'Toujours promouvoir en dame',
     devMode: 'Mode développeur',
-    boardThemes: {
-      wood: 'Bois',
-    },
-    pieceStyle: 'Style des pièces',
-    pieceThemes: {
-      classic: 'Classique',
-    },
   },
   home: {
     subtitle: 'Un jeu d\'échecs simple construit avec Vue 3',

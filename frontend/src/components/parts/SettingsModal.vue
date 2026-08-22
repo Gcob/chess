@@ -22,24 +22,6 @@
       </div>
 
       <label class="c-label">
-        <span>{{ $t('settings.boardTheme') }}</span>
-        <select class="c-select" v-model="store.settings.boardThemeId">
-          <option v-for="opt in boardThemeOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </label>
-
-      <label class="c-label">
-        <span>{{ $t('settings.pieceStyle') }}</span>
-        <select class="c-select" v-model="store.settings.pieceThemeId">
-          <option v-for="opt in pieceThemeOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </label>
-
-      <label class="c-label">
         <span>{{ $t('settings.highlightLastMove') }}</span>
         <input type="checkbox" class="c-checkbox" v-model="store.settings.highlightLastMove" />
       </label>
@@ -67,18 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import {computed} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {useSettingsStore} from '@/stores/useSettingsStore'
-import {BoardThemes, PieceThemes} from '@/types/look-and-feel'
-import {enumToOptions} from '@/utils/enumOptions'
 import LocaleFlag from '@/components/parts/LocaleFlag.vue'
 
 defineProps<{ modelValue: boolean }>()
 defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
 const store = useSettingsStore()
-const {t, locale} = useI18n()
+const {locale} = useI18n()
 
 // Endonyms — a language names itself the same way regardless of the current UI locale.
 const languages = [
@@ -90,9 +69,6 @@ function setLocale(code: 'fr' | 'en') {
   locale.value = code
   localStorage.setItem('locale', code)
 }
-
-const boardThemeOptions = computed(() => enumToOptions(BoardThemes, 'settings.boardThemes', t as (key: string) => string))
-const pieceThemeOptions = computed(() => enumToOptions(PieceThemes, 'settings.pieceThemes', t as (key: string) => string))
 </script>
 
 <style lang="scss" scoped>

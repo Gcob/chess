@@ -144,18 +144,10 @@ export default {
     themeLight: 'Light',
     themeDark: 'Dark',
     sound: 'Sound effects',
-    boardTheme: 'Board theme',
     highlightLastMove: 'Highlight last move',
     showLegalMoves: 'Show legal moves',
     autoPromoteToQueen: 'Always promote to queen',
     devMode: 'Developer mode',
-    boardThemes: {
-      wood: 'Wood',
-    },
-    pieceStyle: 'Piece style',
-    pieceThemes: {
-      classic: 'Classic',
-    },
   },
   home: {
     subtitle: 'A simple chess game built with Vue 3',
