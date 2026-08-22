@@ -1,10 +1,37 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="fr">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+
+    <title>Échecs</title>
+    <meta name="description" content="Un jeu d'échecs complet, écrit de A à Z : moteur maison, aucune bibliothèque d'échecs.">
+
+    <!-- Social previews. Deliberately STATIC and identical on every route: link crawlers
+         (Facebook, LinkedIn, Discord, Slack, iMessage) fetch the HTML without ever running the
+         JavaScript, so per-route tags injected by Vue would never be seen. Making them differ
+         per page would require prerendering or server-side rendering. -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Échecs">
+    <meta property="og:title" content="Échecs">
+    <meta property="og:description" content="Un jeu d'échecs complet, écrit de A à Z : moteur maison, aucune bibliothèque d'échecs.">
+    <meta property="og:url" content="https://chess.impecloud.com/">
+    <!-- Absolute URL required: crawlers do not resolve relative paths. Served from /public, so
+         the filename has no build hash and the link stays valid across deploys. -->
+    <meta property="og:image" content="https://chess.impecloud.com/og-image.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Un cavalier d'échecs bleu en low poly sur fond sombre">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:locale:alternate" content="en_CA">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Échecs">
+    <meta name="twitter:description" content="Un jeu d'échecs complet, écrit de A à Z : moteur maison, aucune bibliothèque d'échecs.">
+    <meta name="twitter:image" content="https://chess.impecloud.com/og-image.png">
+    <meta name="twitter:image:alt" content="Un cavalier d'échecs bleu en low poly sur fond sombre">
   </head>
   <body>
     <div id="app"></div>
