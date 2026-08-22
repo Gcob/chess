@@ -77,12 +77,60 @@ export default {
   },
   about: {
     title: 'About',
-    motivation: 'Motivation',
-    motivationText: 'This project started as a personal challenge to build a fully functional chess game from scratch. The goal is to deepen my understanding of game logic, Vue 3, and modern frontend architecture all while shipping something I\'m proud of.',
-    stack: 'Tech Stack',
-    stackText: 'Built with Vue 3, TypeScript, Pinia, and Vite. Styled with SCSS and a custom design system. Tested with Vitest and Playwright.',
-    roadmap: 'Roadmap',
-    roadmapText: 'Planned features include: full chess rule enforcement, move history, PGN export, AI opponent, and online multiplayer.',
+    dream: 'A teenage dream',
+    dreamStartText: 'A teenage dream finally realised, twenty years later. One of my very first coding challenges was trying to program a chess game. Back then I took my shot with Flash and ActionScript 1.0. I still remember what a disaster it was: spaghetti code full of copy-paste, in the thick of the Dunning-Kruger effect.',
+    dreamNieceText: 'The idea resurfaced last year, following a conversation with my niece. She wanted to learn programming with Unity, and she absolutely insisted we make a chess game. That moment dropped me straight back into my old challenge, and I wondered: what if I took it on again? I knew that with the skills I have today, I could pull it off.',
+    dreamProjectText: 'Getting going on a personal project is hard sometimes: it takes giving yourself the time and taking the pressure off. So I started by modelling the domain with my niece, then a second time for myself. I did not want to lean on a ready-made solution like chess.js, which is already a full chess engine. The goal was to carry a project end to end with technologies I enjoy, and to bring together two hobbies I love: chess and programming.',
+    engine: 'A 100% homemade engine',
+    engineHardText: 'Writing the engine myself turned out to be far harder, and far longer, than I imagined. Chess looks like it has simple rules: remembering how each piece moves should be enough. That is the trap! Cross every piece\'s movement with every special rule and you face an enormous spread of conditions and edge cases.',
+    engineBlindText: 'I also wanted to build it without looking at existing solutions. I had no idea where to start, and I deliberately wrote code without consulting the field\'s proven approaches. AI did help along the way, of course, but I never asked it to do the work in my place. I took the time to structure the frontend in layers, deciding where each kind of logic would live: Vue components, composables and engine. I wanted to go through the real design problems.',
+    engineCompareText: 'Once the engine was finished, I finally went to see how others had done it, and compared. I had walked into nearly every beginner mistake! Where a competition engine keeps incremental state, mine rebuilds its objects every time the position is queried. That is a computing cost taken on purpose, in exchange for code that reads.',
+    engineTestedText: 'What it does have is end-to-end testing. During development, chess.js served as referee, as a development dependency only and never shipped: random games are played in parallel by both engines, and every position is compared piece by piece. As it stands, this engine would hold up in an official game without flinching.',
+    engineClosingText: 'At heart, this project brings my hobbies together with my trade. What drives me is solving problems, being in the thinking, the architecture and the quality control. I like owning a project end to end.',
+    tech: 'Frontend technical details',
+    techIntro: 'The layers mentioned above, and the decisions that hold the whole thing together.',
+    techPoints: {
+      noDeps: {
+        title: 'No chess dependency',
+        text: 'No chess.js or equivalent. The rules, move legality, pins, detection of checkmate, stalemate, draws by threefold repetition or insufficient material, move notation and PGN export are all written by hand.',
+      },
+      layers: {
+        title: 'An engine that knows nothing about Vue',
+        text: 'The game logic lives in a layer of pure TypeScript: flat data in, flat data out, zero Vue imports. It runs without a browser, so it tests fast and can be reused as-is by an AI opponent or a server. The composables are thin reactive adapters on top, and the components only ever display.',
+      },
+      reactivity: {
+        title: 'Reactivity as a given, never as a patch',
+        text: 'Every game is wrapped in a reactive object at birth, in the store that registers it. It is always that proxy travelling around, never the raw reference. Mutating the game from anywhere, the engine, a test or a future websocket, updates the display with no manual trigger at all. If something does not react, that is a leak to fix at the source, never to work around.',
+      },
+      viewDto: {
+        title: 'One single prop for the whole game page',
+        text: 'A composable assembles one view object (board, orientation, clocks, legal moves, commands) that the page passes as a single prop to every section. No prop drilling, no events bubbling level by level. Differences between game modes are decided in that one place instead of scattering through the components.',
+      },
+      objects: {
+        title: 'Objects that wrap the data, never duplicate it',
+        text: 'Inside the engine, state lives in the flat data and behaviour lives in classes pointing at it: the board, the square, the piece, the legality pipeline, the history. Those objects are born and die within a single position, are never stored, and the public interface stays functions over the data. The result: no parallel model to keep in sync.',
+      },
+      strategy: {
+        title: 'One class per movement type',
+        text: 'Ways of moving are interchangeable strategies, with a single place mapping a piece to its movement types. Legality is a pipeline of its own: geometry, king safety, castling, pins, en passant, answering a check. One organ per question.',
+      },
+      tests: {
+        title: 'Tested at three levels',
+        text: 'Over 500 unit tests across the engine and the components, end-to-end tests split into three families (pages, features, full journeys), and a benchmark counting positions computed per second to catch performance regressions.',
+      },
+      docs: {
+        title: 'Help that cannot lie',
+        text: 'The diagrams in the "How to play" window do not redraw the rules: they set up a real position and ask the engine where the pieces are allowed to go. Tests check that every diagram still demonstrates what it claims, for instance that a pinned piece truly has no legal move.',
+      },
+      polish: {
+        title: 'Comfort is not optional',
+        text: 'Hand-rolled drag and drop that tells clicking to move apart from dragging, and adapts to a thumb on mobile. Light and dark themes, independent piece and board themes, an interface in French and English with grammatical gender agreement, and every animation stepping aside when the system asks for less motion.',
+      },
+    },
+    stack: 'Tools',
+    stackText: 'Vue 3 with the Composition API, TypeScript in strict mode, Pinia, Vite, SCSS with a homemade design system, Vitest and Playwright.',
+    roadmap: 'What comes next',
+    roadmapText: 'An AI opponent and online play, reusing the engine as it stands.',
   },
   privacy: {
     title: 'Privacy Policy',

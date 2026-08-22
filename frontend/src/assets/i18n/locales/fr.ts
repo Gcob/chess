@@ -89,12 +89,60 @@ export default {
   },
   about: {
     title: 'À propos',
-    motivation: 'Motivation',
-    motivationText: 'Ce projet est né d\'un défi personnel : construire un jeu d\'échecs complet from scratch. L\'objectif est d\'approfondir ma compréhension de la logique de jeu, de Vue 3 et de l\'architecture frontend moderne tout en livrant quelque chose dont je suis fier.',
-    stack: 'Stack technique',
-    stackText: 'Construit avec Vue 3, TypeScript, Pinia et Vite. Stylisé avec SCSS et un design system maison. Testé avec Vitest et Playwright.',
-    roadmap: 'Feuille de route',
-    roadmapText: 'Fonctionnalités prévues : validation complète des règles des échecs, historique des coups, export PGN, adversaire IA et multijoueur en ligne.',
+    dream: 'Un rêve d\'adolescent',
+    dreamStartText: 'C\'est un rêve d\'adolescent enfin réalisé, vingt ans plus tard. L\'un de mes tout premiers défis de code a été d\'essayer de programmer un jeu d\'échecs. À l\'époque, j\'ai tenté ma chance avec Flash et ActionScript 1.0. Je me rappelle à quel point c\'était un désastre de code spaghetti rempli de copier-coller, en plein effet Dunning-Kruger.',
+    dreamNieceText: 'L\'idée a refait surface l\'an dernier, à la suite d\'une discussion avec ma nièce. Elle voulait apprendre la programmation avec Unity, et elle tenait absolument à ce qu\'on fasse un jeu d\'échecs. Ce moment m\'a replongé directement dans mon vieux défi, et je me suis demandé : et si je le relevais de nouveau ? Je savais qu\'avec mes compétences d\'aujourd\'hui, j\'étais capable de réussir.',
+    dreamProjectText: 'Se mobiliser pour un projet personnel, c\'est parfois difficile : il faut se donner du temps et s\'enlever de la pression. J\'ai donc commencé par concevoir un premier modèle du domaine avec ma nièce, puis un deuxième pour moi. Je ne voulais pas m\'appuyer sur une solution toute faite comme chess.js, qui est déjà un moteur d\'échecs complet : l\'objectif était de mener un projet de A à Z avec des technologies que j\'aime, et de réunir deux passe-temps que j\'adore, les échecs et la programmation.',
+    engine: 'Un moteur 100 % maison',
+    engineHardText: 'Écrire le moteur moi-même a été beaucoup plus difficile et beaucoup plus long que je l\'imaginais. Les échecs ont l\'air d\'avoir des règles simples : il suffirait de se rappeler comment chaque pièce se déplace. C\'est un piège ! En croisant les déplacements de chaque pièce avec toutes les règles particulières, on se retrouve devant un éventail immense de conditions et de cas limites.',
+    engineBlindText: 'J\'ai aussi voulu le construire sans regarder les solutions existantes. Je n\'avais aucune idée par où commencer, et j\'ai volontairement programmé sans consulter les approches éprouvées du domaine. J\'ai bien sûr été aidé par l\'IA pendant le développement, mais sans jamais lui demander de tout faire à ma place. J\'ai pris le temps de structurer le frontend en couches, en décidant où vivrait chaque logique : composants Vue, composables et moteur. Je voulais vivre les vrais défis de conception.',
+    engineCompareText: 'Une fois le moteur terminé, je suis enfin allé voir comment les autres s\'y prenaient, pour me comparer. J\'étais passé par presque toutes les erreurs de débutant ! Là où un moteur de compétition entretient un état incrémental, le mien reconstruit ses objets à chaque interrogation de la position. C\'est un coût de calcul assumé, en échange d\'un code qui se lit.',
+    engineTestedText: 'En revanche, il est testé de bout en bout. Pendant le développement, chess.js a servi d\'arbitre, en dépendance de développement seulement et jamais livrée : des parties aléatoires sont jouées en parallèle par les deux moteurs, et chaque position est comparée pièce par pièce. Aujourd\'hui, ce moteur tiendrait une partie officielle sans broncher.',
+    engineClosingText: 'Au fond, ce projet réunit mes loisirs et mon métier. Ce qui me passionne, c\'est de résoudre des problèmes, d\'être dans la réflexion, l\'architecture et le contrôle qualité. J\'aime être propriétaire d\'un projet d\'un bout à l\'autre.',
+    tech: 'Détails techniques frontend',
+    techIntro: 'Les couches mentionnées plus haut, et les partis pris qui font tenir le tout.',
+    techPoints: {
+      noDeps: {
+        title: 'Aucune dépendance d\'échecs',
+        text: 'Pas de chess.js ni d\'équivalent. Les règles, la légalité des coups, le clouage, la détection du mat, du pat, de la nulle par triple répétition ou par matériel insuffisant, la notation des coups et l\'export PGN sont écrits à la main.',
+      },
+      layers: {
+        title: 'Un moteur qui ne connaît pas Vue',
+        text: 'La logique de jeu vit dans une couche de TypeScript pur : donnée plate en entrée, donnée plate en sortie, zéro import de Vue. Elle tourne sans navigateur, donc elle se teste vite et pourra servir telle quelle à un adversaire IA ou à un serveur. Les composables sont de minces adaptateurs réactifs par-dessus, et les composants ne font qu\'afficher.',
+      },
+      reactivity: {
+        title: 'La réactivité comme acquis, jamais comme un plaster',
+        text: 'Chaque partie est enveloppée dans un objet réactif dès sa naissance, dans le magasin qui l\'enregistre. C\'est toujours ce proxy qui circule, jamais la référence brute. Muter la partie depuis n\'importe où, le moteur, un test ou un futur websocket, met l\'affichage à jour sans le moindre déclencheur manuel. Si quelque chose ne réagit pas, c\'est une fuite à corriger à la source, jamais à contourner.',
+      },
+      viewDto: {
+        title: 'Une seule prop pour toute la page de jeu',
+        text: 'Un composable assemble un objet de vue unique (plateau, orientation, horloges, coups légaux, commandes) que la page passe en une seule prop à toutes ses sections. Aucun passage de props en cascade, aucun événement qui remonte de niveau en niveau. Les différences entre les modes de jeu se décident à cet endroit précis, au lieu de se disperser dans les composants.',
+      },
+      objects: {
+        title: 'Des objets qui enveloppent la donnée, jamais qui la doublent',
+        text: 'Dans le moteur, l\'état vit dans la donnée plate et le comportement dans des classes qui pointent dessus : l\'échiquier, la case, la pièce, le pipeline de légalité, l\'historique. Ces objets naissent et meurent à l\'intérieur d\'une même position, ne sont jamais stockés, et l\'interface publique reste des fonctions sur la donnée. Résultat : aucun modèle parallèle à garder synchronisé.',
+      },
+      strategy: {
+        title: 'Une classe par type de déplacement',
+        text: 'Les façons de bouger sont des stratégies interchangeables, avec un seul endroit qui associe une pièce à ses types de déplacement. La légalité, elle, est un pipeline : géométrie, sécurité du roi, roque, clouage, prise en passant, réponse à l\'échec. Un organe par question.',
+      },
+      tests: {
+        title: 'Testé à trois niveaux',
+        text: 'Plus de 500 tests unitaires sur le moteur et les composants, des tests de bout en bout séparés en trois familles (pages, fonctionnalités, parcours complets), et un banc d\'essai qui compte les positions calculées par seconde pour repérer les régressions de performance.',
+      },
+      docs: {
+        title: 'Une aide qui ne peut pas mentir',
+        text: 'Les diagrammes de la fenêtre « Comment jouer » ne redessinent pas les règles : ils posent une vraie position et demandent au moteur où les pièces ont le droit d\'aller. Des tests vérifient que chaque diagramme démontre encore ce qu\'il annonce, par exemple qu\'une pièce clouée n\'a réellement aucun coup légal.',
+      },
+      polish: {
+        title: 'Le confort n\'est pas une option',
+        text: 'Glisser-déposer maison, qui distingue le clic pour jouer du glissement, et qui s\'adapte au doigt sur mobile. Thème clair et sombre, thèmes de pièces et de plateau indépendants, interface en français et en anglais avec accord en genre, et toutes les animations qui s\'effacent quand le système demande moins de mouvement.',
+      },
+    },
+    stack: 'Outils',
+    stackText: 'Vue 3 en Composition API, TypeScript en mode strict, Pinia, Vite, SCSS avec un design system maison, Vitest et Playwright.',
+    roadmap: 'La suite',
+    roadmapText: 'Un adversaire IA et le jeu en ligne, en réutilisant le moteur tel quel.',
   },
   privacy: {
     title: 'Politique de confidentialité',
