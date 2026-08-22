@@ -1,4 +1,4 @@
-import {computed, reactive} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import {useGameSession} from '@/composables/useGameSession'
 import {useGameClock} from '@/composables/useGameClock'
 import {useIsMobile} from '@/composables/useMediaQuery'
@@ -6,7 +6,7 @@ import {useSettingsStore} from '@/stores/useSettingsStore'
 import {getCapturedPieces, type CapturedByColor} from '@/engine/material'
 import {findKingSquare, toSquareKey} from '@/engine/board'
 import {isPromotionMove, legalDestinations} from '@/engine/move'
-import {enPassantTarget} from '@/engine/game'
+import {enPassantTarget, matingPiece} from '@/engine/game'
 import type {PieceColor, PieceType, SquareKey} from '@/types/chess'
 
 // The reactive DTO for the whole game view. GamePage builds it once and passes it as a single
@@ -127,6 +127,30 @@ export function useGameView(id: string) {
   // Pending draw offer (who offered) — drives the accept/decline UI in GameActions.
   const drawOffer = computed<PieceColor | null>(() => session.game.value?.drawOffer ?? null)
 
+  // The end-of-game celebration. Lives in the view DTO rather than in GamePage so any section
+  // can reopen it through the single `:view` prop — GameInfo does, from deep inside the layout.
+  //
+  // Opened on the TRANSITION to finished, never on the initial value: a view built over an
+  // already-finished game (a dev scenario seeded before mount) must not throw the modal at the
+  // viewer's face.
+  const resultOpen = ref(false)
+  watch(() => session.isGameOver.value, (over, wasOver) => {
+    if (over && !wasOver) {
+      resultOpen.value = true
+    }
+  })
+
+  function showResult() {
+    resultOpen.value = true
+  }
+
+  function hideResult() {
+    resultOpen.value = false
+  }
+
+  // The piece delivering the mate, for the celebration recap — null for every other ending.
+  const mateBy = computed(() => (session.game.value ? matingPiece(session.game.value) : null))
+
   // Which color sits at the top / bottom of the board — the layout places each player accordingly.
   const bottomColor = computed<PieceColor>(() => orientation.value)
   const topColor = computed<PieceColor>(() => (orientation.value === 'white' ? 'black' : 'white'))
@@ -149,7 +173,11 @@ export function useGameView(id: string) {
     clocks,
     isGameOver: session.isGameOver,
     drawOffer,
+    resultOpen,
+    mateBy,
     move,
+    showResult,
+    hideResult,
     dropTargets,
     legalTargets,
     needsPromotionChoice,

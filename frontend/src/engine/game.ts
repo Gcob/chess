@@ -263,6 +263,26 @@ export function flagTimeout(game: Game, color: PieceColor): void {
     : {winner: null, reason: 'timeout'})
 }
 
+// Which piece delivers the mate, for the end-of-game recap. Read from the POSITION, never from
+// the last move: a discovered mate is given by a piece that did not move, so `moves[last]` names
+// the wrong one. Null unless the game ended in checkmate with exactly one checker — a double
+// check has no single author, and naming one of the two would be a half-truth.
+export function matingPiece(game: Game): { pieceType: PieceType; square: SquareKey } | null {
+  if (game.result?.reason !== 'checkmate') {
+    return null
+  }
+
+  const checkers = findCheckers(game.board, game.activeColor)
+  if (checkers.length !== 1) {
+    return null
+  }
+
+  const square = checkers[0]!
+  return square.piece
+    ? {pieceType: square.piece.type, square: `${square.file}${square.rank}`}
+    : null
+}
+
 // Display helper: the settled time, minus the running turn time when color is on the move.
 // null = untimed game. Never negative — the clock shows 0 while flagTimeout settles the game.
 export function remainingSeconds(game: Game, color: PieceColor, now: number = Date.now()): number | null {

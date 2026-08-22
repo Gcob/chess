@@ -12,6 +12,12 @@ $color-danger:  #b91c1c;
 $color-success: #22c55e;
 $color-warning: #eab308;
 
+// Celebration golds — two values, not one opacity: the bright gold reads on a dark modal but
+// falls under the contrast floor on white, so the light theme needs its own deeper tone.
+$color-gold-bright: #f5c451;
+$color-gold-deep:   #b07d12;
+$color-gold-spark:  #c9911c;
+
 $color-slate-50:  #f8fafc;
 $color-slate-100: #f1f5f9;
 $color-slate-200: #e2e8f0;

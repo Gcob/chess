@@ -36,4 +36,67 @@ describe('useGameLauncher', () => {
     const {launch} = useGameLauncher()
     expect(launch().game.moves).toHaveLength(0)
   })
+
+  describe('rematch', () => {
+    it('swaps the colours — nobody plays white twice in a row', () => {
+      const settings = useNewGameStore().settings
+      settings.playerWhiteName = 'Ada'
+      settings.playerWhiteAvatar = 'fox'
+      settings.playerBlackName = 'Linus'
+      settings.playerBlackAvatar = 'panda'
+
+      const {launch, rematch} = useGameLauncher()
+      const played = launch()
+      const revenge = rematch(played.game)
+
+      expect(revenge.game.players.white.metas.name).toBe('Linus')
+      expect(revenge.game.players.white.metas.image).toBe('panda')
+      expect(revenge.game.players.black.metas.name).toBe('Ada')
+      expect(revenge.game.players.black.metas.image).toBe('fox')
+    })
+
+    it('keeps the mode and the time control, and starts from a clean board', () => {
+      const settings = useNewGameStore().settings
+      settings.timerEnabled = true
+      settings.timerMinutes = 3
+      settings.timerIncrement = 2
+
+      const {launch, rematch} = useGameLauncher()
+      const revenge = rematch(launch().game)
+
+      expect(revenge.game.mode).toBe('local')
+      expect(revenge.game.time).toEqual({minutes: 3, secondsIncrement: 2})
+      expect(revenge.game.moves).toHaveLength(0)
+      expect(revenge.game.status).toBe('waiting')
+      expect(revenge.game.result).toBeNull()
+    })
+
+    it('carries an untimed game over as untimed', () => {
+      useNewGameStore().settings.timerEnabled = false
+      const {launch, rematch} = useGameLauncher()
+      expect(rematch(launch().game).game.time).toBeUndefined()
+    })
+
+    it('registers the rematch as its own session, leaving the previous one alone', () => {
+      const {launch, rematch} = useGameLauncher()
+      const played = launch()
+      const revenge = rematch(played.game)
+
+      expect(revenge.id).not.toBe(played.id)
+      expect(useGamesStore().get(played.id)).toBe(played)
+      expect(useGamesStore().get(revenge.id)).toBe(revenge)
+    })
+
+    it('does not touch the persisted form settings', () => {
+      const settings = useNewGameStore().settings
+      settings.playerWhiteName = 'Ada'
+      settings.playerBlackName = 'Linus'
+
+      const {launch, rematch} = useGameLauncher()
+      rematch(launch().game)
+
+      expect(settings.playerWhiteName).toBe('Ada')
+      expect(settings.playerBlackName).toBe('Linus')
+    })
+  })
 })

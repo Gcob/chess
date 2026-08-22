@@ -71,7 +71,6 @@ export default {
   footer: {
     howToPlay: 'How to play',
     about: 'About',
-    terms: 'Terms',
     privacy: 'Privacy',
     github: 'GitHub',
     copyright: '© {year} Chess by Jacob',
@@ -84,10 +83,6 @@ export default {
     stackText: 'Built with Vue 3, TypeScript, Pinia, and Vite. Styled with SCSS and a custom design system. Tested with Vitest and Playwright.',
     roadmap: 'Roadmap',
     roadmapText: 'Planned features include: full chess rule enforcement, move history, PGN export, AI opponent, and online multiplayer.',
-  },
-  terms: {
-    title: 'Terms of Service',
-    placeholder: 'Coming soon.',
   },
   privacy: {
     title: 'Privacy Policy',
@@ -199,6 +194,39 @@ export default {
       },
       acceptDraw: 'Accept',
       declineDraw: 'Decline',
+    },
+    over: {
+      winner: 'Well played, {name}!',
+      draw: 'It\'s a draw!',
+      winnerColor: {
+        white: 'White takes it.',
+        black: 'Black takes it.',
+      },
+      // Same sentence, with the mate spelled out — only when a single piece authored it.
+      winnerColorMate: {
+        white: 'White takes it with a checkmate {piece} on {square}.',
+        black: 'Black takes it with a checkmate {piece} on {square}.',
+      },
+      loser: 'Great fight, {name}!',
+      drawBoth: 'Nicely played, both of you!',
+      drawKind: {
+        'draw-agreement': 'Both sides shake on it.',
+        'stalemate': 'The king is stuck, but safe.',
+        'fifty-move-rule': 'Fifty moves with no capture and no pawn push.',
+        'threefold-repetition': 'The same position, three times over.',
+        'insufficient-material': 'Not enough material left to mate.',
+      },
+      // The preposition is baked into each piece phrase — French contracts its article by gender.
+      mateByPiece: {
+        queen: 'by the queen',
+        rook: 'by the rook',
+        bishop: 'by the bishop',
+        knight: 'by the knight',
+        pawn: 'by the pawn',
+        king: 'by the king',
+      },
+      rematch: 'Rematch',
+      seeResult: 'See result',
     },
     state: {
       waiting: 'Waiting for the first move',

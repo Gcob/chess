@@ -6,6 +6,7 @@ import {
   flagTimeout,
   halfmovesSinceProgress,
   makeMove,
+  matingPiece,
   offerDraw,
   oppositeColor,
   remainingSeconds,
@@ -666,5 +667,62 @@ describe('makeMove — automatic endings', () => {
     makeMove(game, 'g7', 'g6', T0) // the block — play resumes normally
     expect(game.status).toBe('active')
     expect(game.players.black.isInCheck).toBe(false)
+  })
+})
+
+describe('matingPiece', () => {
+  // Black Kh8 boxed in by white Rh1 + Rg1, with a white knight on h6 plugging the h-file.
+  // Moving that knight is what ends the game — but it is never the piece giving check.
+  function discoveredMateSetup(): Game {
+    const game = untimedGame()
+    keepOnly(game.board, ['e1', 'h1', 'g1', 'a1', 'e8'])
+    applyMove(game.board, 'g1', 'h6') // the knight, plugging the rook's file
+    applyMove(game.board, 'a1', 'g1') // the second rook, sealing g7 and g8
+    applyMove(game.board, 'e8', 'h8')
+    return game
+  }
+
+  it('names the checking piece, not the piece that moved — the discovered mate', () => {
+    const game = discoveredMateSetup()
+    makeMove(game, 'h6', 'f5', T0) // the knight steps aside; the rook on h1 delivers the mate
+
+    expect(game.result).toEqual({winner: 'white', reason: 'checkmate'})
+    // Reading the last move would answer "knight on f5", which is simply not the mating piece.
+    expect(matingPiece(game)).toEqual({pieceType: 'rook', square: 'h1'})
+  })
+
+  it('stays silent on a double check — no single piece authored the mate', () => {
+    const game = discoveredMateSetup()
+    makeMove(game, 'h6', 'f7', T0) // the knight both hits h8 and uncovers the rook
+
+    expect(game.result).toEqual({winner: 'white', reason: 'checkmate'})
+    expect(matingPiece(game)).toBeNull()
+  })
+
+  it('names the mover when the mover is the one giving check', () => {
+    const game = untimedGame()
+    playMoves(game, [
+      ['e2', 'e4'], ['e7', 'e5'],
+      ['f1', 'c4'], ['b8', 'c6'],
+      ['d1', 'h5'], ['g8', 'f6'],
+      ['h5', 'f7'],
+    ])
+
+    expect(matingPiece(game)).toEqual({pieceType: 'queen', square: 'f7'})
+  })
+
+  it('is null on every ending that is not a checkmate', () => {
+    const game = untimedGame()
+    startGame(game, T0)
+    resign(game, 'white')
+
+    expect(matingPiece(game)).toBeNull()
+  })
+
+  it('is null while the game is still running', () => {
+    const game = untimedGame()
+    playMoves(game, [['e2', 'e4'], ['f7', 'f5'], ['d1', 'h5']]) // check, not mate
+
+    expect(matingPiece(game)).toBeNull()
   })
 })
