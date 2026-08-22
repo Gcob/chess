@@ -3,6 +3,8 @@
     <template v-if="view.game">
       <GameLayoutMobile v-if="isMobile" :view="view" />
       <GameLayoutDesktop v-else :view="view" />
+
+      <GameOverModal :view="view" @home="goHome" @rematch="playRematch" />
     </template>
 
     <div v-else class="game-page__not-found">
@@ -17,15 +19,19 @@
 </template>
 
 <script lang="ts" setup>
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {useGameView} from '@/composables/useGameView'
 import {useIsMobile} from '@/composables/useMediaQuery'
 import {usePreventLeave} from '@/composables/usePreventLeave'
 import {useSettingsStore} from '@/stores/useSettingsStore'
 import GameLayoutDesktop from '@/components/game/GameLayoutDesktop.vue'
 import GameLayoutMobile from '@/components/game/GameLayoutMobile.vue'
+import GameOverModal from '@/components/game/GameOverModal.vue'
+import {useGameLauncher} from '@/composables/useGameLauncher'
+import {useGamesStore} from '@/stores/useGamesStore'
 
 const route = useRoute()
+const router = useRouter()
 
 // route.params.id is string | string[] — normalize to one string; an unknown or malformed id
 // simply finds no session and falls into the not-found state below.
@@ -37,6 +43,29 @@ const isMobile = useIsMobile()
 // dev tooling (devMode setting) iterates too fast to pay a confirm on every hop.
 const settingsStore = useSettingsStore()
 usePreventLeave(() => !!view.game && !view.isGameOver && !settingsStore.settings.devMode)
+
+const gamesStore = useGamesStore()
+const {rematch} = useGameLauncher()
+
+function goHome() {
+  view.hideResult()
+  void router.push({name: 'home'})
+}
+
+// Same shape as the dev panel's restart: replace rather than push (the finished game is done,
+// and a browser back into a closed session would only find the not-found state), then drop it.
+async function playRematch() {
+  const game = view.game
+  if (!game) {
+    return
+  }
+
+  const previousId = String(route.params.id ?? '')
+  const session = rematch(game)
+  view.hideResult()
+  await router.replace({name: 'game', params: {id: session.id}})
+  gamesStore.close(previousId)
+}
 </script>
 
 <style lang="scss" scoped>

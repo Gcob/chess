@@ -5,13 +5,24 @@
       <span class="game-info__sep" aria-hidden="true">·</span>
       <span>{{ modeLabel }}</span>
     </div>
-    <div class="game-info__state">{{ stateLabel }}</div>
+    <!-- Once the game is over the state line doubles as the way back into the celebration:
+         the modal is dismissible, so the result must stay one click away. -->
+    <button
+      v-if="view.isGameOver"
+      class="game-info__state game-info__state--button"
+      @click="view.showResult()"
+    >
+      {{ stateLabel }}
+      <Sparkles :size="13" />
+    </button>
+    <div v-else class="game-info__state">{{ stateLabel }}</div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import {computed} from 'vue'
 import {useI18n} from 'vue-i18n'
+import {Sparkles} from 'lucide-vue-next'
 import type {GameView} from '@/composables/useGameView'
 import type {GameMode} from '@/types/chess'
 
@@ -97,6 +108,21 @@ const stateLabel = computed(() => {
   &__state {
     color: var(--text-secondary);
     font-weight: $font-weight-semibold;
+  }
+
+  &__state--button {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-1 $spacing-3;
+    border-radius: $border-radius-full;
+    color: var(--celebrate-gold);
+    cursor: pointer;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--celebrate-gold) 12%, transparent);
+    }
   }
 }
 </style>

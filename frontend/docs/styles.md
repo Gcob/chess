@@ -45,3 +45,12 @@
 - Identité : knight low-poly bleu cyan sur fond sombre — Neutral Slate + accent bleu unique
 - `$color-accent: #4a9edd` — couleur interactive principale
 - Palette complète `$color-slate-50` → `$color-slate-950` dans `_variables.scss`
+
+### Dorés de célébration
+
+`--celebrate-gold` / `--celebrate-spark` / `--celebrate-rays` / `--celebrate-halo` / `--celebrate-glint` —
+l'aura de `GameOverModal`. Le CSS du composant est **identique dans les deux thèmes** : seules ces valeurs
+changent. Deux dorés distincts, pas une simple variation d'opacité (`$color-gold-bright` pour le dark,
+`$color-gold-deep` pour le light) — le doré clair passe sous le seuil de contraste sur fond blanc.
+`--celebrate-glint` (le reflet qui balaie l'avatar du gagnant) est blanc en dark et doré en light,
+pour la même raison : du blanc sur du blanc ne se voit pas.

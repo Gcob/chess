@@ -83,7 +83,6 @@ export default {
   footer: {
     howToPlay: 'Comment jouer',
     about: 'À propos',
-    terms: 'Conditions',
     privacy: 'Confidentialité',
     github: 'GitHub',
     copyright: '© {year} Échecs par Jacob',
@@ -96,10 +95,6 @@ export default {
     stackText: 'Construit avec Vue 3, TypeScript, Pinia et Vite. Stylisé avec SCSS et un design system maison. Testé avec Vitest et Playwright.',
     roadmap: 'Feuille de route',
     roadmapText: 'Fonctionnalités prévues : validation complète des règles des échecs, historique des coups, export PGN, adversaire IA et multijoueur en ligne.',
-  },
-  terms: {
-    title: 'Conditions d\'utilisation',
-    placeholder: 'À venir.',
   },
   privacy: {
     title: 'Politique de confidentialité',
@@ -211,6 +206,39 @@ export default {
       },
       acceptDraw: 'Accepter',
       declineDraw: 'Refuser',
+    },
+    over: {
+      winner: 'Bravo {name} !',
+      draw: 'Match nul !',
+      winnerColor: {
+        white: 'Les blancs l\'emportent.',
+        black: 'Les noirs l\'emportent.',
+      },
+      // Same sentence, with the mate spelled out — only when a single piece authored it.
+      winnerColorMate: {
+        white: 'Les blancs l\'emportent avec un mat {piece} en {square}.',
+        black: 'Les noirs l\'emportent avec un mat {piece} en {square}.',
+      },
+      loser: 'Belle bataille, {name} !',
+      drawBoth: 'Bien joué les deux !',
+      drawKind: {
+        'draw-agreement': 'Les deux camps se serrent la main.',
+        'stalemate': 'Le roi est coincé, mais sain et sauf.',
+        'fifty-move-rule': 'Cinquante coups sans capture ni poussée de pion.',
+        'threefold-repetition': 'La même position, trois fois de suite.',
+        'insufficient-material': 'Plus assez de matériel pour mater.',
+      },
+      // The article is baked into each piece phrase — French contracts it by gender.
+      mateByPiece: {
+        queen: 'de la dame',
+        rook: 'de la tour',
+        bishop: 'du fou',
+        knight: 'du cavalier',
+        pawn: 'du pion',
+        king: 'du roi',
+      },
+      rematch: 'Revanche',
+      seeResult: 'Voir le résultat',
     },
     state: {
       waiting: 'En attente du premier coup',

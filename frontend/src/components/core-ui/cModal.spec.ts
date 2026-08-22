@@ -72,6 +72,19 @@ describe('cModal', () => {
     expect(wrapper.find('.c-modal__wrapper--lg').exists()).toBe(true)
   })
 
+  it('pads its content by default', () => {
+    const wrapper = mountModal({ modelValue: true }, { default: 'Body' })
+    expect(wrapper.find('.c-modal__content--flush').exists()).toBe(false)
+  })
+
+  it('drops the content padding when flush', () => {
+    const wrapper = mountModal(
+      { modelValue: true, flush: true },
+      { default: 'Edge to edge' },
+    )
+    expect(wrapper.find('.c-modal__content--flush').exists()).toBe(true)
+  })
+
   it('emits close on X button click', async () => {
     const wrapper = mountModal(
       { modelValue: true },

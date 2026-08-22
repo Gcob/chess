@@ -165,7 +165,7 @@ point sur case vide, anneau sur capture, apparition animée fade + scale ; `view
 seulement après un tap.
 
 > Engine : `engine/game.ts` = commandes gardées par statut (`startGame`, `makeMove`, `resign`,
-> `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helper `remainingSeconds`) — voir
+> `offerDraw`/`acceptDraw`/`declineDraw`, `flagTimeout`, helpers `remainingSeconds`, `matingPiece`) — voir
 > `docs/engine-roadmap.md` pour les principes et la progression. `makeMove` exige le trait, enregistre le
 > `Move` (SAN naïf) avec temps débité + incrément, et le premier coup démarre une partie `waiting` (jamais
 > sur tentative invalide). Couche board : `engine/move.ts` (`canMove` / `legalDestinations` /
@@ -206,7 +206,7 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   sprite (`c-piece__flip`, `rotate` en propriété individuelle, demi-tour animé) — les états du sprite
   (lifted, popped, hop, float) pivotent avec lui, donc le drag d'un joueur « flippé » se miroite vers
   son côté du téléphone. D'où le retrait du bouton « tourner » de `cBoard` (piloté par la policy).
-- `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `PlayersPanel` → `PlayerCard`,
+- `components/game/` : `GameLayout{Desktop,Mobile}`, `GameBoardArea`, `GameOverModal`, `PlayersPanel` → `PlayerCard`,
   `GameInfo` (contrôle de temps, mode, **état de partie** sur sa propre ligne : attente / trait / résultat),
   `MoveHistory` (SAN par tour depuis `view.moves`, **desktop-only**), `GameActions` (masqué si partie finie ;
   proposer nulle / abandonner confirmé ; offre pendante → « Les blancs proposent la nulle » + Accepter /
@@ -222,6 +222,24 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   Le trait est indiqué par le highlight `is-active` de la carte et la ligne d'état de `GameInfo`.
 - **`GameInfo`** : récap compact (contrôle de temps « 5 min + 2 s » + mode). Ordre sidebar desktop :
   joueurs → infos → historique → actions ; mobile : infos → joueurs → board → actions.
+- **Fin de partie** : `GameOverModal` (montée par `GamePage`, donc partagée mobile/desktop) célèbre le
+  résultat — aura dorée en rotation derrière l'avatar du gagnant, anneau conique, reflet qui balaie le
+  sprite, nom en shimmer ; le perdant est salué, jamais diminué. Une nulle ne célèbre rien : aucune couche
+  d'effets n'est rendue du tout (ni rayons, ni halo, ni étincelles, ni anneau, ni shimmer), juste les deux
+  avatars côte à côte. Tout le mouvement s'éteint sous
+  `prefers-reduced-motion` (le titre en shimmer doit alors retrouver une couleur peinte, sinon le nom du
+  gagnant reste transparent). Emojis : `GAME_END_EMOJI` (voir `docs/look-and-feel.md`).
+  L'état vit dans le DTO de vue (`resultOpen` + commandes `showResult`/`hideResult`) et non dans
+  `GamePage` — c'est ce qui permet à `GameInfo`, au fond du layout, de rouvrir la modale sans drilling.
+  Ouverture sur la **transition** vers `finished`, jamais sur la valeur initiale : une vue construite
+  au-dessus d'une partie déjà finie (scénario dev semé avant le mount) ne saute pas au visage.
+  `matingPiece` (engine) nomme la pièce qui mate — lue dans la **position**, jamais dans le dernier coup :
+  un mat à la découverte est donné par une pièce qui n'a pas bougé. Tue en double échec (pas d'auteur unique).
+- **Revanche** : `useGameLauncher.rematch(game)` ouvre une session neuve depuis la partie terminée,
+  **couleurs inversées** (convention : personne ne joue les blancs deux fois de suite), même contrôle de
+  temps. Construite depuis le DTO de la partie, pas depuis le form persisté — les settings du formulaire
+  restent l'affaire du joueur. `GamePage` fait ensuite `router.replace` + `close` de l'ancienne session,
+  comme le restart du panneau dev.
 - **Pas de scroll en desktop** : topbar et footer ont des **hauteurs fixes** (`$topbar-height`,
   `$footer-height`), donc `#game-page` prend `height: calc(100svh - topbar - footer)` (≥ `lg`) — le board
   se dimensionne à sa zone bornée (`ResizeObserver`), l'historique scrolle en interne. Mobile : hauteur

@@ -133,6 +133,14 @@ langue** — pas une propriété universelle de l'avatar (une locale future, ex.
 français). Utilisé par le générateur de noms rigolos pour accorder les adjectifs ; absent = pas d'accord requis
 pour cette langue (ex. l'anglais n'en a jamais besoin).
 
+## Emojis de fin de partie — `src/themes/gameEnd.ts`
+
+`GAME_END_EMOJI` : un emoji par `GameEndReason` (⚔️ mat, 🏳️ abandon, ⏱️ temps, 🤝 accord, 🧊 pat,
+🐌 50 coups, 🔁 répétition, 🪶 matériel insuffisant). Vocabulaire de vue pur — l'engine ne le connaît
+pas et le DTO ne le porte jamais. Consommé par `GameOverModal`, dans le badge de la raison
+et **là seulement** : chaque type de fin a donc son propre signe (la poignée de main n'appartenant
+qu'à l'accord mutuel), sans jamais afficher le même emoji deux fois à l'écran.
+
 ## Générateur de noms rigolos — `src/utils/randomName.ts`
 
 Le vocabulaire vit **en i18n** ; le code ne garde que la logique. Format simple : **nom + adjectif**, mais

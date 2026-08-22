@@ -6,12 +6,16 @@ export interface CModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   closeOnOverlay?: boolean
   closeOnEsc?: boolean
+  // Drops the content padding so the slot paints edge to edge — for immersive modals whose
+  // own background or effects must reach the wrapper's rounded corners.
+  flush?: boolean
 }
 
 const props = withDefaults(defineProps<CModalProps>(), {
   size: 'md',
   closeOnOverlay: true,
   closeOnEsc: true,
+  flush: false,
 })
 
 const emit = defineEmits<{
@@ -76,7 +80,7 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div class="c-modal__content">
+        <div class="c-modal__content" :class="{ 'c-modal__content--flush': flush }">
           <slot />
         </div>
 
@@ -178,6 +182,12 @@ export default {
     overflow: auto;
     font-family: $font-family-mono;
     color: var(--text-secondary);
+
+    // Edge-to-edge: the slot owns its own spacing, and its own rounding if it paints a
+    // background (the wrapper's corners are rounded but it does not clip).
+    &--flush {
+      padding: 0;
+    }
   }
 
   &__footer {

@@ -52,6 +52,15 @@
   --success: #{$color-success};
   --warning: #{$color-warning};
 
+  // --- Celebration (game-over modal) ---
+  // The CSS is identical in both themes — only these values change.
+  --celebrate-gold: #{$color-gold-deep};
+  --celebrate-spark: #{$color-gold-spark};
+  --celebrate-rays: rgba(176, 125, 18, 0.16);
+  --celebrate-halo: rgba(176, 125, 18, 0.20);
+  // The sweep across the winner's avatar: white on white is invisible, so light glints gold.
+  --celebrate-glint: rgba(176, 125, 18, 0.34);
+
   // --- Scrollbar ---
   --scrollbar-track: rgba(15, 23, 42, 0.04);
   --scrollbar-thumb: rgba(15, 23, 42, 0.2);
@@ -104,6 +113,13 @@
   --danger: color-mix(in oklab, #{$color-danger}, white 25%);
   --success: color-mix(in oklab, #{$color-success}, white 20%);
   --warning: color-mix(in oklab, #{$color-warning}, white 15%);
+
+  // --- Celebration (game-over modal) ---
+  --celebrate-gold: #{$color-gold-bright};
+  --celebrate-spark: #{$color-gold-bright};
+  --celebrate-rays: rgba(245, 196, 81, 0.20);
+  --celebrate-halo: rgba(245, 196, 81, 0.32);
+  --celebrate-glint: rgba(255, 255, 255, 0.80);
 
   // --- Scrollbar ---
   --scrollbar-track: rgba(255, 255, 255, 0.04);

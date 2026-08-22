@@ -1,44 +1,35 @@
 # Chess
 
-A chess project made by Jacob Proulx.
+A personal chess project made by Jacob Proulx.
 
 ## Play
 
-Visit the [chess-two-neon.vercel.app](https://chess-two-neon.vercel.app/) link to see the project in action.
+Visit [chess.impecloud.com](https://chess.impecloud.com/) to see the project in action.
 
-Please note that the project is still in development and the game is not accessible yet. 
+Please note that the project is still in development. 
+At the moment, you can only play a game against another player on the same computer.
 
-## Roadmap Phase 1
+## Development
 
-- [x] Set up a domain model to represent the chess game
-- [x] Set up docker compose
-- [x] Set up the backend with Laravel 12 and PHP 8.3.
-- [ ] Implement the domain logic in Laravel to be able to play a game in the terminal.
-- [ ] Set up the frontend in Vue.js 3 compose API.
-- [ ] Implement the game interface with drag and drop for the pieces.
-- [ ] Create multiple AI levels to play against the computer with Stockfish.
-- [ ] Deploy the project on a server.
+2 roadmaps exists in this project:
 
+- [Frontend engine Roadmap](./frontend/docs/engine-roadmap.md)
+- [Backend Roadmap](./docs/ROADMAP.md)
 
-## Phase 2 features
+I did want to develop my own engine for a personal challenge, So I did it for the frontend.
+The backend (Laravel) will a use a php dependency in `composer.json`.
 
-- [ ] Implement a settings system to customize the user experience and basic themes.
-- [ ] Implement a 3D board view with 3D themes.
-- [ ] Implement the account system with registration, login, profile and game history.
-- [ ] Implement a friends system to add and remove friends.
-- [ ] Implement the matchmaking system to invite friends with Laravel Reverb for real-time features and websockets.
-- [ ] Implement a ranking system with ELO and matchmaking based on ELO.
-- [ ] Implement a chat system to communicate with other players.
-- [ ] Implement a tournament system to create and join tournaments.
-- [ ] Implement a puzzle system to solve chess puzzles.
-- [ ] Implement a study system to create and share chess studies.
-- [ ] Implement a lesson system to learn chess with interactive lessons.
-- [ ] Implement a analysis system to analyze games with Stockfish.
-
+> At the moment, the backend and docker are not involved yet in the project.
+> Only the frontend is deployed in Vercel.
 
 ## Domain Model
 
-![modèle du domaine - échec - chess-MDD V2.drawio.png](documentation%2Fmod%C3%A8le%20du%20domaine%20-%20%C3%A9chec%20-%20chess-MDD%20V2.drawio.png)
+In order to plan the engine development, I created a domain model to represent entities and how they 
+interact with each other. The model is based on the rules of chess and the different states of the game.
+
+![modèle-du-domaine.png](docs/mod%C3%A8le-du-domaine.png)
+
+> The domain model is in french.
 
 ## Docker
 
