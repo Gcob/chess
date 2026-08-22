@@ -245,6 +245,27 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
   se dimensionne à sa zone bornée (`ResizeObserver`), l'historique scrolle en interne. Mobile : hauteur
   naturelle, la page peut scroller.
 
+## Aide « Comment jouer »
+
+`ChessRules` (ouvert depuis le footer) est découpé en `cAccordion` : objectif, pièces, valeurs, échec,
+coups spéciaux, conseils aux débutants, fins de partie. Les huit `GameEndReason` y sont expliquées une
+par une — trois victoires, cinq nulles.
+
+**Les diagrammes ne dupliquent jamais les règles.** `RuleDiagram` pose une position et interroge le
+**vrai engine** : les cases atteignables viennent de `legalDestinations`, et les coups spéciaux sont
+joués par `applyMove` (qui déplace la tour du roque, vide la case de la victime en passant et transforme
+le pion promu). Une démo ne peut donc pas enseigner une règle que le jeu ne joue pas.
+Le pendant de ce choix : `createBoard(placement)` est exporté par `gameFactory` (la position initiale
+n'est qu'un placement parmi d'autres), et les positions vivent en donnée pure dans `ruleDiagrams.ts`,
+avec une spec qui **assert ce que chaque diagramme enseigne** (le cavalier cloué a zéro coup, le fou
+reste sur sa couleur, la promotion transforme la pièce…) — un diagramme qui cesse de démontrer sa règle
+casse le build au lieu de tromper un débutant. Chaque position porte les **deux rois** : la légalité
+interroge la case du roi, un board sans roi n'est pas une position d'échecs.
+Les surlignages réutilisent le vocabulaire du vrai board (vert = la pièce, bleu = destination, anneau =
+capture), plus deux marques d'auteur : `threats` (rouge, la ligne de clouage) et `zone` (les cases
+centrales). Les séquences tournent en boucle, coupées par `prefers-reduced-motion` — qui laisse alors
+la position avec les cases du coup marquées, donc une illustration statique encore complète.
+
 ## Settings
 
 - Gérés par `useSettingsStore` (`src/stores/useSettingsStore.ts`)

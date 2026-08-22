@@ -66,8 +66,12 @@ export function createGameSession(payload: CreateGamePayload, id: string): GameS
 const FILES: SquareFile[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const RANKS: SquareRank[] = [1, 2, 3, 4, 5, 6, 7, 8]
 
+// A sparse position: what stands where, by square key. The standard opening setup is just one
+// of these, and so is every rules diagram.
+export type PiecePlacement = Partial<Record<SquareKey, [PieceColor, PieceType]>>
+
 // Standard starting position — [color, type] per square key
-const INITIAL_SETUP: Partial<Record<SquareKey, [PieceColor, PieceType]>> = {
+const INITIAL_SETUP: PiecePlacement = {
   a1: ['white', 'rook'], b1: ['white', 'knight'], c1: ['white', 'bishop'], d1: ['white', 'queen'],
   e1: ['white', 'king'], f1: ['white', 'bishop'], g1: ['white', 'knight'], h1: ['white', 'rook'],
   a2: ['white', 'pawn'], b2: ['white', 'pawn'], c2: ['white', 'pawn'], d2: ['white', 'pawn'],
@@ -79,6 +83,13 @@ const INITIAL_SETUP: Partial<Record<SquareKey, [PieceColor, PieceType]>> = {
 }
 
 function createInitialBoard(): Board {
+  return createBoard(INITIAL_SETUP)
+}
+
+// Builds a fully linked board (64 squares, neighbours wired) holding exactly the given pieces.
+// Public so the rules diagrams can pose a position and ask the real engine about it, instead of
+// keeping a second, hand-written truth about how pieces move.
+export function createBoard(setup: PiecePlacement): Board {
   const squares = {} as Record<SquareKey, Square>
 
   // Pass 1: create all 64 squares with no neighbors yet
@@ -124,9 +135,12 @@ function createInitialBoard(): Board {
     }
   }
 
-  // Pass 3: place pieces in their starting positions
-  for (const [key, setup] of Object.entries(INITIAL_SETUP) as [SquareKey, [PieceColor, PieceType]][]) {
-    squares[key].piece = buildPiece(setup[0], setup[1], key)
+  // Pass 3: place the pieces. The placement map is Partial, so an explicitly undefined entry
+  // ("this square is empty") is a legal input and must leave the square bare, not crash.
+  for (const [key, placement] of Object.entries(setup) as [SquareKey, [PieceColor, PieceType] | undefined][]) {
+    if (placement) {
+      squares[key].piece = buildPiece(placement[0], placement[1], key)
+    }
   }
 
   return {squares}

@@ -14,6 +14,8 @@ src/components/core-ui/
 ├── cButton.spec.ts
 ├── cModal.vue
 ├── cModal.spec.ts
+├── cAccordion.vue
+├── cAccordion.spec.ts
 ├── cToast.vue
 ├── cToast.spec.ts
 ```
@@ -24,6 +26,13 @@ src/components/core-ui/
 - `<style lang="scss">` dans le `.vue` (non scoped pour les composants globaux)
 - Chaque composant DOIT avoir un `.spec.ts` colocalisé avec : rendu par défaut, props principales, événements émis
 - Composables testés indépendamment des composants
+
+## `cAccordion`
+
+Section repliable générique. Props : `title`, `open` (état initial), slot `icon` optionnel, événement `toggle`.
+Le contenu reste **monté** en permanence : l'ouverture s'anime en `grid-template-rows: 0fr → 1fr`,
+ce qui évite toute mesure JS et fonctionne quelle que soit la hauteur du contenu — mais exige que le
+wrapper interne garde `overflow: hidden`. `aria-expanded` + `aria-controls` câblés sur un `id` généré.
 
 ## `cModal`
 
