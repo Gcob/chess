@@ -85,6 +85,19 @@ describe('cModal', () => {
     expect(wrapper.find('.c-modal__content--flush').exists()).toBe(true)
   })
 
+  it('leaves the scrollbar to itself by default', () => {
+    const wrapper = mountModal({ modelValue: true }, { default: 'Body' })
+    expect(wrapper.find('.c-modal__content--stable-scrollbar').exists()).toBe(false)
+  })
+
+  it('reserves the scrollbar gutter on request', () => {
+    const wrapper = mountModal(
+      { modelValue: true, stableScrollbar: true },
+      { default: 'Body' },
+    )
+    expect(wrapper.find('.c-modal__content--stable-scrollbar').exists()).toBe(true)
+  })
+
   it('emits close on X button click', async () => {
     const wrapper = mountModal(
       { modelValue: true },

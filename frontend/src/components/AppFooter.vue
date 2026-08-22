@@ -24,7 +24,13 @@
       {{ $t('footer.copyright', { year }) }}
     </p>
 
-    <cModal v-model="showRules" size="lg">
+    <!-- Two layout concerns, both caused by the collapsible sections:
+         `stable-scrollbar` reserves the gutter, so a toggle that crosses the viewport height
+         does not jog everything sideways;
+         `flush` moves the padding off the SCROLLING box and into .chess-rules, because a sticky
+         heading pins to the scroller's padding box — any padding there leaves a transparent
+         strip above the stuck title with the content sliding visibly through it. -->
+    <cModal v-model="showRules" size="lg" flush stable-scrollbar>
       <template #header>{{ $t('chessRules.title') }}</template>
       <ChessRules />
       <template #footer="{ close }">
