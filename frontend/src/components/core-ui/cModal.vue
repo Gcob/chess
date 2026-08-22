@@ -9,6 +9,9 @@ export interface CModalProps {
   // Drops the content padding so the slot paints edge to edge — for immersive modals whose
   // own background or effects must reach the wrapper's rounded corners.
   flush?: boolean
+  // Reserves the scrollbar's width up front. For content that grows and shrinks (collapsible
+  // sections), where a scrollbar appearing and vanishing shifts the layout on every toggle.
+  stableScrollbar?: boolean
 }
 
 const props = withDefaults(defineProps<CModalProps>(), {
@@ -16,6 +19,7 @@ const props = withDefaults(defineProps<CModalProps>(), {
   closeOnOverlay: true,
   closeOnEsc: true,
   flush: false,
+  stableScrollbar: false,
 })
 
 const emit = defineEmits<{
@@ -80,7 +84,13 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div class="c-modal__content" :class="{ 'c-modal__content--flush': flush }">
+        <div
+          class="c-modal__content"
+          :class="{
+            'c-modal__content--flush': flush,
+            'c-modal__content--stable-scrollbar': stableScrollbar,
+          }"
+        >
           <slot />
         </div>
 
@@ -187,6 +197,18 @@ export default {
     // background (the wrapper's corners are rounded but it does not clip).
     &--flush {
       padding: 0;
+    }
+
+    // No layout shift when the content grows past the viewport. Modern engines reserve the
+    // gutter without painting a dead scrollbar; older ones (Safari before 18.2) fall back to
+    // always showing one, which is less pretty but just as steady.
+    &--stable-scrollbar {
+      overflow-y: scroll;
+
+      @supports (scrollbar-gutter: stable) {
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+      }
     }
   }
 

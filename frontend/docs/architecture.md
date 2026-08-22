@@ -249,12 +249,19 @@ la largeur** (`useMediaQuery`/`useIsMobile`, seuil `$breakpoint-lg`) : `GameLayo
 
 `ChessRules` (ouvert depuis le footer) est découpé en `cAccordion` : objectif, pièces, valeurs, échec,
 coups spéciaux, conseils aux débutants, fins de partie. Les huit `GameEndReason` y sont expliquées une
-par une — trois victoires, cinq nulles.
+par une — trois victoires, cinq nulles. Ouvrir une section la ramène en haut du conteneur scrollable
+(`cAccordion.scrollOnOpen`, défaut activé) : sans ça, on déplie un contenu qu'on ne voit pas.
+Le texte vise un public qui n'a **jamais joué** : pas de jargon non expliqué (« le joueur dont c'est le
+tour », jamais « au trait »).
 
 **Les diagrammes ne dupliquent jamais les règles.** `RuleDiagram` pose une position et interroge le
 **vrai engine** : les cases atteignables viennent de `legalDestinations`, et les coups spéciaux sont
 joués par `applyMove` (qui déplace la tour du roque, vide la case de la victime en passant et transforme
 le pion promu). Une démo ne peut donc pas enseigner une règle que le jeu ne joue pas.
+**Chaque diagramme ne montre qu'une idée** : aucune pièce parasite, pas de roi inutile planté dans un
+coin — l'engine répond parfaitement sur un board sans roi (il n'en cherche un que si un coup pourrait
+l'exposer), ce qu'une spec verrouille. Les diagrammes d'ouverture font exception : ils partent de
+`INITIAL_SETUP` parce qu'ils SONT une position complète.
 Le pendant de ce choix : `createBoard(placement)` est exporté par `gameFactory` (la position initiale
 n'est qu'un placement parmi d'autres), et les positions vivent en donnée pure dans `ruleDiagrams.ts`,
 avec une spec qui **assert ce que chaque diagramme enseigne** (le cavalier cloué a zéro coup, le fou

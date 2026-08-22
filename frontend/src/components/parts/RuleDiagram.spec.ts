@@ -32,9 +32,13 @@ describe('RuleDiagram', () => {
   })
 
   it('renders one sprite per piece on the board', () => {
-    // Knight, both kings, and the eight pawns ringing it.
+    // The knight and the eight pawns ringing it — nothing else on the board.
     const wrapper = mountDiagram(PIECE_DIAGRAMS.knight!)
-    expect(wrapper.findAll('.rule-diagram__piece')).toHaveLength(11)
+    expect(wrapper.findAll('.rule-diagram__piece')).toHaveLength(9)
+  })
+
+  it('shows a lone piece alone, with no idle kings cluttering the lesson', () => {
+    expect(mountDiagram(PIECE_DIAGRAMS.queen!).findAll('.rule-diagram__piece')).toHaveLength(1)
   })
 
   it('marks the piece and every square the engine says it may reach', () => {
@@ -59,25 +63,33 @@ describe('RuleDiagram', () => {
   })
 
   it('shades an authored zone', () => {
-    const wrapper = mountDiagram(TIP_DIAGRAMS.centre!)
+    const wrapper = mountDiagram({setup: {}, zone: ['d4', 'd5', 'e4', 'e5']})
     expect(wrapper.findAll('.rule-diagram__cell--zone')).toHaveLength(4)
   })
 
-  it('plays a sequence on a loop, and resets to the starting position', async () => {
-    const wrapper = mountDiagram(SPECIAL_DIAGRAMS.castling!)
-    const kingAt = () => wrapper.findAll('.rule-diagram__piece')
+  // Authored marks are context; a square involved in the move being played takes precedence,
+  // so the reader always sees what is happening right now over what is merely highlighted.
+  it('lets the move being played win over the zone underneath it', () => {
+    const wrapper = mountDiagram(TIP_DIAGRAMS.centre!)
+    // e4 is both a central square and the destination of the first move: it reads as the move.
+    expect(wrapper.findAll('.rule-diagram__cell--zone')).toHaveLength(3)
+    expect(wrapper.findAll('.rule-diagram__cell--target').length).toBeGreaterThan(0)
+  })
 
-    expect(kingAt()).toHaveLength(3)
+  it('plays a sequence on a loop, and resets to the starting position', async () => {
+    const wrapper = mountDiagram(SPECIAL_DIAGRAMS.castlingKingSide!)
+    const pieces = () => wrapper.findAll('.rule-diagram__piece')
+
+    expect(pieces()).toHaveLength(2)
 
     await vi.advanceTimersByTimeAsync(1500)
     await wrapper.vm.$nextTick()
-    // Castling moved two pieces, so both squares of the move are marked.
     expect(wrapper.findAll('.rule-diagram__cell--target').length).toBeGreaterThan(0)
 
-    // After the reset the board is whole again — the rook is back beside the king.
+    // After the reset the board is whole again — king and rook back where they started.
     await vi.advanceTimersByTimeAsync(4000)
     await wrapper.vm.$nextTick()
-    expect(wrapper.findAll('.rule-diagram__piece')).toHaveLength(3)
+    expect(pieces()).toHaveLength(2)
   })
 
   it('promotes the pawn for real — the sprite becomes a queen', async () => {

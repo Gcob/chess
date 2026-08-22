@@ -70,8 +70,9 @@ const RANKS: SquareRank[] = [1, 2, 3, 4, 5, 6, 7, 8]
 // of these, and so is every rules diagram.
 export type PiecePlacement = Partial<Record<SquareKey, [PieceColor, PieceType]>>
 
-// Standard starting position — [color, type] per square key
-const INITIAL_SETUP: PiecePlacement = {
+// Standard starting position — [color, type] per square key. Exported so the opening diagrams
+// can start from a real game rather than an invented arrangement.
+export const INITIAL_SETUP: PiecePlacement = {
   a1: ['white', 'rook'], b1: ['white', 'knight'], c1: ['white', 'bishop'], d1: ['white', 'queen'],
   e1: ['white', 'king'], f1: ['white', 'bishop'], g1: ['white', 'knight'], h1: ['white', 'rook'],
   a2: ['white', 'pawn'], b2: ['white', 'pawn'], c2: ['white', 'pawn'], d2: ['white', 'pawn'],

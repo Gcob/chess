@@ -1,8 +1,15 @@
 import {describe, it, expect} from 'vitest'
-import {PIECE_DIAGRAMS, SPECIAL_DIAGRAMS, TIP_DIAGRAMS, type RuleDiagram} from './ruleDiagrams'
+import {
+  CHECK_DIAGRAM,
+  END_DIAGRAMS,
+  PIECE_DIAGRAMS,
+  SPECIAL_DIAGRAMS,
+  TIP_DIAGRAMS,
+  type RuleDiagram,
+} from './ruleDiagrams'
 import {createBoard} from '@/composables/factories/gameFactory'
 import {applyMove, legalDestinations} from '@/engine/move'
-import {findKingSquare} from '@/engine/board'
+import {findCheckers} from '@/engine/board'
 import type {SquareKey} from '@/types/chess'
 
 // These specs are the point of deriving the diagrams from the engine: they assert that each
@@ -14,13 +21,47 @@ function destinations(diagram: RuleDiagram): SquareKey[] {
   return legalDestinations(board, diagram.from!, diagram.enPassantTarget ?? null).sort()
 }
 
-describe('rule diagrams — every position is a legal chess position', () => {
-  const all = {...PIECE_DIAGRAMS, ...SPECIAL_DIAGRAMS, ...TIP_DIAGRAMS}
+describe('rule diagrams — each one shows a single idea', () => {
+  // A diagram carries no spare pieces: an idle king standing in a corner is noise to a reader
+  // who has never played. The opening diagrams are the exception — they ARE a full position.
+  const SPARSE = {...PIECE_DIAGRAMS, ...SPECIAL_DIAGRAMS, ...END_DIAGRAMS, check: CHECK_DIAGRAM}
 
-  it.each(Object.entries(all))('%s has both kings on the board', (_name, diagram) => {
-    const board = createBoard(diagram.setup)
-    expect(findKingSquare(board, 'white')).toBeTruthy()
-    expect(findKingSquare(board, 'black')).toBeTruthy()
+  it.each(Object.entries(SPARSE))('%s stays small enough to read', (_name, diagram) => {
+    expect(Object.keys(diagram.setup).length).toBeLessThanOrEqual(9)
+  })
+
+  it('every piece diagram holds exactly the piece it explains, plus its context', () => {
+    expect(Object.keys(PIECE_DIAGRAMS.queen!.setup)).toEqual(['d4'])
+    expect(Object.keys(PIECE_DIAGRAMS.rook!.setup)).toEqual(['d4'])
+    expect(Object.keys(PIECE_DIAGRAMS.bishop!.setup)).toEqual(['d4'])
+    expect(Object.keys(PIECE_DIAGRAMS.king!.setup)).toEqual(['e4'])
+  })
+})
+
+describe('check and endings — the engine decides, not the author', () => {
+  it('a checked king may flee sideways but never along the line of attack', () => {
+    const board = createBoard(CHECK_DIAGRAM.setup)
+    const escapes = legalDestinations(board, 'e1')
+
+    expect(findCheckers(board, 'white')).toHaveLength(1)
+    expect(escapes.sort()).toEqual(['d1', 'd2', 'f1', 'f2'])
+    // Staying on the file is not an escape, and the engine says so on its own.
+    expect(escapes).not.toContain('e2')
+  })
+
+  it('the back-rank mate really is mate: in check, and no move at all', () => {
+    const board = createBoard(END_DIAGRAMS.checkmate!.setup)
+
+    expect(findCheckers(board, 'black')).toHaveLength(1)
+    expect(legalDestinations(board, 'h8')).toEqual([])
+  })
+
+  it('the stalemate really is stalemate: no move, and NOT in check', () => {
+    const board = createBoard(END_DIAGRAMS.stalemate!.setup)
+
+    // This is the whole difference with the diagram above, and the one beginners miss.
+    expect(findCheckers(board, 'black')).toEqual([])
+    expect(legalDestinations(board, 'a8')).toEqual([])
   })
 })
 
@@ -62,8 +103,8 @@ describe('piece diagrams — the engine answers what the caption promises', () =
 })
 
 describe('special move diagrams — applyMove does the whole special move', () => {
-  it('castling relocates the rook along with the king', () => {
-    const diagram = SPECIAL_DIAGRAMS.castling!
+  it('king-side castling drops the rook on f1', () => {
+    const diagram = SPECIAL_DIAGRAMS.castlingKingSide!
     const board = createBoard(diagram.setup)
     applyMove(board, ...diagram.moves![0]!)
 
@@ -71,6 +112,16 @@ describe('special move diagrams — applyMove does the whole special move', () =
     expect(board.squares.f1.piece?.type).toBe('rook')
     expect(board.squares.e1.piece).toBeNull()
     expect(board.squares.h1.piece).toBeNull()
+  })
+
+  it('queen-side castling sends the king to c1 and the rook all the way to d1', () => {
+    const diagram = SPECIAL_DIAGRAMS.castlingQueenSide!
+    const board = createBoard(diagram.setup)
+    applyMove(board, ...diagram.moves![0]!)
+
+    expect(board.squares.c1.piece?.type).toBe('king')
+    expect(board.squares.d1.piece?.type).toBe('rook')
+    expect(board.squares.a1.piece).toBeNull()
   })
 
   it('en passant clears the pawn that just double-pushed', () => {
@@ -124,5 +175,54 @@ describe('beginner tips', () => {
 
   it('the centre diagram marks the four central squares', () => {
     expect(TIP_DIAGRAMS.centre!.zone).toEqual(['d4', 'd5', 'e4', 'e5'])
+  })
+
+  it('all four tips carry a diagram', () => {
+    for (const key of ['blunder', 'pin', 'centre', 'develop']) {
+      expect(TIP_DIAGRAMS[key], key).toBeTruthy()
+    }
+  })
+
+  it('the blunder is a legal move onto a covered square, then a legal capture', () => {
+    const diagram = TIP_DIAGRAMS.blunder!
+    const board = createBoard(diagram.setup)
+
+    // The knight really may go there — it is a legal move, just a bad one.
+    expect(legalDestinations(board, 'c3')).toContain('d5')
+
+    applyMove(board, ...diagram.moves![0]!)
+    // And the pawn really may take it.
+    expect(legalDestinations(board, 'e6')).toContain('d5')
+
+    applyMove(board, ...diagram.moves![1]!)
+    expect(board.squares.d5.piece?.color).toBe('black')
+  })
+
+  it('the centre opening leaves white owning the middle and black nowhere', () => {
+    const diagram = TIP_DIAGRAMS.centre!
+    const board = createBoard(diagram.setup)
+    for (const move of diagram.moves!) {
+      applyMove(board, ...move)
+    }
+
+    expect(board.squares.e4.piece?.color).toBe('white')
+    expect(board.squares.d4.piece?.color).toBe('white')
+    // Black spent both moves on rook pawns, touching no central square.
+    expect(board.squares.d5.piece).toBeNull()
+    expect(board.squares.e5.piece).toBeNull()
+  })
+
+  it('the development sequence ends with the king actually castled', () => {
+    const diagram = TIP_DIAGRAMS.develop!
+    const board = createBoard(diagram.setup)
+    for (const move of diagram.moves!) {
+      applyMove(board, ...move)
+    }
+
+    expect(board.squares.f3.piece?.type).toBe('knight')
+    expect(board.squares.c4.piece?.type).toBe('bishop')
+    // Castling only became possible because those two pieces vacated f1 and g1.
+    expect(board.squares.g1.piece?.type).toBe('king')
+    expect(board.squares.f1.piece?.type).toBe('rook')
   })
 })

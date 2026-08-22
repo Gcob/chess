@@ -186,6 +186,12 @@ onBeforeUnmount(() => clearTimeout(timer))
   flex-direction: column;
   align-items: center;
   gap: $spacing-2;
+  // Fill the track the layout hands us, but never grow past a readable board size. Both halves
+  // matter: without the width, two diagrams side by side size to their content and come out
+  // mismatched; without the cap, a diagram in a row swallows the whole line and squeezes the
+  // text beside it into an unreadable column.
+  width: 100%;
+  max-width: 17rem;
   margin: 0;
 
   &__board {

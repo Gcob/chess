@@ -1,30 +1,47 @@
 <script setup lang="ts">
-import {ref, useId} from 'vue'
+import {nextTick, ref, useId} from 'vue'
 import {ChevronDown} from 'lucide-vue-next'
 
 export interface CAccordionProps {
   title: string
   // Whether the section starts expanded — uncontrolled from then on.
   open?: boolean
+  // Bring the section to the top of its scrolling container when it opens, so the content that
+  // just appeared is the content you are looking at.
+  scrollOnOpen?: boolean
 }
 
 const props = withDefaults(defineProps<CAccordionProps>(), {
   open: false,
+  scrollOnOpen: true,
 })
 
 const emit = defineEmits<{ toggle: [open: boolean] }>()
 
 const isOpen = ref(props.open)
 const panelId = useId()
+const root = ref<HTMLElement | null>(null)
 
-function toggle() {
+async function toggle() {
   isOpen.value = !isOpen.value
   emit('toggle', isOpen.value)
+
+  if (!isOpen.value || !props.scrollOnOpen) {
+    return
+  }
+
+  // After the panel has been laid out, or the scroll aims at the collapsed height. Optional
+  // call: jsdom has no scrollIntoView, and neither do some embedded webviews.
+  await nextTick()
+  root.value?.scrollIntoView?.({
+    block: 'start',
+    behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  })
 }
 </script>
 
 <template>
-  <section class="c-accordion" :class="{ 'c-accordion--open': isOpen }">
+  <section ref="root" class="c-accordion" :class="{ 'c-accordion--open': isOpen }">
     <h3 class="c-accordion__heading">
       <button
         class="c-accordion__trigger"
@@ -54,10 +71,24 @@ function toggle() {
 
 <style lang="scss" scoped>
 .c-accordion {
-  border-bottom: $border-width-thin solid var(--border-color);
-
+  // The heading carries its own surface: it separates one section from the next far better than
+  // a hairline, and it is what makes the sticky title readable once content scrolls under it.
+  //
+  // Sticky against the nearest scrolling ancestor. Two hard requirements: the background must be
+  // OPAQUE, and no ancestor between here and that scroller may use `overflow: hidden`.
+  // The colours are hooks, not hard-coded values — a consumer on a different surface overrides
+  // them to keep the contrast right (ChessRules does, against the modal).
   &__heading {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     margin: 0;
+    // The space between sections lives HERE, as an opaque border, not as a margin between
+    // siblings. A margin would leave a transparent strip pinned at the top of the scrollport,
+    // and the content sliding underneath would show through it while one heading hands over to
+    // the next. Being part of the sticky element, this border travels with it and stays opaque.
+    border-top: $spacing-2 solid var(--accordion-surface, var(--bg-primary));
+    background: var(--accordion-heading-bg, var(--bg-secondary));
     font-size: inherit;
     font-weight: inherit;
   }
@@ -67,7 +98,7 @@ function toggle() {
     align-items: center;
     gap: $spacing-3;
     width: 100%;
-    padding: $spacing-3 $spacing-1;
+    padding: $spacing-3;
     font-family: $font-family-display;
     font-size: $font-size-base;
     font-weight: $font-weight-semibold;
@@ -126,7 +157,7 @@ function toggle() {
   }
 
   &__content {
-    padding: 0 $spacing-1 $spacing-4;
+    padding: $spacing-4 $spacing-3 $spacing-5;
   }
 }
 
