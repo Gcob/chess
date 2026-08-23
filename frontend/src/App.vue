@@ -5,18 +5,21 @@
          pages read their params once at setup. -->
     <RouterView :key="$route.path" />
     <AppFooter />
-    <Analytics />
+    <Analytics :before-send="beforeSend" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { Analytics } from '@vercel/analytics/vue'
+import { createPageviewDedupe } from '@/utils/analyticsDedupe'
 import { useTheme } from '@/composables/useTheme'
 import SuperTopBar from '@/components/SuperTopBar.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
 useTheme()
+
+const beforeSend = createPageviewDedupe()
 </script>
 
 <style lang="scss">

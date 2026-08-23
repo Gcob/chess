@@ -10,6 +10,7 @@
 - Lucide pour les icônes (import individuel depuis `lucide-vue-next`, pas d'enregistrement global)
 - vue-tippy pour les tooltips (plugin global dans `main.ts`, directive `v-tippy`)
 - Zod pour la validation (schémas purs dans `src/validation/`, agnostiques de Vue)
+- Vercel Web Analytics (`@vercel/analytics/vue`, monté dans `App.vue`)
 
 ## Structure des dossiers
 
@@ -339,3 +340,17 @@ si `shouldWarn`, un `window.confirm` s'affiche et annule la nav si refusée (top
 - Simulé côté frontend (`src/utils/ulid.ts`, fallback non-crypto documenté) tant qu'il n'y a pas de
   backend ; le backend/DB deviendra la source des vrais ULID.
 - Triable par date de création, générable partout — exactement le cas d'usage du ULID.
+
+## Web Analytics
+
+`<Analytics>` de `@vercel/analytics/vue` est monté dans `App.vue`, hors du `RouterView`.
+En dev, le paquet bascule seul sur son script de debug : les pageviews sont loggées, jamais envoyées.
+
+Deux contraintes de la lib méritent d'être connues :
+
+- Sa peer `vue-router@^4` est incompatible avec notre v5, d'où l'`overrides` dans `package.json`
+  (`"vue-router": "$vue-router"`). L'intégration ne touche qu'à `useRoute`, `route.path`, `route.params`
+  et `watch`, tous inchangés en v5.
+- Elle envoie une pageview depuis son `setup()`, puis une seconde quand le router confirme la navigation
+  initiale, donc la page d'entrée compte double. `createPageviewDedupe()` (`src/utils/analyticsDedupe.ts`)
+  est branchée sur la prop `beforeSend` et jette toute pageview répétant l'URL de la précédente.
